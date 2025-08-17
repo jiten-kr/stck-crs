@@ -1,15 +1,15 @@
 import Link from "next/link"
 import Image from "next/image"
-// import { Button } from "@/components/ui/button"
-// import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-// import { courses, categories } from "@/lib/data"
-// import { Star, Users, Clock } from "lucide-react"
-// import RenderCourseList from "./courses/renderCourseList"
+import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
+import { courses, categories } from "@/lib/data"
+import { Star, Users, Clock } from "lucide-react"
+import RenderCourseList from "./courses/renderCourseList"
 
 export default function HomePage() {
   console.log("HomePage component rendered");
   // Get featured courses (first 3)
-  // const featuredCourses = courses.slice(0, 3)
+  const featuredCourses = courses.slice(0, 3)
   const studentReviews = [
     {
       id: "s1a2b3",
@@ -85,7 +85,7 @@ export default function HomePage() {
 
       {/* Featured Courses Section */}
 
-            {/* <RenderCourseList courses={featuredCourses} /> */}
+            <RenderCourseList courses={featuredCourses} />
 
 
 
@@ -102,20 +102,20 @@ export default function HomePage() {
           </div>
           <div className="mx-auto grid max-w-5xl grid-cols-1 gap-6 md:grid-cols-3 mt-8">
             {studentReviews.map((student) => (
-              <div key={student.id} className="border rounded-lg p-6">
-                <div className="mb-4">
+              <Card key={student.id}>
+                <CardHeader>
                   <div className="flex items-center gap-4">
                     <div>
-                      <h3 className="text-base font-semibold">{student.name}</h3>
+                      <CardTitle className="text-base">{student.name}</CardTitle>
                     </div>
                   </div>
-                </div>
-                <div>
-                  <p className="text-sm text-gray-600">
+                </CardHeader>
+                <CardContent>
+                  <p className="text-sm text-muted-foreground">
                     {student.review}
                   </p>
-                </div>
-              </div>
+                </CardContent>
+              </Card>
             ))}
           </div>
         </div>
