@@ -1,11 +1,11 @@
 import type React from "react"
 import { Inter } from "next/font/google"
-// import { ThemeProvider } from "@/components/theme-provider"
-// import { CartProvider } from "@/components/cart-provider"
-// import Header from "@/components/header"
-// import Footer from "@/components/footer"
+import { ThemeProvider } from "@/components/theme-provider"
+import { CartProvider } from "@/components/cart-provider"
+import Header from "@/components/header"
+import Footer from "@/components/footer"
 import "./globals.css"
-// import { Providers } from "@/components/providers"
+import { Providers } from "@/components/providers"
 
 const inter = Inter({ subsets: ["latin"] })
 
@@ -25,9 +25,17 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={inter.className}>
-        <div className="flex min-h-screen flex-col">
-          <main className="flex-1">{children}</main>
-        </div>
+        <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
+          <CartProvider>
+          <Providers>
+            <div className="flex min-h-screen flex-col">
+              <Header />
+              <main className="flex-1">{children}</main>
+              <Footer />
+            </div>
+            </Providers>
+          </CartProvider>
+        </ThemeProvider>
       </body>
     </html>
   )

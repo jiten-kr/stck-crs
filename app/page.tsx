@@ -7,7 +7,6 @@ import { Star, Users, Clock } from "lucide-react"
 import RenderCourseList from "./courses/renderCourseList"
 
 export default function HomePage() {
-  console.log("HomePage component rendered");
   // Get featured courses (first 3)
   const featuredCourses = courses.slice(0, 3)
   const studentReviews = [
