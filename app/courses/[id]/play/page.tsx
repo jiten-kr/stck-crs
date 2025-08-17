@@ -244,26 +244,4 @@ const VideoPlayer = () => {
 };
 
 export default VideoPlayer;
-// <MuxPlayer
-//   streamType="on-demand"
-//   playbackId={tokens.playbackId}
-//   tokens={{
-//     playback: tokens.playback,
-//     thumbnail: tokens.thumbnail,
-//   }}
-//   preload="metadata"
-//   _hlsConfig={{
-//     maxBufferLength: 10, // Maximum buffer length in seconds (e.g., 15 seconds)
-//     // maxBufferSize: 30 * 1024 * 1024, // Maximum buffer size in bytes (e.g., 30 MB)
-//     maxMaxBufferLength: 20, // Absolute maximum buffer length in seconds (e.g., 30 seconds)
-//     // Add any other hls.js config properties here
-//     // For example, to adjust live latency for live streams:
-//     // liveSyncDuration: 3, // Target live latency in seconds
-//     // liveMaxLatencyDuration: 10, // Max live latency before seeking to live edge
-//   }}
-//   style={{
-//     // aspectRatio: "16/9",
-//     width: "90%",
-//     height: "90%",
-//   }}
-// />
+
