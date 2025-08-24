@@ -68,7 +68,11 @@ export default function AccountPage() {
     try {
       const token = localStorage.getItem("token");
       if (!token) {
-        toast({ title: "❌ Not logged in" });
+        toast({
+          title: "Authentication Error",
+          description: "You are not logged in. Please sign in again.",
+          variant: "destructive",
+        });
         return;
       }
 
@@ -84,19 +88,24 @@ export default function AccountPage() {
       const data = await res.json();
       if (res.ok) {
         toast({
-          title: "✅ Profile updated",
-          description: "Your profile has been saved.",
+          title: "Profile Updated",
+          description: "Your profile has been saved successfully.",
         });
         setProfile(data.user);
       } else {
         toast({
-          title: "❌ Error",
+          title: "Update Failed",
           description: data.error || "Failed to update profile",
+          variant: "destructive",
         });
       }
     } catch (error) {
       console.error("Error updating profile:", error);
-      toast({ title: "❌ Error", description: "Something went wrong" });
+      toast({
+        title: "Error",
+        description: "Something went wrong while updating your profile",
+        variant: "destructive",
+      });
     } finally {
       setLoading(false);
     }
@@ -106,16 +115,18 @@ export default function AccountPage() {
   const handleChangePassword = async () => {
     if (!newPassword || !currentPassword || !confirmPassword) {
       toast({
-        title: "⚠️ Missing fields",
-        description: "Please fill out all fields.",
+        title: "Missing Fields",
+        description: "Please fill out all password fields.",
+        variant: "destructive",
       });
       return;
     }
 
     if (newPassword !== confirmPassword) {
       toast({
-        title: "⚠️ Password mismatch",
+        title: "Password Mismatch",
         description: "New passwords do not match.",
+        variant: "destructive",
       });
       return;
     }
@@ -124,7 +135,11 @@ export default function AccountPage() {
     try {
       const token = localStorage.getItem("token");
       if (!token) {
-        toast({ title: "❌ Not logged in" });
+        toast({
+          title: "Authentication Error",
+          description: "You are not logged in. Please sign in again.",
+          variant: "destructive",
+        });
         return;
       }
 
@@ -143,21 +158,26 @@ export default function AccountPage() {
       const data = await res.json();
       if (res.ok) {
         toast({
-          title: "✅ Password updated",
-          description: "Your password has been changed.",
+          title: "Password Updated",
+          description: "Your password has been changed successfully.",
         });
         setCurrentPassword("");
         setNewPassword("");
         setConfirmPassword("");
       } else {
         toast({
-          title: "❌ Error",
+          title: "Password Change Failed",
           description: data.error || "Failed to change password",
+          variant: "destructive",
         });
       }
     } catch (error) {
       console.error("Error changing password:", error);
-      toast({ title: "❌ Error", description: "Something went wrong" });
+      toast({
+        title: "Error",
+        description: "Something went wrong while changing your password",
+        variant: "destructive",
+      });
     } finally {
       setPwLoading(false);
     }

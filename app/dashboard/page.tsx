@@ -1,40 +1,55 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import Link from "next/link"
-import Image from "next/image"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import { Progress } from "@/components/ui/progress"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { BookOpen, CheckCircle, Clock, Play, User } from "lucide-react"
+import { useState } from "react";
+import Link from "next/link";
+import Image from "next/image";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Progress } from "@/components/ui/progress";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { BookOpen, CheckCircle, Clock, Play, User } from "lucide-react";
 
 export default function DashboardPage() {
-  const [progress, setProgress] = useState(35)
+  const [progress, setProgress] = useState(35);
 
   return (
     <div className="container px-4 py-8 md:px-6 md:py-12">
       <div className="flex flex-col gap-8">
         <div className="flex flex-col gap-2">
           <h1 className="text-3xl font-bold">Dashboard</h1>
-          <p className="text-muted-foreground">Welcome back! Continue your learning journey.</p>
+          <p className="text-muted-foreground">
+            Welcome back! Continue your learning journey.
+          </p>
         </div>
 
         <div className="grid gap-6 md:grid-cols-3">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Course Progress</CardTitle>
+              <CardTitle className="text-sm font-medium">
+                Course Progress
+              </CardTitle>
               <BookOpen className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{progress}%</div>
               <Progress value={progress} className="mt-2" />
-              <p className="text-xs text-muted-foreground mt-2">4 of 12 modules completed</p>
+              <p className="text-xs text-muted-foreground mt-2">
+                4 of 12 modules completed
+              </p>
             </CardContent>
           </Card>
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Learning Time</CardTitle>
+              <CardTitle className="text-sm font-medium">
+                Learning Time
+              </CardTitle>
               <Clock className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
@@ -44,12 +59,16 @@ export default function DashboardPage() {
           </Card>
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Achievements</CardTitle>
+              <CardTitle className="text-sm font-medium">
+                Achievements
+              </CardTitle>
               <CheckCircle className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">3</div>
-              <p className="text-xs text-muted-foreground mt-2">Badges earned</p>
+              <p className="text-xs text-muted-foreground mt-2">
+                Badges earned
+              </p>
             </CardContent>
           </Card>
         </div>
@@ -64,7 +83,9 @@ export default function DashboardPage() {
             <Card>
               <CardHeader>
                 <CardTitle>Technical Analysis Fundamentals</CardTitle>
-                <CardDescription>Learn to read charts and identify key patterns</CardDescription>
+                <CardDescription>
+                  Learn to read charts and identify key patterns
+                </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="relative h-[200px] rounded-md overflow-hidden">
@@ -91,14 +112,18 @@ export default function DashboardPage() {
                   <div className="flex items-center gap-2 rounded-md border p-3">
                     <CheckCircle className="h-5 w-5 text-primary" />
                     <div className="flex-1">
-                      <p className="font-medium">Lesson 1: Introduction to Charts</p>
+                      <p className="font-medium">
+                        Lesson 1: Introduction to Charts
+                      </p>
                       <p className="text-sm text-muted-foreground">Completed</p>
                     </div>
                   </div>
                   <div className="flex items-center gap-2 rounded-md border p-3">
                     <CheckCircle className="h-5 w-5 text-primary" />
                     <div className="flex-1">
-                      <p className="font-medium">Lesson 2: Support and Resistance</p>
+                      <p className="font-medium">
+                        Lesson 2: Support and Resistance
+                      </p>
                       <p className="text-sm text-muted-foreground">Completed</p>
                     </div>
                   </div>
@@ -106,7 +131,9 @@ export default function DashboardPage() {
                     <div className="h-5 w-5 rounded-full border-2 border-primary" />
                     <div className="flex-1">
                       <p className="font-medium">Lesson 3: Trend Lines</p>
-                      <p className="text-sm text-muted-foreground">In progress</p>
+                      <p className="text-sm text-muted-foreground">
+                        In progress
+                      </p>
                     </div>
                     <Button size="sm">Continue</Button>
                   </div>
@@ -114,7 +141,9 @@ export default function DashboardPage() {
                     <div className="h-5 w-5 rounded-full border-2" />
                     <div className="flex-1">
                       <p className="font-medium">Lesson 4: Chart Patterns</p>
-                      <p className="text-sm text-muted-foreground">Not started</p>
+                      <p className="text-sm text-muted-foreground">
+                        Not started
+                      </p>
                     </div>
                   </div>
                 </div>
@@ -174,11 +203,20 @@ export default function DashboardPage() {
                       <span>{module.progress}%</span>
                     </div>
                     <Progress value={module.progress} />
-                    <p className="text-xs text-muted-foreground">{module.lessons} lessons</p>
+                    <p className="text-xs text-muted-foreground">
+                      {module.lessons} lessons
+                    </p>
                   </CardContent>
                   <CardFooter>
-                    <Button className="w-full" variant={module.completed ? "outline" : "default"}>
-                      {module.completed ? "Review" : module.progress > 0 ? "Continue" : "Start"}
+                    <Button
+                      className="w-full"
+                      variant={module.completed ? "outline" : "default"}
+                    >
+                      {module.completed
+                        ? "Review"
+                        : module.progress > 0
+                        ? "Continue"
+                        : "Start"}
                     </Button>
                   </CardFooter>
                 </Card>
@@ -211,7 +249,9 @@ export default function DashboardPage() {
                       <span>{module.progress}%</span>
                     </div>
                     <Progress value={module.progress} />
-                    <p className="text-xs text-muted-foreground">{module.lessons} lessons</p>
+                    <p className="text-xs text-muted-foreground">
+                      {module.lessons} lessons
+                    </p>
                   </CardContent>
                   <CardFooter>
                     <Button className="w-full" variant="outline">
@@ -223,60 +263,7 @@ export default function DashboardPage() {
             </div>
           </TabsContent>
         </Tabs>
-
-        <div className="grid gap-6 md:grid-cols-2">
-          <Card>
-            <CardHeader>
-              <CardTitle>Account Settings</CardTitle>
-              <CardDescription>Manage your account details and preferences</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex items-center gap-4">
-                <div className="h-12 w-12 rounded-full bg-muted flex items-center justify-center">
-                  <User className="h-6 w-6" />
-                </div>
-                <div>
-                  <p className="font-medium">John Doe</p>
-                  <p className="text-sm text-muted-foreground">john.doe@example.com</p>
-                </div>
-              </div>
-              <div className="space-y-1">
-                <p className="text-sm font-medium">Subscription</p>
-                <p className="text-sm text-muted-foreground">Pro Plan</p>
-              </div>
-            </CardContent>
-            <CardFooter>
-              <Button asChild variant="outline" className="w-full">
-                <Link href="/dashboard/settings">Manage Account</Link>
-              </Button>
-            </CardFooter>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle>Support</CardTitle>
-              <CardDescription>Get help with your course or account</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="space-y-2">
-                <p className="text-sm font-medium">Need assistance?</p>
-                <p className="text-sm text-muted-foreground">
-                  Our support team is available to help you with any questions or issues.
-                </p>
-              </div>
-            </CardContent>
-            <CardFooter className="flex flex-col space-y-2">
-              <Button asChild className="w-full">
-                <Link href="/contact">Contact Support</Link>
-              </Button>
-              <Button asChild variant="outline" className="w-full">
-                <Link href="/faq">View FAQ</Link>
-              </Button>
-            </CardFooter>
-          </Card>
-        </div>
       </div>
     </div>
-  )
+  );
 }
-

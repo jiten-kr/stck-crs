@@ -1,23 +1,23 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import Link from "next/link"
-import { Menu, ShoppingCart, User } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
-import { useCart } from "@/components/cart-provider"
-import { Badge } from "@/components/ui/badge"
-import { useSelector } from "react-redux"
-import { RootState } from "@/lib/store"
+import { useState } from "react";
+import Link from "next/link";
+import { Menu, ShoppingCart, User } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { useCart } from "@/components/cart-provider";
+import { Badge } from "@/components/ui/badge";
+import { useSelector } from "react-redux";
+import { RootState } from "@/lib/store";
 
 export default function Header() {
-  const { user, isAuthenticated } = useSelector((state: RootState) => state.auth)
-  const [isUserMenuOpen, setIsUserMenuOpen] = useState(false)
-  const { itemCount } = useCart()
+  const { user, isAuthenticated } = useSelector(
+    (state: RootState) => state.auth
+  );
+  const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
+  const { itemCount } = useCart();
 
-
-  console.log("isLoggedIn jimmy", isAuthenticated, user)
-
+  console.log("isLoggedIn jimmy", isAuthenticated, user);
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background">
@@ -62,7 +62,11 @@ export default function Header() {
           </Link>
 
           <div className="relative">
-            <Button variant="ghost" size="icon" onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
+            >
               <User className="h-5 w-5" />
               <span className="sr-only">User menu</span>
             </Button>
@@ -70,20 +74,31 @@ export default function Header() {
             {isUserMenuOpen && (
               <div className="absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-background border">
                 <div className="py-1">
-                  {!isAuthenticated && <Link
-                    href="/auth/signin"
+                  {!isAuthenticated && (
+                    <Link
+                      href="/auth/signin"
+                      className="block px-4 py-2 text-sm hover:bg-muted"
+                      onClick={() => setIsUserMenuOpen(false)}
+                    >
+                      Sign In
+                    </Link>
+                  )}
+                  {!isAuthenticated && (
+                    <Link
+                      href="/auth/signup"
+                      className="block px-4 py-2 text-sm hover:bg-muted"
+                      onClick={() => setIsUserMenuOpen(false)}
+                    >
+                      Sign Up
+                    </Link>
+                  )}
+                  <Link
+                    href="/dashboard"
                     className="block px-4 py-2 text-sm hover:bg-muted"
                     onClick={() => setIsUserMenuOpen(false)}
                   >
-                    Sign In
-                  </Link>}
-                  {!isAuthenticated && <Link
-                    href="/auth/signup"
-                    className="block px-4 py-2 text-sm hover:bg-muted"
-                    onClick={() => setIsUserMenuOpen(false)}
-                  >
-                    Sign Up
-                  </Link>}
+                    Dashboard
+                  </Link>
                   <Link
                     href="/account"
                     className="block px-4 py-2 text-sm hover:bg-muted"
@@ -91,6 +106,7 @@ export default function Header() {
                   >
                     My Account
                   </Link>
+
                   <Link
                     href="/account/orders"
                     className="block px-4 py-2 text-sm hover:bg-muted"
@@ -98,13 +114,15 @@ export default function Header() {
                   >
                     Order History
                   </Link>
-                  {isAuthenticated && <Link
-                    href="/auth/signin"
-                    className="block px-4 py-2 text-sm hover:bg-muted"
-                    onClick={() => setIsUserMenuOpen(false)}
-                  >
-                    Logout
-                  </Link>}
+                  {isAuthenticated && (
+                    <Link
+                      href="/auth/signin"
+                      className="block px-4 py-2 text-sm hover:bg-muted"
+                      onClick={() => setIsUserMenuOpen(false)}
+                    >
+                      Logout
+                    </Link>
+                  )}
                 </div>
               </div>
             )}
@@ -112,6 +130,5 @@ export default function Header() {
         </div>
       </div>
     </header>
-  )
+  );
 }
-

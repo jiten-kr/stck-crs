@@ -60,6 +60,7 @@ export default function SignInPage() {
 
       router.push("/dashboard"); // redirect to dashboard after login
     } catch (error: any) {
+      console.error("Login error:", error);
       toast({
         title: "Login failed",
         description: error.message,
