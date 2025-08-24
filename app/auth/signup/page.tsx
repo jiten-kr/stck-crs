@@ -1,68 +1,153 @@
-"use client"
+"use client";
 
-import type React from "react"
-
-import { useState } from "react"
-import Link from "next/link"
-import { useRouter } from "next/navigation"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Checkbox } from "@/components/ui/checkbox"
-import { useToast } from "@/hooks/use-toast"
+import type React from "react";
+import { useState } from "react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
+import { useToast } from "@/hooks/use-toast";
 
 export default function SignUpPage() {
-  const router = useRouter()
-  const { toast } = useToast()
-  const [isLoading, setIsLoading] = useState(false)
+  const router = useRouter();
+  const { toast } = useToast();
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault()
-    setIsLoading(true)
+    e.preventDefault();
+    setIsLoading(true);
 
-    // Simulate account creation
-    setTimeout(() => {
-      setIsLoading(false)
+    const formData = new FormData(e.currentTarget);
+    const firstName = formData.get("firstName") as string;
+    const lastName = formData.get("lastName") as string;
+    const email = formData.get("email") as string;
+    const phone = formData.get("phone") as string;
+    const password = formData.get("password") as string;
+    const confirmPassword = formData.get("confirmPassword") as string;
+
+    if (password !== confirmPassword) {
+      toast({
+        title: "Error",
+        description: "Passwords do not match.",
+        variant: "destructive",
+      });
+      setIsLoading(false);
+      return;
+    }
+
+    try {
+      const res = await fetch("/api/auth/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: `${firstName} ${lastName}`,
+          email,
+          phone,
+          password,
+        }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data.error || "Something went wrong");
+      }
+
       toast({
         title: "Account created",
         description: "Your account has been created successfully.",
-      })
-      router.push("/account")
-    }, 1500)
-  }
+      });
+
+      router.push("/account");
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to create account.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   return (
     <div className="flex min-h-[calc(100vh-4rem)] items-center justify-center py-12">
       <Card className="w-full max-w-md">
         <CardHeader className="space-y-1">
-          <CardTitle className="text-2xl font-bold">Create an account</CardTitle>
-          <CardDescription>Enter your information to create an account</CardDescription>
+          <CardTitle className="text-2xl font-bold">
+            Create an account
+          </CardTitle>
+          <CardDescription>
+            Enter your information to create an account
+          </CardDescription>
         </CardHeader>
         <form onSubmit={handleSubmit}>
           <CardContent className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="firstName">First name</Label>
-                <Input id="firstName" placeholder="John" required />
+                <Input
+                  id="firstName"
+                  name="firstName"
+                  placeholder="John"
+                  required
+                />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="lastName">Last name</Label>
-                <Input id="lastName" placeholder="Doe" required />
+                <Input
+                  id="lastName"
+                  name="lastName"
+                  placeholder="Doe"
+                  required
+                />
               </div>
             </div>
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
-              <Input id="email" type="email" placeholder="name@example.com" required />
+              <Input
+                id="email"
+                name="email"
+                type="email"
+                placeholder="name@example.com"
+                required
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="phone">Phone</Label>
+              <Input
+                id="phone"
+                name="phone"
+                type="tel"
+                placeholder="9876543210"
+                required
+              />
             </div>
             <div className="space-y-2">
               <Label htmlFor="password">Password</Label>
-              <Input id="password" type="password" required />
-              <p className="text-xs text-muted-foreground">Password must be at least 8 characters long</p>
+              <Input id="password" name="password" type="password" required />
+              <p className="text-xs text-muted-foreground">
+                Password must be at least 8 characters long
+              </p>
             </div>
             <div className="space-y-2">
               <Label htmlFor="confirmPassword">Confirm password</Label>
-              <Input id="confirmPassword" type="password" required />
+              <Input
+                id="confirmPassword"
+                name="confirmPassword"
+                type="password"
+                required
+              />
             </div>
             <div className="flex items-center space-x-2">
               <Checkbox id="terms" required />
@@ -71,11 +156,17 @@ export default function SignUpPage() {
                 className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
               >
                 I agree to the{" "}
-                <Link href="/terms" className="text-primary underline-offset-4 hover:underline">
+                <Link
+                  href="/terms"
+                  className="text-primary underline-offset-4 hover:underline"
+                >
                   terms of service
                 </Link>{" "}
                 and{" "}
-                <Link href="/privacy" className="text-primary underline-offset-4 hover:underline">
+                <Link
+                  href="/privacy"
+                  className="text-primary underline-offset-4 hover:underline"
+                >
                   privacy policy
                 </Link>
               </label>
@@ -87,7 +178,10 @@ export default function SignUpPage() {
             </Button>
             <div className="text-center text-sm">
               Already have an account?{" "}
-              <Link href="/auth/signin" className="text-primary underline-offset-4 hover:underline">
+              <Link
+                href="/auth/signin"
+                className="text-primary underline-offset-4 hover:underline"
+              >
                 Sign in
               </Link>
             </div>
@@ -95,6 +189,5 @@ export default function SignUpPage() {
         </form>
       </Card>
     </div>
-  )
+  );
 }
-

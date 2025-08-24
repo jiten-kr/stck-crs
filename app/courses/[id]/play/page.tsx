@@ -190,58 +190,56 @@ const VideoPlayer = () => {
   }
 
   return (
-<div className="w-full h-[60vh] md:h-[70vh] flex flex-col md:flex-row gap-4 p-4">
-  {/* Video Player Wrapper */}
-  <div className="flex-1 relative rounded-lg overflow-hidden bg-black">
-    {mounted && tokens.playback && tokens.thumbnail && (
-      <MuxPlayer
-        streamType="on-demand"
-        playbackId={tokens.playbackId}
-        tokens={{
-          playback: tokens.playback,
-          thumbnail: tokens.thumbnail,
-        }}
-        preload="metadata"
-        _hlsConfig={{
-          maxBufferLength: 10, // Maximum buffer length in seconds (e.g., 15 seconds)
-          // maxBufferSize: 30 * 1024 * 1024, // Maximum buffer size in bytes (e.g., 30 MB)
-          maxMaxBufferLength: 20, // Absolute maximum buffer length in seconds (e.g., 30 seconds)
-          // Add any other hls.js config properties here
-          // For example, to adjust live latency for live streams:
-          // liveSyncDuration: 3, // Target live latency in seconds
-          // liveMaxLatencyDuration: 10, // Max live latency before seeking to live edge
-        }}
-        className="w-full h-full object-cover" // fills parent fully
-      />
-    )}
-  </div>
-
-  {/* Playlist */}
-  <div className="w-full md:w-1/3 flex flex-col overflow-y-auto max-h-[30vh] md:max-h-full">
-    <h3 className="text-lg font-semibold mb-2">Playlist</h3>
-    <div className="flex flex-col gap-2">
-      {mockVideos.map((video, index) => (
-        <div
-          key={index}
-          className="flex items-center gap-4 cursor-pointer p-2 border rounded-md hover:bg-gray-200"
-          onClick={() => handleVideoSelect(video)}
-        >
-          <img
-            src={video.thumbnail}
-            alt={video.title}
-            className="w-20 h-12 object-cover rounded-md"
+    <div className="w-full h-[60vh] md:h-[70vh] flex flex-col md:flex-row gap-4 p-4">
+      {/* Video Player Wrapper */}
+      <div className="flex-1 relative rounded-lg overflow-hidden bg-black">
+        {mounted && tokens.playback && tokens.thumbnail && (
+          <MuxPlayer
+            streamType="on-demand"
+            playbackId={tokens.playbackId}
+            tokens={{
+              playback: tokens.playback,
+              thumbnail: tokens.thumbnail,
+            }}
+            preload="metadata"
+            _hlsConfig={{
+              maxBufferLength: 10, // Maximum buffer length in seconds (e.g., 15 seconds)
+              // maxBufferSize: 30 * 1024 * 1024, // Maximum buffer size in bytes (e.g., 30 MB)
+              maxMaxBufferLength: 20, // Absolute maximum buffer length in seconds (e.g., 30 seconds)
+              // Add any other hls.js config properties here
+              // For example, to adjust live latency for live streams:
+              // liveSyncDuration: 3, // Target live latency in seconds
+              // liveMaxLatencyDuration: 10, // Max live latency before seeking to live edge
+            }}
+            className="w-full h-full object-cover" // fills parent fully
           />
-          <div className="flex flex-col">
-            <span className="truncate w-40">{video.title}</span>
-          </div>
-        </div>
-      ))}
-    </div>
-  </div>
-</div>
+        )}
+      </div>
 
+      {/* Playlist */}
+      <div className="w-full md:w-1/3 flex flex-col overflow-y-auto max-h-[30vh] md:max-h-full">
+        <h3 className="text-lg font-semibold mb-2">Playlist</h3>
+        <div className="flex flex-col gap-2">
+          {mockVideos.map((video, index) => (
+            <div
+              key={index}
+              className="flex items-center gap-4 cursor-pointer p-2 border rounded-md hover:bg-gray-200"
+              onClick={() => handleVideoSelect(video)}
+            >
+              <img
+                src={video.thumbnail}
+                alt={video.title}
+                className="w-20 h-12 object-cover rounded-md"
+              />
+              <div className="flex flex-col">
+                <span className="truncate w-40">{video.title}</span>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
   );
 };
 
 export default VideoPlayer;
-
