@@ -1,5 +1,4 @@
-import Link from "next/link";
-import { Button } from "@/components/ui/button";
+import FeaturedVideo from "@/components/featured-video";
 import {
   Card,
   CardContent,
@@ -81,16 +80,7 @@ export default function HomePage() {
                 freedom today.
               </p>
             </div>
-            <div className="relative w-full aspect-video rounded-xl overflow-hidden lg:col-span-7">
-              <iframe
-                src="https://player.mux.com/2tTEB02b8hSYgstRlEpjI5orTkEnWmmZnAhCAf00Tt00oA?metadata-video-title=C0258&video-title=C0258"
-                title="C0258"
-                className="w-full h-full"
-                style={{ border: "none" }}
-                allow="accelerometer; gyroscope; autoplay; encrypted-media; picture-in-picture;"
-                allowFullScreen
-              />
-            </div>
+            <FeaturedVideo className="lg:col-span-7" />
           </div>
         </div>
       </section>
