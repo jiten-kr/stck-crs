@@ -28,8 +28,7 @@ export default function SignUpPage() {
     setIsLoading(true);
 
     const formData = new FormData(e.currentTarget);
-    const firstName = formData.get("firstName") as string;
-    const lastName = formData.get("lastName") as string;
+    const name = formData.get("name") as string;
     const email = formData.get("email") as string;
     const phone = formData.get("phone") as string;
     const password = formData.get("password") as string;
@@ -50,7 +49,7 @@ export default function SignUpPage() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          name: `${firstName} ${lastName}`,
+          name,
           email,
           phone,
           password,
@@ -62,6 +61,8 @@ export default function SignUpPage() {
       if (!res.ok) {
         throw new Error(data.error || "Something went wrong");
       }
+
+      localStorage.setItem("token", data.token);
 
       toast({
         title: "Account created",
@@ -93,26 +94,11 @@ export default function SignUpPage() {
         </CardHeader>
         <form onSubmit={handleSubmit}>
           <CardContent className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="firstName">First name</Label>
-                <Input
-                  id="firstName"
-                  name="firstName"
-                  placeholder="John"
-                  required
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="lastName">Last name</Label>
-                <Input
-                  id="lastName"
-                  name="lastName"
-                  placeholder="Doe"
-                  required
-                />
-              </div>
+            <div className="space-y-2">
+              <Label htmlFor="firstName">Full Name</Label>
+              <Input id="name" name="name" placeholder="Your name" required />
             </div>
+
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
               <Input
@@ -135,7 +121,13 @@ export default function SignUpPage() {
             </div>
             <div className="space-y-2">
               <Label htmlFor="password">Password</Label>
-              <Input id="password" name="password" type="password" required />
+              <Input
+                id="password"
+                name="password"
+                type="password"
+                required
+                autoComplete="new-password"
+              />
               <p className="text-xs text-muted-foreground">
                 Password must be at least 8 characters long
               </p>
@@ -147,6 +139,7 @@ export default function SignUpPage() {
                 name="confirmPassword"
                 type="password"
                 required
+                autoComplete="new-password"
               />
             </div>
             <div className="flex items-center space-x-2">

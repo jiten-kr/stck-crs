@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import pool from "@/lib/db";
 import bcrypt from "bcryptjs";
+import { generateJWT } from "@/lib/api/jwt";
 
 export async function POST(req: Request) {
   try {
@@ -36,9 +37,11 @@ export async function POST(req: Request) {
        VALUES ($1, $2, $3, $4) RETURNING id, name, email, phone, created_at`,
       [name, email, phone, hashedPassword]
     );
+    // ✅ Generate JWT
+    const token = generateJWT<any>({ id: result.rows[0].id, email, phone });
 
     return NextResponse.json(
-      { message: "User registered successfully", user: result.rows[0] },
+      { message: "User registered successfully", user: result.rows[0], token },
       { status: 201 }
     );
   } catch (error) {

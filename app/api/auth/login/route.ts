@@ -1,14 +1,17 @@
 import { NextResponse } from "next/server";
 import pool from "@/lib/db";
 import bcrypt from "bcryptjs";
-import jwt from "jsonwebtoken";
+import { generateJWT } from "@/lib/api/jwt";
 
 export async function POST(req: Request) {
   try {
     const { emailOrPhone, password } = await req.json();
 
     if (!emailOrPhone || !password) {
-      return NextResponse.json({ error: "Email/Phone and password are required" }, { status: 400 });
+      return NextResponse.json(
+        { error: "Email/Phone and password are required" },
+        { status: 400 }
+      );
     }
 
     // ✅ Find user by email or phone
@@ -26,25 +29,33 @@ export async function POST(req: Request) {
     // ✅ Compare password
     const isValid = await bcrypt.compare(password, user.password);
     if (!isValid) {
-      return NextResponse.json({ error: "Invalid credentials" }, { status: 401 });
+      return NextResponse.json(
+        { error: "Invalid credentials" },
+        { status: 401 }
+      );
     }
 
     // ✅ Generate JWT
-    const token = jwt.sign(
-      { id: user.id, email: user.email, phone: user.phone },
-      process.env.JWT_SECRET as string,
-      { expiresIn: "1h" }
-    );
+    const token = generateJWT<any>(user);
 
     return NextResponse.json({
       message: "Login successful",
       token,
-      user: { id: user.id, name: user.name, email: user.email, phone: user.phone,         hasPaidFor: {
+      user: {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        phone: user.phone,
+        hasPaidFor: {
           courseIds: ["course-1"],
-        }, },
+        },
+      },
     });
   } catch (error) {
     console.error("Login Error:", error);
-    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Internal Server Error" },
+      { status: 500 }
+    );
   }
 }

@@ -1,10 +1,10 @@
 "use client";
-import { useRef, useState, useEffect, use } from "react";
-import { Play } from "lucide-react";
+import { useState, useEffect } from "react";
 import { useSelector } from "react-redux";
 import { RootState } from "@/lib/store";
 import { useParams, useRouter } from "next/navigation";
 import MuxPlayer from "@mux/mux-player-react";
+import VideoPlayer from "@/lib/customMuxPlayer";
 
 type Video = {
   src: string;
@@ -111,9 +111,8 @@ const mockVideos: Video[] = [
     title: "Sample Video",
   },
 ];
-// const [videoDurations, setVideoDurations] = useState<{ [key: string]: string }>({});
 
-const VideoPlayer = () => {
+const Player = () => {
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
@@ -126,18 +125,15 @@ const VideoPlayer = () => {
     thumbnail: string;
     playbackId: string;
   }>({
-    playback:
-      "eyJhbGciOiJSUzI1NiJ9.eyJraWQiOiJ5WWRqMkJPYm1YcnE3MDBvMDByeHpkNlZ4U0JieERDQVpxVUQwMElETUljWmtRIiwic3ViIjoieVFXc3dGRXEydFR6cnRMQjEwMnc1RGcwMGwzOVBZVDFkSHpQbFBDMDBwRFFqTSIsImF1ZCI6InYiLCJleHAiOjE3NDk0Njk1Mjd9.I0h_wlRJffAFHbfeWZGerF_2Vbao0GJ2BdqjeWk-1_19krGIhifh5nIRKlLH0urWKx1cfMpiT8PZQoljPtQZksGIqcWVhmNGCZexlzt0wxW-RSGlTi1GJoNL19szgfqGGUWMwK6RidxA7CwW_sx3kwWQaXn_0YNIrfAhnF9La5wG67yj6dope1WEZmWXmaeXptUQp8vGCee1oeWAhVZHF9cR_aWAqCe9kBgHFUOeg8-gfJ-U9jPetPPNHk1uYyu5kRgUxAoXL2XxeGST2dZXvy-2XcBpQPKsWt7wd2Dvz21JJRXGTL-A7AWwIIseBEBjEq7hDXW2aEI84L0FphBrzg",
-    thumbnail:
-      "eyJhbGciOiJSUzI1NiJ9.eyJraWQiOiJ5WWRqMkJPYm1YcnE3MDBvMDByeHpkNlZ4U0JieERDQVpxVUQwMElETUljWmtRIiwic3ViIjoieVFXc3dGRXEydFR6cnRMQjEwMnc1RGcwMGwzOVBZVDFkSHpQbFBDMDBwRFFqTSIsImF1ZCI6InQiLCJleHAiOjE3NDk0Njk1Mjd9.g6kKMv95TB3-otMXvYDYI8V3-UZ0M3AHU9yN1rhSN63rgFpkTHhT8kB6M5NLkix7KGGM86_8rSpIjXlhBxfiVNIMj1EjGDog0HpqbkM9TkIWICIREH_Z0ZW0_le5mownGaKkcljrWAoi_i1NUY3iIYEA1YWuFeEAi7QhhNRzxEa_3H0YvH3pKVp7YS6q1C8O_tVF7T7HTfsd1iMIT17h3C56kvK01O_o35ZclnWXNdRTBbITuh3dF0B_Kj1X7W62UMWHC9tjleZ_bQX3jlg6uklt6tMfDJE6XN11-zYFqSeIu5ZTeNTTaAL6iCJMjRLBXUnLYNBXypoSPE0GCSQIaQ",
-    playbackId: "yQWswFEq2tTzrtLB102w5Dg00l39PYT1dHzPlPC00pDQjM",
+    playback: "",
+    thumbnail: "",
+    playbackId: "",
   });
   const { user, isAuthenticated } = useSelector(
     (state: RootState) => state.auth
   );
   const router = useRouter();
 
-  // console.log("Token fetched successfully:", tokens);
   useEffect(() => {
     const getToken = async () => {
       try {
@@ -194,24 +190,12 @@ const VideoPlayer = () => {
       {/* Video Player Wrapper */}
       <div className="flex-1 relative rounded-lg overflow-hidden bg-black">
         {mounted && tokens.playback && tokens.thumbnail && (
-          <MuxPlayer
-            streamType="on-demand"
+          <VideoPlayer
             playbackId={tokens.playbackId}
             tokens={{
               playback: tokens.playback,
               thumbnail: tokens.thumbnail,
             }}
-            preload="metadata"
-            _hlsConfig={{
-              maxBufferLength: 10, // Maximum buffer length in seconds (e.g., 15 seconds)
-              // maxBufferSize: 30 * 1024 * 1024, // Maximum buffer size in bytes (e.g., 30 MB)
-              maxMaxBufferLength: 20, // Absolute maximum buffer length in seconds (e.g., 30 seconds)
-              // Add any other hls.js config properties here
-              // For example, to adjust live latency for live streams:
-              // liveSyncDuration: 3, // Target live latency in seconds
-              // liveMaxLatencyDuration: 10, // Max live latency before seeking to live edge
-            }}
-            className="w-full h-full object-cover" // fills parent fully
           />
         )}
       </div>
@@ -242,4 +226,4 @@ const VideoPlayer = () => {
   );
 };
 
-export default VideoPlayer;
+export default Player;
