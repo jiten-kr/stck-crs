@@ -62,19 +62,23 @@ export default function FeatureCarousel({
         }}
       >
         {images.map((image, index) => (
-          <div
-            key={image.src}
-            className="absolute inset-0 transition-opacity duration-700 ease-in-out"
-            style={{ opacity: index === currentIndex ? 1 : 0 }}
-          >
-            <Image
-              src={image.src}
-              alt={image.alt}
-              fill
-              priority={index === 0}
-              sizes="(max-width: 640px) 100vw, (max-width: 1024px) 80vw, 60vw"
-              className="object-cover"
-            />
+          <div className="relative w-full h-[50vh] sm:h-[60vh] md:h-[70vh] lg:h-[80vh]">
+            {images.map((image, index) => (
+              <div
+                key={image.src}
+                className="absolute inset-0 transition-opacity duration-700 ease-in-out"
+                style={{ opacity: index === currentIndex ? 1 : 0 }}
+              >
+                <Image
+                  src={image.src}
+                  alt={image.alt}
+                  fill
+                  priority={index === 0}
+                  sizes="100vw"
+                  className="object-contain"
+                />
+              </div>
+            ))}
           </div>
         ))}
       </div>

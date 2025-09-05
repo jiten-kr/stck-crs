@@ -66,10 +66,11 @@ export default function HomePage() {
 
   return (
     <div className="flex flex-col">
+      {/* Hero Section */}
       <section className="w-full py-12 md:py-24 lg:py-32 bg-muted">
         <div className="container px-4 md:px-6">
-          <div className="grid gap-6 lg:grid-cols-10 lg:gap-12 items-center">
-            <div className="space-y-4 lg:col-span-3">
+          <div className="grid gap-8 md:grid-cols-2 items-center">
+            <div className="space-y-4">
               <h1 className="text-3xl font-bold tracking-tighter sm:text-4xl md:text-5xl">
                 Master the Markets with Confidence
               </h1>
@@ -79,7 +80,9 @@ export default function HomePage() {
                 freedom today.
               </p>
             </div>
-            <FeatureCarousel className="lg:col-span-7" />
+            <div className="w-full">
+              <FeatureCarousel className="w-full h-full" />
+            </div>
           </div>
         </div>
       </section>
