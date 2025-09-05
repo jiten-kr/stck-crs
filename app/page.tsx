@@ -1,4 +1,4 @@
-import FeaturedVideo from "@/components/featured-video";
+import FeatureCarousel from "@/components/feature-carousel";
 import {
   Card,
   CardContent,
@@ -8,7 +8,6 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { courses, categories } from "@/lib/data";
-import { Star, Users, Clock } from "lucide-react";
 import RenderCourseList from "./courses/renderCourseList";
 
 export default function HomePage() {
@@ -80,7 +79,7 @@ export default function HomePage() {
                 freedom today.
               </p>
             </div>
-            <FeaturedVideo className="lg:col-span-7" />
+            <FeatureCarousel className="lg:col-span-7" />
           </div>
         </div>
       </section>
