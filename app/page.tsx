@@ -67,7 +67,7 @@ export default function HomePage() {
   return (
     <div className="flex flex-col">
       {/* Hero Section */}
-      <section className="w-full py-12 md:py-24 lg:py-32 bg-muted">
+      <section className="w-full py-12 md:py-8 lg:py-8 bg-muted">
         <div className="container px-4 md:px-6">
           <div className="grid gap-8 md:grid-cols-2 items-center">
             <div className="space-y-4">
