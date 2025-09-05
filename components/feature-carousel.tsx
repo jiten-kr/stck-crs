@@ -1,7 +1,9 @@
 "use client";
 
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { useMemo } from "react";
 import Image from "next/image";
+import useEmblaCarousel from "embla-carousel-react";
+import Autoplay from "embla-carousel-autoplay";
 
 type FeatureCarouselProps = {
   className?: string;
@@ -10,7 +12,7 @@ type FeatureCarouselProps = {
 
 export default function FeatureCarousel({
   className,
-  intervalMs = 2000,
+  intervalMs = 3000,
 }: FeatureCarouselProps) {
   const images = useMemo(
     () => [
@@ -34,64 +36,35 @@ export default function FeatureCarousel({
     []
   );
 
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const timerRef = useRef<NodeJS.Timeout | null>(null);
-
-  useEffect(() => {
-    if (timerRef.current) {
-      clearInterval(timerRef.current);
-    }
-    timerRef.current = setInterval(() => {
-      setCurrentIndex((prev) => (prev + 1) % images.length);
-    }, intervalMs);
-    return () => {
-      if (timerRef.current) clearInterval(timerRef.current);
-    };
-  }, [images.length, intervalMs]);
+  const [emblaRef] = useEmblaCarousel({ loop: true }, [
+    Autoplay({ delay: intervalMs, stopOnInteraction: false }),
+  ]);
 
   return (
     <div
-      className={`relative w-full aspect-video rounded-xl overflow-hidden ${
+      className={`relative w-full overflow-hidden rounded-xl ${
         className ?? ""
       }`}
     >
-      <div
-        className="h-full w-full"
-        style={{
-          position: "relative",
-        }}
-      >
-        {images.map((image, index) => (
-          <div className="relative w-full h-[50vh] sm:h-[60vh] md:h-[70vh] lg:h-[80vh]">
-            {images.map((image, index) => (
-              <div
-                key={image.src}
-                className="absolute inset-0 transition-opacity duration-700 ease-in-out"
-                style={{ opacity: index === currentIndex ? 1 : 0 }}
-              >
-                <Image
-                  src={image.src}
-                  alt={image.alt}
-                  fill
-                  priority={index === 0}
-                  sizes="100vw"
-                  className="object-contain"
-                />
-              </div>
-            ))}
-          </div>
-        ))}
-      </div>
-
-      <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex items-center gap-2">
-        {images.map((_, index) => (
-          <span
-            key={index}
-            className={`h-1.5 w-6 rounded-full transition-colors ${
-              index === currentIndex ? "bg-white/90" : "bg-white/40"
-            }`}
-          />
-        ))}
+      {/* Embla viewport */}
+      <div className="overflow-hidden" ref={emblaRef}>
+        <div className="flex">
+          {images.map((image, index) => (
+            <div
+              key={image.src}
+              className="relative flex-[0_0_100%] w-full h-[50vh] sm:h-[60vh] md:h-[70vh] lg:h-[80vh]"
+            >
+              <Image
+                src={image.src}
+                alt={image.alt}
+                fill
+                priority={index === 0}
+                sizes="100vw"
+                className="object-contain"
+              />
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   );
