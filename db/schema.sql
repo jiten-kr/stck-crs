@@ -9,20 +9,19 @@ CREATE TABLE users (
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
--- Courses table
+-- Table for courses
 CREATE TABLE stock_market_courses (
     course_id SERIAL PRIMARY KEY,
     title VARCHAR(255) NOT NULL,
     description TEXT,
     instructor VARCHAR(150) NOT NULL,
     price NUMERIC(10,2) NOT NULL DEFAULT 0.00,
-    duration INTERVAL, -- e.g., '2 hours 30 minutes'
+    category VARCHAR(100),
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
 
-    -- Mux integration (at course level if single video course)
-    mux_asset_id VARCHAR(100) UNIQUE,
-    mux_playback_id VARCHAR(100) UNIQUE
+    -- Useful flags
+    is_active BOOLEAN DEFAULT TRUE,
+    CONSTRAINT uq_title_instructor UNIQUE (title, instructor)
 );
 
 -- What you will learn (pointers)
@@ -71,4 +70,17 @@ CREATE TABLE user_enrollments (
     enrollment_date TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     progress JSONB DEFAULT '{}'::jsonb, -- flexible progress tracking
     UNIQUE(user_id, course_id)
+);
+
+-- Course ratings and reviews
+CREATE TABLE course_ratings (
+    rating_id SERIAL PRIMARY KEY,
+    course_id INT NOT NULL REFERENCES stock_market_courses(course_id) ON DELETE CASCADE,
+    user_id INT NOT NULL, -- assuming you have a users table
+    rating SMALLINT CHECK (rating BETWEEN 1 AND 5) NOT NULL, -- 1 to 5 stars
+    review TEXT,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+
+    -- Ensure a user can rate a course only once
+    CONSTRAINT uq_course_user UNIQUE (course_id, user_id)
 );
