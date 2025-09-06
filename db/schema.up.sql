@@ -1,5 +1,5 @@
 -- Users table
-CREATE TABLE users (
+CREATE TABLE IF NOT EXISTS users (
   id SERIAL PRIMARY KEY,
   name VARCHAR(100) NOT NULL,
   email VARCHAR(100) UNIQUE NOT NULL,
@@ -10,7 +10,7 @@ CREATE TABLE users (
 );
 
 -- Table for courses
-CREATE TABLE stock_market_courses (
+CREATE TABLE IF NOT EXISTS stock_market_courses (
     course_id SERIAL PRIMARY KEY,
     title VARCHAR(255) NOT NULL,
     description TEXT,
@@ -25,7 +25,7 @@ CREATE TABLE stock_market_courses (
 );
 
 -- What you will learn (pointers)
-CREATE TABLE course_learnings (
+CREATE TABLE IF NOT EXISTS course_learnings (
     learning_id SERIAL PRIMARY KEY,
     course_id INT NOT NULL REFERENCES stock_market_courses(course_id) ON DELETE CASCADE,
     pointer_text TEXT NOT NULL,
@@ -35,7 +35,7 @@ CREATE TABLE course_learnings (
 );
 
 -- Modules (sections in a course)
-CREATE TABLE course_modules (
+CREATE TABLE IF NOT EXISTS course_modules (
     module_id SERIAL PRIMARY KEY,
     course_id INT NOT NULL REFERENCES stock_market_courses(course_id) ON DELETE CASCADE,
     title VARCHAR(255) NOT NULL,
@@ -46,7 +46,7 @@ CREATE TABLE course_modules (
 );
 
 -- Lessons (videos/content inside a module)
-CREATE TABLE course_lessons (
+CREATE TABLE IF NOT EXISTS course_lessons (
     lesson_id SERIAL PRIMARY KEY,
     module_id INT NOT NULL REFERENCES course_modules(module_id) ON DELETE CASCADE,
     title VARCHAR(255) NOT NULL,
@@ -63,12 +63,12 @@ CREATE TABLE course_lessons (
 );
 
 -- User progress tracking per lesson
-CREATE TABLE lesson_progress (
+CREATE TABLE IF NOT EXISTS lesson_progress (
     progress_id SERIAL PRIMARY KEY,
     user_id INT NOT NULL, -- assuming users table exists
     lesson_id INT NOT NULL REFERENCES course_lessons(lesson_id) ON DELETE CASCADE,
 
-    watched_duration INTERVAL DEFAULT '0 seconds', -- e.g., '00:02:00'
+    watched_duration INTERVAL DEFAULT '0', -- e.g., '00:02:00'
     completed BOOLEAN DEFAULT FALSE, -- true if lesson fully watched
     last_watched_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
 
@@ -77,7 +77,7 @@ CREATE TABLE lesson_progress (
 );
 
 -- User enrollments
-CREATE TABLE user_enrollments (
+CREATE TABLE IF NOT EXISTS user_enrollments (
     enrollment_id SERIAL PRIMARY KEY,
     user_id INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     course_id INT NOT NULL REFERENCES stock_market_courses(course_id) ON DELETE CASCADE,
@@ -87,7 +87,7 @@ CREATE TABLE user_enrollments (
 );
 
 -- Course ratings and reviews
-CREATE TABLE course_ratings (
+CREATE TABLE IF NOT EXISTS course_ratings (
     rating_id SERIAL PRIMARY KEY,
     course_id INT NOT NULL REFERENCES stock_market_courses(course_id) ON DELETE CASCADE,
     user_id INT NOT NULL, -- assuming you have a users table
