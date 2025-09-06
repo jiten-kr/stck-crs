@@ -1,27 +1,27 @@
--- Users table
+-- Users table (with role support)
 CREATE TABLE IF NOT EXISTS users (
   id SERIAL PRIMARY KEY,
   name VARCHAR(100) NOT NULL,
   email VARCHAR(100) UNIQUE NOT NULL,
   phone VARCHAR(20) UNIQUE,
   password TEXT NOT NULL,
+  role VARCHAR(50) DEFAULT 'student' CHECK (role IN ('student', 'instructor', 'admin')),
   created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
--- Table for courses
+-- Table for courses (reference instructor as user_id)
 CREATE TABLE IF NOT EXISTS stock_market_courses (
     course_id SERIAL PRIMARY KEY,
     title VARCHAR(255) NOT NULL,
     description TEXT,
-    instructor VARCHAR(150) NOT NULL,
+    instructor_id INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     price NUMERIC(10,2) NOT NULL DEFAULT 0.00,
     category VARCHAR(100),
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
 
     -- Useful flags
-    is_active BOOLEAN DEFAULT TRUE,
-    CONSTRAINT uq_title_instructor UNIQUE (title, instructor)
+    is_active BOOLEAN DEFAULT TRUE
 );
 
 -- What you will learn (pointers)
