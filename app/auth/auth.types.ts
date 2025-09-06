@@ -1,8 +1,7 @@
-export interface User {
-    id: string
-    name: string
-    email: string
-    hasPaidFor?: {
-      courseIds: string[]
-    }
-  }
+import { User as BaseUser } from "@/lib/types";
+
+export interface AuthUser extends Omit<BaseUser, "password"> {
+  hasPaidFor?: {
+    courseIds: string[];
+  };
+}

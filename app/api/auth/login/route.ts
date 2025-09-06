@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import pool from "@/lib/db";
 import bcrypt from "bcryptjs";
 import { generateJWT } from "@/lib/api/jwt";
+import { User } from "@/lib/types";
 
 export async function POST(req: Request) {
   try {
@@ -24,7 +25,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
-    const user = result.rows[0];
+    const user: User = result.rows[0];
 
     // ✅ Compare password
     const isValid = await bcrypt.compare(password, user.password);
@@ -36,7 +37,7 @@ export async function POST(req: Request) {
     }
 
     // ✅ Generate JWT
-    const token = generateJWT<any>(user);
+    const token = generateJWT<User>(user);
 
     return NextResponse.json({
       message: "Login successful",

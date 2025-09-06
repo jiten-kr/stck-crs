@@ -17,7 +17,6 @@ CREATE TABLE IF NOT EXISTS stock_market_courses (
     description TEXT,
     instructor_id INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     price NUMERIC(10,2) NOT NULL DEFAULT 0.00,
-    category VARCHAR(100),
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
 
     -- Useful flags
