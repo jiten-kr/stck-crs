@@ -62,6 +62,20 @@ CREATE TABLE course_lessons (
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
+-- User progress tracking per lesson
+CREATE TABLE lesson_progress (
+    progress_id SERIAL PRIMARY KEY,
+    user_id INT NOT NULL, -- assuming users table exists
+    lesson_id INT NOT NULL REFERENCES course_lessons(lesson_id) ON DELETE CASCADE,
+
+    watched_duration INTERVAL DEFAULT '0 seconds', -- e.g., '00:02:00'
+    completed BOOLEAN DEFAULT FALSE, -- true if lesson fully watched
+    last_watched_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+
+    -- Ensure one progress record per user per lesson
+    CONSTRAINT uq_user_lesson UNIQUE (user_id, lesson_id)
+);
+
 -- User enrollments
 CREATE TABLE user_enrollments (
     enrollment_id SERIAL PRIMARY KEY,
