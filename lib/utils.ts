@@ -44,7 +44,7 @@ export async function fetchCoursesFromApi(): Promise<Course[]> {
     tags: [],
     image: "/placeholder.svg",
     instructor: {
-      id: String(c.instructor_id),
+      id: c.instructor_id,
       name: "Instructor",
       bio: "",
       image: "/placeholder-user.jpg",
@@ -57,6 +57,31 @@ export async function fetchCoursesFromApi(): Promise<Course[]> {
     reviewCount: 0,
     students: 0,
     updatedAt: c.created_at,
-    curriculum: [],
+    curriculum: [
+      {
+        title: "Introduction to Stock Market",
+        lessons: [
+          { title: "What is the Stock Market?", duration: "15 min" },
+          { title: "How Stocks Work", duration: "20 min" },
+          { title: "Understanding Stock Exchanges", duration: "25 min" },
+        ],
+      },
+      {
+        title: "Investing Strategies",
+        lessons: [
+          { title: "Value vs Growth Investing", duration: "40 min" },
+          { title: "Technical vs Fundamental Analysis", duration: "45 min" },
+          { title: "Building a Diversified Portfolio", duration: "50 min" },
+        ],
+      },
+      {
+        title: "Risk Management",
+        lessons: [
+          { title: "Managing Market Volatility", duration: "35 min" },
+          { title: "Stop Loss and Take Profit Strategies", duration: "40 min" },
+          { title: "Psychology of Trading", duration: "50 min" },
+        ],
+      },
+    ],
   }));
 }

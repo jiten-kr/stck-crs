@@ -18,7 +18,7 @@ export type Course = {
 };
 
 export type Instructor = {
-  id: string;
+  id: number;
   name: string;
   bio: string;
   image: string;
