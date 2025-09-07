@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { useRouter } from "next/navigation"
+import { useRouter } from "next/navigation";
 
 import { notFound, useParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
@@ -36,7 +36,7 @@ import { useSelector } from "react-redux";
 import { RootState } from "@/lib/store";
 
 export default function CoursePage() {
-  const { user, isAuthenticated, } = useSelector((state: RootState) => state.auth)
+  const { user } = useSelector((state: RootState) => state.auth);
   const courseId = useParams()?.id;
   const purchasedCourses = user?.hasPaidFor?.courseIds || [];
 
@@ -46,9 +46,13 @@ export default function CoursePage() {
   console.log("isPurchased", isPurchased);
 
   const params = useParams();
-    const router = useRouter()
-  
-  const course = courses.find((c) => c.id === params?.id);
+  const courseIdNum = parseInt(
+    Array.isArray(params?.id) ? params.id[0] : params?.id || "",
+    10
+  );
+  const router = useRouter();
+
+  const course = courses.find((c) => c.id === courseIdNum);
   const { addItem, isInCart, clearCart } = useCart();
   const [isAdding, setIsAdding] = useState(false);
 
@@ -65,19 +69,18 @@ export default function CoursePage() {
   };
 
   const buyNow = () => {
-    clearCart()
+    clearCart();
     addItem(course);
     setTimeout(() => {
       router.push("/checkout");
-    }
-    , 2000);
+    }, 2000);
   };
 
   const playNow = () => {
     router.push(`/courses/${courseId}/play`);
-  }
+  };
 
-  const isAlreadyInCart = isInCart(course.id);
+  const isAlreadyInCart = isInCart(course.id.toString());
   const learningOutcomes = [
     { id: "a1b2c3", outcome: "Learning outcome 1" },
     { id: "d4e5f6", outcome: "Learning outcome 2" },
@@ -298,66 +301,66 @@ export default function CoursePage() {
                 )}
               </div>
             </CardHeader>
-            {!isPurchased && <CardContent className="space-y-4">
-              {isAlreadyInCart ? (
-                <Button className="w-full" asChild>
-                  <Link href="/cart">
-                    <ShoppingCart className="mr-2 h-4 w-4" />
-                    Go to Cart
-                  </Link>
-                </Button>
-              ) : (
-                <Button
-                  className="w-full"
-                  onClick={handleAddToCart}
-                  disabled={isAdding}
-                >
-                  {isAdding ? (
-                    "Adding to Cart..."
-                  ) : (
-                    <>
+            {!isPurchased && (
+              <CardContent className="space-y-4">
+                {isAlreadyInCart ? (
+                  <Button className="w-full" asChild>
+                    <Link href="/cart">
                       <ShoppingCart className="mr-2 h-4 w-4" />
-                      Add to Cart
-                    </>
-                  )}
+                      Go to Cart
+                    </Link>
+                  </Button>
+                ) : (
+                  <Button
+                    className="w-full"
+                    onClick={handleAddToCart}
+                    disabled={isAdding}
+                  >
+                    {isAdding ? (
+                      "Adding to Cart..."
+                    ) : (
+                      <>
+                        <ShoppingCart className="mr-2 h-4 w-4" />
+                        Add to Cart
+                      </>
+                    )}
+                  </Button>
+                )}
+
+                <Button variant="outline" onClick={buyNow} className="w-full">
+                  Buy Now
                 </Button>
-              )}
 
-              <Button variant="outline" onClick={buyNow} className="w-full">
-                Buy Now
-              </Button>
+                <div className="text-sm text-muted-foreground text-center">
+                  30-Day Money-Back Guarantee
+                </div>
 
-              <div className="text-sm text-muted-foreground text-center">
-                30-Day Money-Back Guarantee
-              </div>
-
-              <div className="space-y-2">
-                <h4 className="font-medium">This course includes:</h4>
-                <ul className="space-y-2">
-                  <li className="flex items-center gap-2 text-sm">
-                    <Clock className="h-4 w-4" />
-                    <span>{course?.duration} of on-demand video</span>
-                  </li>
-                  <li className="flex items-center gap-2 text-sm">
-                    <CheckCircle className="h-4 w-4" />
-                    <span>Access on mobile and TV</span>
-                  </li>
-                  <li className="flex items-center gap-2 text-sm">
-                    <Award className="h-4 w-4" />
-                    <span>Certificate of completion</span>
-                  </li>
-                </ul>
-              </div>
-            </CardContent>}
-            {isPurchased && <CardContent className="space-y-4">
-
-
-              <Button variant="outline" onClick={playNow} className="w-full">
-                Play
-              </Button>
-
-
-            </CardContent>}
+                <div className="space-y-2">
+                  <h4 className="font-medium">This course includes:</h4>
+                  <ul className="space-y-2">
+                    <li className="flex items-center gap-2 text-sm">
+                      <Clock className="h-4 w-4" />
+                      <span>{course?.duration} of on-demand video</span>
+                    </li>
+                    <li className="flex items-center gap-2 text-sm">
+                      <CheckCircle className="h-4 w-4" />
+                      <span>Access on mobile and TV</span>
+                    </li>
+                    <li className="flex items-center gap-2 text-sm">
+                      <Award className="h-4 w-4" />
+                      <span>Certificate of completion</span>
+                    </li>
+                  </ul>
+                </div>
+              </CardContent>
+            )}
+            {isPurchased && (
+              <CardContent className="space-y-4">
+                <Button variant="outline" onClick={playNow} className="w-full">
+                  Play
+                </Button>
+              </CardContent>
+            )}
           </Card>
         </div>
       </div>

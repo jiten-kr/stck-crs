@@ -1,5 +1,5 @@
 export type Course = {
-  id: string;
+  id: number;
   title: string;
   description: string;
   price: number;
@@ -65,4 +65,18 @@ export type UserProfile = {
   role: "student" | "instructor" | "admin";
   created_at: Date;
   updated_at: Date;
+};
+
+export type LoginResponse = {
+  message: string;
+  token: string;
+  user: {
+    id: number;
+    name: string;
+    email: string;
+    phone: string;
+    hasPaidFor: {
+      courseIds: number[];
+    };
+  };
 };

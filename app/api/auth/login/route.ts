@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import pool from "@/lib/db";
 import bcrypt from "bcryptjs";
 import { generateJWT } from "@/lib/api/jwt";
-import { User } from "@/lib/types";
+import { User, LoginResponse } from "@/lib/types";
 
 export async function POST(req: Request) {
   try {
@@ -39,7 +39,17 @@ export async function POST(req: Request) {
     // ✅ Generate JWT
     const token = generateJWT<User>(user);
 
-    return NextResponse.json({
+    // ✅ Fetch purchased course IDs
+    const purchasedCoursesResult = await pool.query(
+      "SELECT course_id FROM user_enrollments WHERE user_id = $1",
+      [user.id]
+    );
+
+    const purchasedCourseIds: number[] = purchasedCoursesResult.rows.map(
+      (row) => row.course_id
+    );
+
+    const resp: LoginResponse = {
       message: "Login successful",
       token,
       user: {
@@ -48,10 +58,12 @@ export async function POST(req: Request) {
         email: user.email,
         phone: user.phone,
         hasPaidFor: {
-          courseIds: ["course-1"],
+          courseIds: purchasedCourseIds,
         },
       },
-    });
+    };
+
+    return NextResponse.json(resp);
   } catch (error) {
     console.error("Login Error:", error);
     return NextResponse.json(

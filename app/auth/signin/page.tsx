@@ -18,7 +18,9 @@ import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { useDispatch } from "react-redux";
 import { login } from "../authSlice";
-import { User } from "../auth.types";
+import { User } from "@/lib/types";
+import api from "@/lib/api/axios";
+// import { User } from "../auth.types";
 
 export default function SignInPage() {
   const router = useRouter();
@@ -33,19 +35,10 @@ export default function SignInPage() {
     setIsLoading(true);
 
     try {
-      const res = await fetch("/api/auth/login", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ emailOrPhone: email, password }),
+      const { data } = await api.post("/auth/login", {
+        emailOrPhone: email,
+        password,
       });
-
-      const data = await res.json();
-
-      if (!res.ok) {
-        throw new Error(data.error || "Login failed");
-      }
 
       const t = data.token;
       localStorage.setItem("token", t);

@@ -1,4 +1,4 @@
-import type { Course, Instructor, Order } from "./types"
+import type { Course, Instructor, Order } from "./types";
 
 export const instructors: Instructor[] = [
   {
@@ -41,11 +41,11 @@ export const instructors: Instructor[] = [
     students: 10000,
     rating: 4.6,
   },
-]
+];
 
 export const courses: Course[] = [
   {
-    id: "course-1",
+    id: 1,
     title: "Stock Market Investing for Beginners",
     description:
       "Learn the basics of stock market investing, including how to analyze stocks, manage risks, and build a diversified portfolio.",
@@ -89,7 +89,7 @@ export const courses: Course[] = [
     ],
   },
   {
-    id: "course-2",
+    id: 2,
     title: "Advanced Technical Analysis for Trading",
     description:
       "Master the art of technical analysis to make informed trading decisions using chart patterns, indicators, and market trends.",
@@ -133,7 +133,7 @@ export const courses: Course[] = [
     ],
   },
   {
-    id: "course-3",
+    id: 3,
     title: "Options Trading Mastery",
     description:
       "Learn how to trade options like a pro with in-depth strategies covering calls, puts, spreads, and risk management.",
@@ -175,9 +175,8 @@ export const courses: Course[] = [
         ],
       },
     ],
-  }
+  },
 ];
-
 
 export const sampleOrders: Order[] = [
   {
@@ -201,7 +200,7 @@ export const sampleOrders: Order[] = [
     total: 249.98,
     status: "completed",
   },
-]
+];
 
 export const categories = [
   { id: "cat-1", name: "Programming", count: 15 },
@@ -210,5 +209,4 @@ export const categories = [
   { id: "cat-4", name: "Marketing", count: 10 },
   { id: "cat-5", name: "Design", count: 7 },
   { id: "cat-6", name: "Personal Development", count: 9 },
-]
-
+];

@@ -3,7 +3,6 @@ import { useState, useEffect } from "react";
 import { useSelector } from "react-redux";
 import { RootState } from "@/lib/store";
 import { useParams, useRouter } from "next/navigation";
-import MuxPlayer from "@mux/mux-player-react";
 import VideoPlayer from "@/lib/customMuxPlayer";
 
 type Video = {
@@ -118,6 +117,7 @@ const Player = () => {
   useEffect(() => {
     setMounted(true);
   }, []);
+
   console.log("VideoPlayer component rendered");
 
   const [tokens, setTokens] = useState<{
@@ -156,18 +156,16 @@ const Player = () => {
 
   const [checkingAuth, setCheckingAuth] = useState(true);
 
-  const courseId = useParams()?.id;
+  const courseId = Number(useParams()?.id);
   const purchasedCourses = user?.hasPaidFor?.courseIds || [];
 
   useEffect(() => {
     const isPurchased = purchasedCourses.some((course) => course === courseId);
-    console.log("courseId", courseId, "purchasedCourses", purchasedCourses);
-    console.log("isPurchased", isPurchased);
 
     // Simulate auth check delay
     const timeout = setTimeout(() => {
       if (!isAuthenticated || !isPurchased) {
-        router.push(`/c`);
+        router.push(`/`);
       } else {
         setCheckingAuth(false);
       }
