@@ -30,6 +30,8 @@ import {
   ShoppingCart,
 } from "lucide-react";
 import type { Course } from "@/lib/types";
+import { useSelector } from "react-redux";
+import { RootState } from "@/lib/store";
 
 type LearningOutcome = { id: string; outcome: string };
 
@@ -43,8 +45,9 @@ export default function CoursePageClient({
   const router = useRouter();
   const { addItem, isInCart, clearCart } = useCart();
   const [isAdding, setIsAdding] = useState(false);
+  const { user } = useSelector((state: RootState) => state.auth);
 
-  const isPurchased = true;
+  const isPurchased = user?.hasPaidFor?.courseIds.includes(course.id);
   const isAlreadyInCart = isInCart(course.id.toString());
 
   const handleAddToCart = () => {
