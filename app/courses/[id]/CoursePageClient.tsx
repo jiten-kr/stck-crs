@@ -31,7 +31,15 @@ import {
 } from "lucide-react";
 import type { Course } from "@/lib/types";
 
-export default function CoursePageClient({ course }: { course: Course }) {
+type LearningOutcome = { id: string; outcome: string };
+
+export default function CoursePageClient({
+  course,
+  learningOutcomes,
+}: {
+  course: Course;
+  learningOutcomes: LearningOutcome[];
+}) {
   const router = useRouter();
   const { addItem, isInCart, clearCart } = useCart();
   const [isAdding, setIsAdding] = useState(false);
@@ -58,16 +66,6 @@ export default function CoursePageClient({ course }: { course: Course }) {
   const playNow = () => {
     router.push(`/courses/${course.id}/play`);
   };
-
-  const learningOutcomes = [
-    { id: "a1b2c3", outcome: "Learning outcome 1" },
-    { id: "d4e5f6", outcome: "Learning outcome 2" },
-    { id: "g7h8i9", outcome: "Learning outcome 3" },
-    { id: "j1k2l3", outcome: "Learning outcome 4" },
-    { id: "m4n5o6", outcome: "Learning outcome 5" },
-    { id: "p7q8r9", outcome: "Learning outcome 6" },
-    { id: "s1t2u3", outcome: "Learning outcome 7" },
-  ];
 
   return (
     <div className="container px-4 py-8 md:px-6 md:py-12">

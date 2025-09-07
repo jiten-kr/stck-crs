@@ -72,5 +72,27 @@ export default async function CoursePage({
       },
     ],
   };
-  return <CoursePageClient course={course} />;
+  // Fetch learnings from the new API
+  const learningsRes = await fetch(`${baseUrl}/api/course/${idNum}/learnings`, {
+    cache: "no-store",
+  });
+  const learningsData: {
+    learnings: {
+      learning_id: number;
+      course_id: number;
+      pointer_text: string;
+      display_order: number;
+      created_at: string;
+      updated_at: string;
+    }[];
+  } = learningsRes.ok ? await learningsRes.json() : { learnings: [] };
+
+  const learningOutcomes = learningsData.learnings.map((l) => ({
+    id: String(l.learning_id),
+    outcome: l.pointer_text,
+  }));
+
+  return (
+    <CoursePageClient course={course} learningOutcomes={learningOutcomes} />
+  );
 }
