@@ -4,6 +4,7 @@ import { useSelector } from "react-redux";
 import { RootState } from "@/lib/store";
 import { useParams, useRouter } from "next/navigation";
 import VideoPlayer from "@/lib/customMuxPlayer";
+import api from "@/lib/api/axios";
 
 type Video = {
   src: string;
@@ -137,11 +138,7 @@ const Player = () => {
   useEffect(() => {
     const getToken = async () => {
       try {
-        const response = await fetch("/api/auth/t");
-        if (!response.ok) {
-          throw new Error("Failed to fetch token");
-        }
-        const data = await response.json();
+        const { data } = await api.get("/auth/t");
         setTokens({
           playback: data.data.p,
           thumbnail: data.data.t,

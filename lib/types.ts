@@ -51,8 +51,11 @@ export type User = {
   name: string;
   email: string;
   phone?: string;
-  password: string;
+  password?: string;
   role: "student" | "instructor" | "admin";
+  hasPaidFor: {
+    courseIds: number[];
+  };
   created_at: Date;
   updated_at: Date;
 };
@@ -70,13 +73,5 @@ export type UserProfile = {
 export type LoginResponse = {
   message: string;
   token: string;
-  user: {
-    id: number;
-    name: string;
-    email: string;
-    phone: string;
-    hasPaidFor: {
-      courseIds: number[];
-    };
-  };
+  user: User;
 };
