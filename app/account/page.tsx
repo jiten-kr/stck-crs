@@ -16,6 +16,7 @@ import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { User, ShoppingBag } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import api from "@/lib/api/axios";
 
 type Profile = {
   name: string;
@@ -42,16 +43,8 @@ export default function AccountPage() {
         const token = localStorage.getItem("token");
         if (!token) return;
 
-        const res = await fetch("/api/auth/profile", {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-
-        if (res.ok) {
-          const data = await res.json();
-          setProfile(data.user);
-        } else {
-          console.error("Failed to fetch profile");
-        }
+        const { data } = await api.get("/auth/profile");
+        setProfile(data.user);
       } catch (error) {
         console.error("Error fetching profile:", error);
       }
@@ -76,34 +69,17 @@ export default function AccountPage() {
         return;
       }
 
-      const res = await fetch("/api/auth/profile/update", {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify(profile),
+      const { data } = await api.put("/auth/profile/update", profile);
+      toast({
+        title: "Profile Updated",
+        description: "Your profile has been saved successfully.",
       });
-
-      const data = await res.json();
-      if (res.ok) {
-        toast({
-          title: "Profile Updated",
-          description: "Your profile has been saved successfully.",
-        });
-        setProfile(data.user);
-      } else {
-        toast({
-          title: "Update Failed",
-          description: data.error || "Failed to update profile",
-          variant: "destructive",
-        });
-      }
-    } catch (error) {
+      setProfile(data.user);
+    } catch (error: any) {
       console.error("Error updating profile:", error);
       toast({
-        title: "Error",
-        description: "Something went wrong while updating your profile",
+        title: "Update Failed",
+        description: error.message || "Failed to update profile",
         variant: "destructive",
       });
     } finally {
@@ -143,39 +119,23 @@ export default function AccountPage() {
         return;
       }
 
-      const res = await fetch("/api/auth/change-password", {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          oldPassword: currentPassword,
-          newPassword: newPassword,
-        }),
+      await api.put("/auth/change-password", {
+        oldPassword: currentPassword,
+        newPassword: newPassword,
       });
 
-      const data = await res.json();
-      if (res.ok) {
-        toast({
-          title: "Password Updated",
-          description: "Your password has been changed successfully.",
-        });
-        setCurrentPassword("");
-        setNewPassword("");
-        setConfirmPassword("");
-      } else {
-        toast({
-          title: "Password Change Failed",
-          description: data.error || "Failed to change password",
-          variant: "destructive",
-        });
-      }
-    } catch (error) {
+      toast({
+        title: "Password Updated",
+        description: "Your password has been changed successfully.",
+      });
+      setCurrentPassword("");
+      setNewPassword("");
+      setConfirmPassword("");
+    } catch (error: any) {
       console.error("Error changing password:", error);
       toast({
-        title: "Error",
-        description: "Something went wrong while changing your password",
+        title: "Password Change Failed",
+        description: error.message || "Failed to change password",
         variant: "destructive",
       });
     } finally {

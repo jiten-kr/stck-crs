@@ -1,7 +1,8 @@
-import { courses } from "@/lib/data";
 import RenderCourseList from "./renderCourseList";
+import { fetchCoursesFromApi } from "@/lib/utils";
 
-export default function CoursesPage() {
+export default async function CoursesPage() {
+  const courses = await fetchCoursesFromApi();
   return (
     <div className="container px-4 py-8 md:px-6 md:py-12">
       <div className="flex flex-col gap-8">

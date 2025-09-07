@@ -1,18 +1,11 @@
 import FeatureCarousel from "@/components/feature-carousel";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { courses, categories } from "@/lib/data";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import RenderCourseList from "./courses/renderCourseList";
+import { fetchCoursesFromApi } from "@/lib/utils";
 
-export default function HomePage() {
-  // Get featured courses (first 3)
-  const featuredCourses = courses.slice(0, 3);
+export default async function HomePage() {
+  const all = await fetchCoursesFromApi();
+  const featuredCourses = all.slice(0, 3);
   const studentReviews = [
     {
       id: "s1a2b3",
