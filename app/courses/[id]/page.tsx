@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import type { Course } from "@/lib/types";
-import { headers } from "next/headers";
+import { buildBaseUrl } from "@/lib/utils";
 import CoursePageClient from "./CoursePageClient";
 
 export default async function CoursePage({
@@ -8,20 +8,20 @@ export default async function CoursePage({
 }: {
   params: { id: string };
 }) {
-  const idNum = parseInt(
-    Array.isArray(params.id) ? params.id[0] : params.id,
-    10
-  );
-  const hdrs = await headers();
-  const host = hdrs.get("x-forwarded-host") || hdrs.get("host");
-  const protocol = hdrs.get("x-forwarded-proto") || "http";
-  const baseUrl = `${protocol}://${host}`;
+  const rawId = Array.isArray(params?.id) ? params.id[0] : params?.id;
+  const idNum = Number.parseInt(rawId ?? "", 10);
+  if (!rawId || Number.isNaN(idNum)) {
+    return notFound();
+  }
 
-  const res = await fetch(`${baseUrl}/api/course/${idNum}`, {
-    cache: "no-store",
-  });
-  if (!res.ok) {
-    notFound();
+  const baseUrl = await buildBaseUrl();
+
+  const [courseRes, learningsRes] = await Promise.all([
+    fetch(`${baseUrl}/api/course/${idNum}`, { cache: "no-store" }),
+    fetch(`${baseUrl}/api/course/${idNum}/learnings`, { cache: "no-store" }),
+  ]);
+  if (!courseRes.ok) {
+    return notFound();
   }
   const data: {
     course: {
@@ -33,7 +33,7 @@ export default async function CoursePage({
       created_at: string;
       is_active: boolean;
     };
-  } = await res.json();
+  } = await courseRes.json();
 
   const row = data.course;
   const course: Course = {
@@ -72,10 +72,6 @@ export default async function CoursePage({
       },
     ],
   };
-  // Fetch learnings from the new API
-  const learningsRes = await fetch(`${baseUrl}/api/course/${idNum}/learnings`, {
-    cache: "no-store",
-  });
   const learningsData: {
     learnings: {
       learning_id: number;
