@@ -64,22 +64,8 @@ export const sampleOrders: Order[] = [
   {
     id: "order-1",
     date: "2023-12-15",
-    courses: [courses[0], courses[2]],
+    courses: [courses[0], courses[0]],
     total: 204.98,
-    status: "completed",
-  },
-  {
-    id: "order-2",
-    date: "2023-11-28",
-    courses: [courses[1]],
-    total: 109.99,
-    status: "completed",
-  },
-  {
-    id: "order-3",
-    date: "2023-10-05",
-    courses: [courses[4], courses[5]],
-    total: 249.98,
     status: "completed",
   },
 ];

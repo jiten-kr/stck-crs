@@ -1,12 +1,18 @@
-"use client"
+"use client";
 
-import Link from "next/link"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Separator } from "@/components/ui/separator"
-import { Badge } from "@/components/ui/badge"
-import { sampleOrders } from "@/lib/data"
-import { ShoppingBag, Download, ExternalLink } from "lucide-react"
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Separator } from "@/components/ui/separator";
+import { Badge } from "@/components/ui/badge";
+import { sampleOrders } from "@/lib/data";
+import { ShoppingBag, Download, ExternalLink } from "lucide-react";
 
 export default function OrdersPage() {
   return (
@@ -14,7 +20,9 @@ export default function OrdersPage() {
       <div className="flex flex-col gap-8">
         <div className="flex flex-col gap-2">
           <h1 className="text-3xl font-bold">Order History</h1>
-          <p className="text-muted-foreground">View your past orders and download invoices</p>
+          <p className="text-muted-foreground">
+            View your past orders and download invoices
+          </p>
         </div>
 
         <div className="space-y-6">
@@ -27,8 +35,13 @@ export default function OrdersPage() {
                     <CardDescription>Placed on {order.date}</CardDescription>
                   </div>
                   <div className="flex items-center gap-2">
-                    <Badge variant={order.status === "completed" ? "default" : "outline"}>
-                      {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
+                    <Badge
+                      variant={
+                        order.status === "completed" ? "default" : "outline"
+                      }
+                    >
+                      {order.status.charAt(0).toUpperCase() +
+                        order.status.slice(1)}
                     </Badge>
                     <Button variant="outline" size="sm">
                       <Download className="h-4 w-4 mr-2" />
@@ -49,12 +62,16 @@ export default function OrdersPage() {
                           <ShoppingBag className="h-6 w-6" />
                         </div>
                         <div>
-                          <p className="font-medium">{course.title}</p>
-                          <p className="text-sm text-muted-foreground">By {course.instructor.name}</p>
+                          <p className="font-medium">{course?.title}</p>
+                          <p className="text-sm text-muted-foreground">
+                            By {course.instructor.name}
+                          </p>
                         </div>
                       </div>
                       <div className="flex items-center gap-2">
-                        <span className="text-sm font-medium">${course.discountedPrice || course.price}</span>
+                        <span className="text-sm font-medium">
+                          ${course.discountedPrice || course.price}
+                        </span>
                         <Button asChild size="sm">
                           <Link href={`/courses/${course.id}`}>
                             <ExternalLink className="h-4 w-4 mr-2" />
@@ -69,7 +86,9 @@ export default function OrdersPage() {
 
                   <div className="flex justify-between">
                     <span className="font-medium">Total</span>
-                    <span className="font-medium">${order.total.toFixed(2)}</span>
+                    <span className="font-medium">
+                      ${order.total.toFixed(2)}
+                    </span>
                   </div>
                 </div>
               </CardContent>
@@ -84,6 +103,5 @@ export default function OrdersPage() {
         </div>
       </div>
     </div>
-  )
+  );
 }
-
