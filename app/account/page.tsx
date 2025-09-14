@@ -40,9 +40,6 @@ export default function AccountPage() {
   useEffect(() => {
     const fetchProfile = async () => {
       try {
-        const token = localStorage.getItem("token");
-        if (!token) return;
-
         const { data } = await api.get("/auth/profile");
         setProfile(data.user);
       } catch (error) {
