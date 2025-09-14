@@ -14,7 +14,8 @@ export function generateJWT<T extends object>(
 export function verifyJWT<T extends object>(token: string): T | null {
   try {
     return jwt.verify(token, JWT_SECRET) as T;
-  } catch {
+  } catch (error) {
+    console.error("JWT verification failed:", error);
     return null;
   }
 }

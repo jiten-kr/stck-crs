@@ -4,9 +4,17 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
+    "dev:debug": "NODE_OPTIONS='--inspect' next dev",
+    "dev:debug-brk": "NODE_OPTIONS='--inspect-brk' next dev",
+    "dev:debug-api": "DEBUG=1 NODE_OPTIONS='--inspect' next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "start:debug": "NODE_OPTIONS='--inspect' next start",
+    "lint": "next lint",
+    "lint:fix": "next lint --fix",
+    "type-check": "tsc --noEmit",
+    "debug:server": "NODE_OPTIONS='--inspect' next dev",
+    "debug:client": "next dev"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.9.1",

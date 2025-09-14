@@ -1,6 +1,5 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -10,13 +9,14 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
-import { User, ShoppingBag } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import api from "@/lib/api/axios";
+import { ShoppingBag, User } from "lucide-react";
+import { useEffect, useState } from "react";
 
 type Profile = {
   name: string;
@@ -40,6 +40,7 @@ export default function AccountPage() {
   useEffect(() => {
     const fetchProfile = async () => {
       try {
+        console.log("Fetching profile...");
         const { data } = await api.get("/auth/profile");
         setProfile(data.user);
       } catch (error) {
@@ -56,16 +57,6 @@ export default function AccountPage() {
     setLoading(true);
 
     try {
-      const token = localStorage.getItem("token");
-      if (!token) {
-        toast({
-          title: "Authentication Error",
-          description: "You are not logged in. Please sign in again.",
-          variant: "destructive",
-        });
-        return;
-      }
-
       const { data } = await api.put("/auth/profile/update", profile);
       toast({
         title: "Profile Updated",
@@ -106,16 +97,6 @@ export default function AccountPage() {
 
     setPwLoading(true);
     try {
-      const token = localStorage.getItem("token");
-      if (!token) {
-        toast({
-          title: "Authentication Error",
-          description: "You are not logged in. Please sign in again.",
-          variant: "destructive",
-        });
-        return;
-      }
-
       await api.put("/auth/change-password", {
         oldPassword: currentPassword,
         newPassword: newPassword,
