@@ -1,32 +1,19 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import pool from "@/lib/db";
 import bcrypt from "bcryptjs";
-import jwt from "jsonwebtoken";
+import { validateRequest } from "@/lib/middleware/verifyJWT";
+import { User } from "@/lib/types";
 
-const JWT_SECRET = process.env.JWT_SECRET;
+// 2. Load environment variables
 
-export async function PUT(req: Request) {
+export async function PUT(req: NextRequest) {
   try {
-    // 1. Get token from header
-    const authHeader = req.headers.get("authorization");
-    if (!authHeader || !authHeader.startsWith("Bearer ")) {
-      return NextResponse.json(
-        { error: "Unauthorized: No token provided" },
-        { status: 401 }
-      );
-    }
+    // Verify token
+    let { decoded, status, send401 } = validateRequest<User>(req);
 
-    const token = authHeader.split(" ")[1];
-
-    // 2. Verify token
-    let decoded: any;
-    try {
-      decoded = jwt.verify(token, JWT_SECRET);
-    } catch (err) {
-      return NextResponse.json(
-        { error: "Unauthorized: Invalid or expired token" },
-        { status: 401 }
-      );
+    // Handle validation failure
+    if (!status || !decoded) {
+      return send401();
     }
 
     const userId = decoded.id;

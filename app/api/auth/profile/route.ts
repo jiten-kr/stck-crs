@@ -6,15 +6,12 @@ import { User } from "@/lib/types";
 export async function GET(req: NextRequest) {
   try {
     // Verify token
-    const decoded = validateRequest<User>(req);
+    let { decoded: user, status, send401 } = validateRequest<User>(req);
 
-    // Check if validation failed
-    if (decoded || "error" in decoded) {
-      return decoded;
+    // Handle validation failure
+    if (!status || !user) {
+      return send401();
     }
-
-    // Type assertion after type guard
-    let user = decoded as User;
 
     // Fetch user details from DB
     const result = await pool.query(

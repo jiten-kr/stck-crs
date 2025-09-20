@@ -1,32 +1,17 @@
 // app/api/profile/update/route.ts
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import pool from "@/lib/db";
-import jwt from "jsonwebtoken";
+import { validateRequest } from "@/lib/middleware/verifyJWT";
+import { User } from "@/lib/types";
 
-const JWT_SECRET = process.env.JWT_SECRET;
-
-export async function PUT(req: Request) {
+export async function PUT(req: NextRequest) {
   try {
-    // 1. Get token from header
-    const authHeader = req.headers.get("authorization");
-    if (!authHeader || !authHeader.startsWith("Bearer ")) {
-      return NextResponse.json(
-        { error: "Unauthorized: No token provided" },
-        { status: 401 }
-      );
-    }
+    // Verify token
+    let { decoded: user, status, send401 } = validateRequest<User>(req);
 
-    const token = authHeader.split(" ")[1];
-
-    // 2. Verify token
-    let decoded: any;
-    try {
-      decoded = jwt.verify(token, JWT_SECRET);
-    } catch (err) {
-      return NextResponse.json(
-        { error: "Unauthorized: Invalid or expired token" },
-        { status: 401 }
-      );
+    // Handle validation failure
+    if (!status || !user) {
+      return send401();
     }
 
     const body = await req.json();
@@ -39,7 +24,7 @@ export async function PUT(req: Request) {
       );
     }
 
-    const userId = decoded.id;
+    const userId = user.id;
 
     console.log("Updating profile for userId:", userId);
 
