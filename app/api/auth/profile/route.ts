@@ -1,34 +1,32 @@
 import { NextRequest, NextResponse } from "next/server";
-import jwt from "jsonwebtoken";
 import pool from "@/lib/db"; // PostgreSQL connection
+import { validateRequest } from "@/lib/middleware/verifyJWT";
+import { User } from "@/lib/types";
 
 export async function GET(req: NextRequest) {
   try {
-    // Get token from Authorization header
-    const authHeader = req.headers.get("authorization");
-    if (!authHeader || !authHeader.startsWith("Bearer ")) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    // Verify token
+    const decoded = validateRequest<User>(req);
+
+    // Check if validation failed
+    if (decoded || "error" in decoded) {
+      return decoded;
     }
 
-    const token = authHeader.split(" ")[1];
-
-    // Verify token
-    const decoded = jwt.verify(token, process.env.JWT_SECRET!) as {
-      id: number;
-      email: string;
-    };
+    // Type assertion after type guard
+    let user = decoded as User;
 
     // Fetch user details from DB
     const result = await pool.query(
       "SELECT name, email, phone FROM users WHERE id = $1",
-      [decoded.id]
+      [user.id]
     );
 
     if (result.rows.length === 0) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
-    const user = result.rows[0];
+    user = result.rows[0];
 
     return NextResponse.json({ user });
   } catch (error) {
