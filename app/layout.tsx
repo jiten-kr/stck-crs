@@ -6,11 +6,12 @@ import Header from "@/components/header"
 import Footer from "@/components/footer"
 import "./globals.css"
 import { Providers } from "@/components/providers"
+import { PLATFORM_FULL_NAME } from "@/lib/constants"
 
 const inter = Inter({ subsets: ["latin"] })
 
 export const metadata = {
-  title: "LearnHub - Online Course Platform",
+  title: PLATFORM_FULL_NAME,
   description: "Discover and purchase high-quality online courses",
     generator: 'v0.dev'
 }

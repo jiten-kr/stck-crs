@@ -9,6 +9,7 @@ import { useCart } from "@/components/cart-provider";
 import { Badge } from "@/components/ui/badge";
 import { useSelector } from "react-redux";
 import { RootState } from "@/lib/store";
+import { PLATFORM_NAME } from "@/lib/constants";
 
 export default function Header() {
   const { user, isAuthenticated } = useSelector(
@@ -44,7 +45,7 @@ export default function Header() {
             </SheetContent>
           </Sheet>
           <Link href="/" className="flex items-center space-x-2">
-            <span className="font-bold text-xl">LearnHub</span>
+            <span className="font-bold text-xl">{PLATFORM_NAME}</span>
           </Link>
         </div>
 

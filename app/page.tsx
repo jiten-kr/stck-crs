@@ -63,10 +63,10 @@ export default async function HomePage() {
               {/* CTA Button */}
               <div className="flex flex-col space-y-2 pt-4">
                 <Button
-                  asChild
+                  onClick={handleClick}
                   className="w-full md:w-auto bg-blue-600 hover:bg-blue-700 text-white text-base md:text-lg px-8 py-6 md:py-7 rounded-lg font-semibold"
                 >
-                  <Link href="/courses">Learn at ₹49</Link>
+                  Learn at ₹49
                 </Button>
                 <p className="text-sm text-gray-600">
                   (Take only 50 people in one batch)

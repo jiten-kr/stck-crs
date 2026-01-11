@@ -1,4 +1,5 @@
 import Link from "next/link"
+import { PLATFORM_NAME } from "@/lib/constants";
 
 export default function Footer() {
   return (
@@ -6,7 +7,7 @@ export default function Footer() {
       <div className="container px-4 py-8 md:px-6 md:py-12">
         <div className="grid grid-cols-1 gap-8 md:grid-cols-4">
           <div className="space-y-4">
-            <h3 className="text-lg font-medium">LearnHub</h3>
+            <h3 className="text-lg font-medium">{PLATFORM_NAME}</h3>
             <p className="text-sm text-muted-foreground">
               Discover and master new skills with our expert-led online courses.
             </p>
@@ -73,7 +74,7 @@ export default function Footer() {
           </div>
         </div>
         <div className="mt-8 border-t pt-8 text-center text-sm text-muted-foreground">
-          &copy; {new Date().getFullYear()} LearnHub. All rights reserved.
+          &copy; {new Date().getFullYear()} {PLATFORM_NAME}. All rights reserved.
         </div>
       </div>
     </footer>
