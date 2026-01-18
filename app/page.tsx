@@ -1,14 +1,14 @@
-import Link from "next/link";
+"use client";
+
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import {
   TrendingUp,
   BarChart3,
   Hash,
-  Laptop,
-  Gift,
+  ShieldCheck,
+  CheckCircle2,
   GraduationCap,
-  Star,
   Users,
   PieChart,
   FileText,
@@ -16,7 +16,12 @@ import {
   ArrowUpRight,
 } from "lucide-react";
 
-export default async function HomePage() {
+export default function HomePage() {
+
+  const handleClick = () => {
+    console.log("Button clicked");
+  };
+
   return (
     <div className="flex flex-col min-h-screen">
       {/* Hero Section */}
@@ -28,22 +33,28 @@ export default async function HomePage() {
               {/* Main Headline */}
               <div className="space-y-4">
                 <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-black leading-tight">
-                  Unlock the Secrets of Stock Selection From A{" "}
-                  <span className="text-blue-600">Professional</span>{" "}
-                  <span className="text-blue-600">Stock Trader</span>
+                Trade With Rules, {" "}
+                  <span className="text-blue-600">Not</span>{" "}
+                  <span className="text-blue-600">Emotions</span>
                 </h2>
                 <p className="text-base md:text-lg text-gray-700 leading-relaxed">
-                  Unleash the Power of Smart Money Tools to Identify and Catch
-                  Big Institutional Moves
+                
+                Most traders don’t lose money because of the market. They lose because they enter without a plan, hesitate to book losses, move stop-loss emotionally, and exit profitable trades too early.
                 </p>
               </div>
 
               {/* Key Features */}
               <div className="flex flex-col space-y-3 md:space-y-4">
+              <div className="flex items-center space-x-3">
+                  <ShieldCheck className="w-5 h-5 md:w-6 md:h-6 text-blue-600 flex-shrink-0" />
+                  <span className="text-base md:text-lg text-blue-600 font-medium">
+                    A Practical Masterclass on Entry, Stop-Loss & 1:5 Risk-Reward
+                  </span>
+                </div>
                 <div className="flex items-center space-x-3">
                   <TrendingUp className="w-5 h-5 md:w-6 md:h-6 text-blue-600 flex-shrink-0" />
                   <span className="text-base md:text-lg text-blue-600 font-medium">
-                    Catch Big Monster Moves Everyday
+                    Catch Big Monster Moves with Rules
                   </span>
                 </div>
                 <div className="flex items-center space-x-3">
@@ -52,6 +63,7 @@ export default async function HomePage() {
                     Enter Before The Breakouts
                   </span>
                 </div>
+
                 <div className="flex items-center space-x-3">
                   <Hash className="w-5 h-5 md:w-6 md:h-6 text-blue-600 flex-shrink-0" />
                   <span className="text-base md:text-lg text-blue-600 font-medium">
@@ -66,10 +78,11 @@ export default async function HomePage() {
                   onClick={handleClick}
                   className="w-full md:w-auto bg-blue-600 hover:bg-blue-700 text-white text-base md:text-lg px-8 py-6 md:py-7 rounded-lg font-semibold"
                 >
-                  Learn at ₹49
+                  Join Live Class for ₹49
                 </Button>
                 <p className="text-sm text-gray-600">
-                  (Take only 50 people in one batch)
+                  Limited to 21 participants per batch for focused, high-quality
+                  interaction.
                 </p>
               </div>
             </div>
@@ -128,126 +141,182 @@ export default async function HomePage() {
             <div className="w-24 h-1 bg-gradient-to-r from-blue-600 to-blue-400 mx-auto rounded-full"></div>
           </div>
 
-          {/* Learning Cards Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8">
-            {/* Card 1: Introduction To Institutional Trading Strategies */}
-            <Card className="group bg-white border border-gray-200 rounded-xl p-6 md:p-8 flex flex-col h-full hover:shadow-xl hover:border-blue-500 transition-all duration-300 hover:-translate-y-1">
-              <CardContent className="p-0 flex flex-col h-full">
-                <div className="flex justify-center mb-6">
-                  <div className="w-16 h-16 md:w-20 md:h-20 rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300">
-                    <TrendingUp className="w-8 h-8 md:w-10 md:h-10 text-white" />
-                  </div>
-                </div>
-                <h3 className="text-lg md:text-xl font-bold text-gray-900 mb-4 text-center group-hover:text-blue-600 transition-colors">
-                  Introduction To Institutional Trading Strategies
-                </h3>
-                <ul className="space-y-3 flex-1">
-                  <li className="flex items-start">
-                    <div className="w-2 h-2 rounded-full bg-blue-500 mt-2 mr-3 flex-shrink-0"></div>
-                    <span className="text-sm md:text-base text-gray-700 leading-relaxed">
-                      Understand why, how and when stocks make big moves
-                    </span>
-                  </li>
-                  <li className="flex items-start">
-                    <div className="w-2 h-2 rounded-full bg-blue-500 mt-2 mr-3 flex-shrink-0"></div>
-                    <span className="text-sm md:text-base text-gray-700 leading-relaxed">
-                      Build your foundation with concepts such as liquidity and
-                      market structure
-                    </span>
-                  </li>
-                </ul>
-              </CardContent>
-            </Card>
+          
 
-            {/* Card 2: Relative Strength Analysis */}
-            <Card className="group bg-white border border-gray-200 rounded-xl p-6 md:p-8 flex flex-col h-full hover:shadow-xl hover:border-green-500 transition-all duration-300 hover:-translate-y-1">
-              <CardContent className="p-0 flex flex-col h-full">
-                <div className="flex justify-center mb-6 relative">
-                  <div className="w-16 h-16 md:w-20 md:h-20 rounded-xl bg-gradient-to-br from-green-500 to-green-600 flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300">
-                    <PieChart className="w-8 h-8 md:w-10 md:h-10 text-white" />
-                  </div>
-                  <ArrowUpRight className="w-5 h-5 md:w-6 md:h-6 text-green-600 absolute top-2 right-[30%] group-hover:scale-110 transition-transform" />
-                </div>
-                <h3 className="text-lg md:text-xl font-bold text-gray-900 mb-4 text-center group-hover:text-green-600 transition-colors">
-                  Relative Strength Analysis
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
+            <div className="bg-white border border-gray-200 rounded-xl p-6 md:p-8 shadow-sm">
+              <div className="flex items-center gap-3 mb-4">
+                <CheckCircle2 className="w-6 h-6 text-blue-600 flex-shrink-0" />
+                <h3 className="text-lg md:text-xl font-bold text-gray-900">
+                  Proper Entry Strategy
                 </h3>
-                <ul className="space-y-3 flex-1">
-                  <li className="flex items-start">
-                    <div className="w-2 h-2 rounded-full bg-green-500 mt-2 mr-3 flex-shrink-0"></div>
-                    <span className="text-sm md:text-base text-gray-700 leading-relaxed">
-                      Learn how trading relatively stronger stocks can optimize
-                      your trading strategies
-                    </span>
-                  </li>
-                  <li className="flex items-start">
-                    <div className="w-2 h-2 rounded-full bg-green-500 mt-2 mr-3 flex-shrink-0"></div>
-                    <span className="text-sm md:text-base text-gray-700 leading-relaxed">
-                      Use fundamental catalysts and sector rotation tools to
-                      skyrocket your performance
-                    </span>
-                  </li>
-                </ul>
-              </CardContent>
-            </Card>
+              </div>
+              <ul className="space-y-2">
+                <li className="flex items-start">
+                  <div className="w-2 h-2 rounded-full bg-blue-500 mt-2 mr-3 flex-shrink-0"></div>
+                  <span className="text-sm md:text-base text-gray-700 leading-relaxed">
+                    How to identify high-probability entries
+                  </span>
+                </li>
+                <li className="flex items-start">
+                  <div className="w-2 h-2 rounded-full bg-blue-500 mt-2 mr-3 flex-shrink-0"></div>
+                  <span className="text-sm md:text-base text-gray-700 leading-relaxed">
+                    When not to enter (most important rule)
+                  </span>
+                </li>
+                <li className="flex items-start">
+                  <div className="w-2 h-2 rounded-full bg-blue-500 mt-2 mr-3 flex-shrink-0"></div>
+                  <span className="text-sm md:text-base text-gray-700 leading-relaxed">
+                    Avoid chasing and FOMO trades
+                  </span>
+                </li>
+              </ul>
+            </div>
 
-            {/* Card 3: Building A Game Plan */}
-            <Card className="group bg-white border border-gray-200 rounded-xl p-6 md:p-8 flex flex-col h-full hover:shadow-xl hover:border-purple-500 transition-all duration-300 hover:-translate-y-1">
-              <CardContent className="p-0 flex flex-col h-full">
-                <div className="flex justify-center mb-6">
-                  <div className="w-16 h-16 md:w-20 md:h-20 rounded-xl bg-gradient-to-br from-purple-500 to-purple-600 flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300">
-                    <FileText className="w-8 h-8 md:w-10 md:h-10 text-white" />
-                  </div>
-                </div>
-                <h3 className="text-lg md:text-xl font-bold text-gray-900 mb-4 text-center group-hover:text-purple-600 transition-colors">
-                  Building A Game Plan
+            <div className="bg-white border border-gray-200 rounded-xl p-6 md:p-8 shadow-sm">
+              <div className="flex items-center gap-3 mb-4">
+                <CheckCircle2 className="w-6 h-6 text-blue-600 flex-shrink-0" />
+                <h3 className="text-lg md:text-xl font-bold text-gray-900">
+                  Stop-Loss That Actually Works
                 </h3>
-                <ul className="space-y-3 flex-1">
-                  <li className="flex items-start">
-                    <div className="w-2 h-2 rounded-full bg-purple-500 mt-2 mr-3 flex-shrink-0"></div>
-                    <span className="text-sm md:text-base text-gray-700 leading-relaxed">
-                      Understand the three step framework to build a winning
-                      watchlist in minutes
-                    </span>
-                  </li>
-                  <li className="flex items-start">
-                    <div className="w-2 h-2 rounded-full bg-purple-500 mt-2 mr-3 flex-shrink-0"></div>
-                    <span className="text-sm md:text-base text-gray-700 leading-relaxed">
-                      Leverage the power of data and artificial intelligence to
-                      master trade management
-                    </span>
-                  </li>
-                </ul>
-              </CardContent>
-            </Card>
+              </div>
+              <ul className="space-y-2">
+                <li className="flex items-start">
+                  <div className="w-2 h-2 rounded-full bg-blue-500 mt-2 mr-3 flex-shrink-0"></div>
+                  <span className="text-sm md:text-base text-gray-700 leading-relaxed">
+                    Logical stop-loss placement (not random points)
+                  </span>
+                </li>
+                <li className="flex items-start">
+                  <div className="w-2 h-2 rounded-full bg-blue-500 mt-2 mr-3 flex-shrink-0"></div>
+                  <span className="text-sm md:text-base text-gray-700 leading-relaxed">
+                    How to protect capital first, profits second
+                  </span>
+                </li>
+                <li className="flex items-start">
+                  <div className="w-2 h-2 rounded-full bg-blue-500 mt-2 mr-3 flex-shrink-0"></div>
+                  <span className="text-sm md:text-base text-gray-700 leading-relaxed">
+                    Why most stop-losses fail—and how to fix it
+                  </span>
+                </li>
+              </ul>
+            </div>
 
-            {/* Card 4: Case Studies & Examples */}
-            <Card className="group bg-white border border-gray-200 rounded-xl p-6 md:p-8 flex flex-col h-full hover:shadow-xl hover:border-orange-500 transition-all duration-300 hover:-translate-y-1">
-              <CardContent className="p-0 flex flex-col h-full">
-                <div className="flex justify-center mb-6">
-                  <div className="w-16 h-16 md:w-20 md:h-20 rounded-xl bg-gradient-to-br from-orange-500 to-orange-600 flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300">
-                    <FileCheck className="w-8 h-8 md:w-10 md:h-10 text-white" />
-                  </div>
-                </div>
-                <h3 className="text-lg md:text-xl font-bold text-gray-900 mb-4 text-center group-hover:text-orange-600 transition-colors">
-                  Case Studies & Examples
+            <div className="bg-white border border-gray-200 rounded-xl p-6 md:p-8 shadow-sm">
+              <div className="flex items-center gap-3 mb-4">
+                <CheckCircle2 className="w-6 h-6 text-blue-600 flex-shrink-0" />
+                <h3 className="text-lg md:text-xl font-bold text-gray-900">
+                  Target Setting Like a Pro
                 </h3>
-                <ul className="space-y-3 flex-1">
-                  <li className="flex items-start">
-                    <div className="w-2 h-2 rounded-full bg-orange-500 mt-2 mr-3 flex-shrink-0"></div>
-                    <span className="text-sm md:text-base text-gray-700 leading-relaxed">
-                      Learn hands on with 10+ case studies backed with Verified
-                      P&L
-                    </span>
-                  </li>
-                  <li className="flex items-start">
-                    <div className="w-2 h-2 rounded-full bg-orange-500 mt-2 mr-3 flex-shrink-0"></div>
-                    <span className="text-sm md:text-base text-gray-700 leading-relaxed">
-                      Get access to pre built watchlists, scanners and screeners
-                    </span>
-                  </li>
-                </ul>
-              </CardContent>
-            </Card>
+              </div>
+              <ul className="space-y-2">
+                <li className="flex items-start">
+                  <div className="w-2 h-2 rounded-full bg-blue-500 mt-2 mr-3 flex-shrink-0"></div>
+                  <span className="text-sm md:text-base text-gray-700 leading-relaxed">
+                    How to define targets before entering a trade
+                  </span>
+                </li>
+                <li className="flex items-start">
+                  <div className="w-2 h-2 rounded-full bg-blue-500 mt-2 mr-3 flex-shrink-0"></div>
+                  <span className="text-sm md:text-base text-gray-700 leading-relaxed">
+                    Holding winners instead of exiting early
+                  </span>
+                </li>
+                <li className="flex items-start">
+                  <div className="w-2 h-2 rounded-full bg-blue-500 mt-2 mr-3 flex-shrink-0"></div>
+                  <span className="text-sm md:text-base text-gray-700 leading-relaxed">
+                    Scaling out without destroying risk-reward
+                  </span>
+                </li>
+              </ul>
+            </div>
+
+            <div className="bg-white border border-gray-200 rounded-xl p-6 md:p-8 shadow-sm">
+              <div className="flex items-center gap-3 mb-4">
+                <CheckCircle2 className="w-6 h-6 text-blue-600 flex-shrink-0" />
+                <h3 className="text-lg md:text-xl font-bold text-gray-900">
+                  Risk-Reward Ratio: Minimum 1:5
+                </h3>
+              </div>
+              <ul className="space-y-2">
+                <li className="flex items-start">
+                  <div className="w-2 h-2 rounded-full bg-blue-500 mt-2 mr-3 flex-shrink-0"></div>
+                  <span className="text-sm md:text-base text-gray-700 leading-relaxed">
+                    Why low risk-reward kills accounts
+                  </span>
+                </li>
+                <li className="flex items-start">
+                  <div className="w-2 h-2 rounded-full bg-blue-500 mt-2 mr-3 flex-shrink-0"></div>
+                  <span className="text-sm md:text-base text-gray-700 leading-relaxed">
+                    How to structure trades for asymmetric returns
+                  </span>
+                </li>
+                <li className="flex items-start">
+                  <div className="w-2 h-2 rounded-full bg-blue-500 mt-2 mr-3 flex-shrink-0"></div>
+                  <span className="text-sm md:text-base text-gray-700 leading-relaxed">
+                    Fewer trades, higher impact results
+                  </span>
+                </li>
+              </ul>
+            </div>
+
+            <div className="bg-white border border-gray-200 rounded-xl p-6 md:p-8 shadow-sm">
+              <div className="flex items-center gap-3 mb-4">
+                <CheckCircle2 className="w-6 h-6 text-blue-600 flex-shrink-0" />
+                <h3 className="text-lg md:text-xl font-bold text-gray-900">
+                  Universal Strategy – All Markets
+                </h3>
+              </div>
+              <ul className="space-y-2">
+                <li className="flex items-start">
+                  <div className="w-2 h-2 rounded-full bg-blue-500 mt-2 mr-3 flex-shrink-0"></div>
+                  <span className="text-sm md:text-base text-gray-700 leading-relaxed">
+                    Same logic for stocks, crypto &amp; commodities
+                  </span>
+                </li>
+                <li className="flex items-start">
+                  <div className="w-2 h-2 rounded-full bg-blue-500 mt-2 mr-3 flex-shrink-0"></div>
+                  <span className="text-sm md:text-base text-gray-700 leading-relaxed">
+                    Market-independent decision making
+                  </span>
+                </li>
+                <li className="flex items-start">
+                  <div className="w-2 h-2 rounded-full bg-blue-500 mt-2 mr-3 flex-shrink-0"></div>
+                  <span className="text-sm md:text-base text-gray-700 leading-relaxed">
+                    Adapt strategy, not emotions
+                  </span>
+                </li>
+              </ul>
+            </div>
+
+            <div className="bg-white border border-gray-200 rounded-xl p-6 md:p-8 shadow-sm">
+              <div className="flex items-center gap-3 mb-4">
+                <CheckCircle2 className="w-6 h-6 text-blue-600 flex-shrink-0" />
+                <h3 className="text-lg md:text-xl font-bold text-gray-900">
+                  Trading Psychology &amp; Discipline
+                </h3>
+              </div>
+              <ul className="space-y-2">
+                <li className="flex items-start">
+                  <div className="w-2 h-2 rounded-full bg-blue-500 mt-2 mr-3 flex-shrink-0"></div>
+                  <span className="text-sm md:text-base text-gray-700 leading-relaxed">
+                    How to follow rules under pressure
+                  </span>
+                </li>
+                <li className="flex items-start">
+                  <div className="w-2 h-2 rounded-full bg-blue-500 mt-2 mr-3 flex-shrink-0"></div>
+                  <span className="text-sm md:text-base text-gray-700 leading-relaxed">
+                    Eliminate over-trading and revenge trades
+                  </span>
+                </li>
+                <li className="flex items-start">
+                  <div className="w-2 h-2 rounded-full bg-blue-500 mt-2 mr-3 flex-shrink-0"></div>
+                  <span className="text-sm md:text-base text-gray-700 leading-relaxed">
+                    Build consistency, not luck
+                  </span>
+                </li>
+              </ul>
+            </div>
           </div>
         </div>
       </section>
@@ -261,7 +330,7 @@ export default async function HomePage() {
               Who is this Masterclass for?
             </h2>
             <p className="text-base md:text-lg text-gray-600 max-w-2xl mx-auto">
-              Designed for individuals ready to transform their trading journey
+             Designed for individuals who are ready to trade with structure, discipline, and clarity.
             </p>
           </div>
 
@@ -284,9 +353,9 @@ export default async function HomePage() {
                     </div>
                   </div>
                   <p className="text-base md:text-lg text-gray-700 leading-relaxed flex-1">
-                    Beginner, intermediate and professional traders who are
-                    looking to level up their trading game and become a super
-                    trader.
+                    Beginners, intermediate, and professional traders who want
+                    a rules-based system for entries, stop-loss, and targets to
+                    trade with confidence.
                   </p>
                 </CardContent>
               </Card>
@@ -309,9 +378,9 @@ export default async function HomePage() {
                     </div>
                   </div>
                   <p className="text-base md:text-lg text-gray-700 leading-relaxed flex-1">
-                    First time or seasoned investors who are looking to
-                    outperform their portfolio returns with superior tools and
-                    techniques.
+                    First-time or seasoned investors who want a clear framework
+                    to time entries, manage risk, and improve overall portfolio
+                    performance.
                   </p>
                 </CardContent>
               </Card>
@@ -334,9 +403,9 @@ export default async function HomePage() {
                     </div>
                   </div>
                   <p className="text-base md:text-lg text-gray-700 leading-relaxed flex-1">
-                    Working professionals, home makers or students who are
-                    looking to venture into stock trading to create active and
-                    passive source of income.
+                    Working professionals, homemakers, or students who want a
+                    simple, repeatable process to build trading skills and
+                    create active income.
                   </p>
                 </CardContent>
               </Card>
