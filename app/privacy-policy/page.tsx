@@ -1,6 +1,6 @@
 import { Separator } from "@/components/ui/separator"
 
-export default function PrivacyPage() {
+export default function PrivacyPolicyPage() {
   return (
     <div className="container px-4 py-12 md:px-6 md:py-16">
       <div className="mx-auto max-w-3xl space-y-8">
@@ -61,4 +61,3 @@ export default function PrivacyPage() {
     </div>
   )
 }
-

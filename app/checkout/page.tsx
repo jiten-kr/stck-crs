@@ -154,7 +154,7 @@ export default function CheckoutPage() {
               <CardFooter className="text-sm text-muted-foreground">
                 <p>
                   By completing your purchase, you agree to our{" "}
-                  <Link href="/terms" className="text-primary underline-offset-4 hover:underline">
+                  <Link href="/terms-of-service" className="text-primary underline-offset-4 hover:underline">
                     Terms of Service
                   </Link>
                 </p>

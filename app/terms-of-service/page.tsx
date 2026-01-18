@@ -1,6 +1,6 @@
 import { Separator } from "@/components/ui/separator";
 
-export default function TermsPage() {
+export default function TermsOfServicePage() {
   return (
     <div className="container px-4 py-12 md:px-6 md:py-16">
       <div className="mx-auto max-w-3xl space-y-8">

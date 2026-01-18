@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Separator } from "@/components/ui/separator"
 import { useToast } from "@/hooks/use-toast"
-import { PLATFORM_NAME } from "@/lib/constants"
+import { PLATFORM_NAME, PLATFORM_SUPPORT_EMAIL } from "@/lib/constants"
 import { Mail, Phone, Clock, MapPin, Send } from 'lucide-react'
 
 export default function ContactPage() {
@@ -113,10 +113,10 @@ export default function ContactPage() {
                   <Mail className="h-5 w-5 text-primary mt-0.5" />
                   <div>
                     <h3 className="font-medium">Email</h3>
-                    <p className="text-sm text-muted-foreground">For general inquiries:</p>
-                    <p>info@marketmastery.com</p>
+                    <p>{PLATFORM_SUPPORT_EMAIL}</p>
+                    {/* <p className="text-sm text-muted-foreground">For general inquiries:</p>
                     <p className="text-sm text-muted-foreground mt-2">For support:</p>
-                    <p>support@marketmastery.com</p>
+                    <p>{PLATFORM_SUPPORT_EMAIL}</p> */}
                   </div>
                 </div>
 
@@ -151,10 +151,10 @@ export default function ContactPage() {
                   <div>
                     <h3 className="font-medium">Office Address</h3>
                     <p>{PLATFORM_NAME}</p>
-                    <p>123 Trading Street, Suite 456</p>
-                    <p>Financial District</p>
+                    <p>Bagwara, Uttar Pradesh, India</p>
+                    {/* <p>Financial District</p>
                     <p>New York, NY 10001</p>
-                    <p>United States</p>
+                    <p>United States</p> */}
                   </div>
                 </div>
               </CardContent>
