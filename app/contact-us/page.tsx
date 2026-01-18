@@ -44,6 +44,79 @@ export default function ContactPage() {
         </div>
 
         <div className="grid gap-8 md:grid-cols-2">
+          <div className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>Contact Information</CardTitle>
+                <CardDescription>
+                  Reach out to us directly using the following contact details.
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="flex items-start gap-4">
+                  <Mail className="h-5 w-5 text-primary mt-0.5" />
+                  <div>
+                    <h3 className="font-medium">Email</h3>
+                    <p>{PLATFORM_SUPPORT_EMAIL}</p>
+                    {/* <p className="text-sm text-muted-foreground">For general inquiries:</p>
+                    <p className="text-sm text-muted-foreground mt-2">For support:</p>
+                    <p>{PLATFORM_SUPPORT_EMAIL}</p> */}
+                  </div>
+                </div>
+
+                <Separator />
+
+                <div className="flex items-start gap-4">
+                  <Phone className="h-5 w-5 text-primary mt-0.5" />
+                  <div>
+                    <h3 className="font-medium">Phone</h3>
+                    <p className="text-sm text-muted-foreground">Customer Support:</p>
+                    <p>+91 9997336099</p>
+                    {/* <p className="text-sm text-muted-foreground mt-2">Sales:</p>
+                    <p>+1 (800) 765-4321</p> */}
+                  </div>
+                </div>
+
+                <Separator />
+
+                <div className="flex items-start gap-4">
+                  <Clock className="h-5 w-5 text-primary mt-0.5" />
+                  <div>
+                    <h3 className="font-medium">Hours of Operation</h3>
+                    <p className="text-sm text-muted-foreground">Customer Support:</p>
+                    <p>Monday - Sunday: 9:00 AM - 9:00 PM IST</p>
+                  </div>
+                </div>
+
+                <Separator />
+
+                <div className="flex items-start gap-4">
+                  <MapPin className="h-5 w-5 text-primary mt-0.5" />
+                  <div>
+                    <h3 className="font-medium">Office Address</h3>
+                    <p>{PLATFORM_NAME}</p>
+                    <p>Bagwara, Uttar Pradesh, India</p>
+                    {/* <p>Financial District</p>
+                    <p>New York, NY 10001</p>
+                    <p>United States</p> */}
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>Response Time</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p>
+                  We strive to respond to all inquiries within 24 hours during business days. For urgent matters,
+                  please contact our customer support phone line for immediate assistance.
+                </p>
+              </CardContent>
+            </Card>
+          </div>
+
           <div>
             <Card>
               <CardHeader>
@@ -96,79 +169,6 @@ export default function ContactPage() {
                     )}
                   </Button>
                 </form>
-              </CardContent>
-            </Card>
-          </div>
-
-          <div className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>Contact Information</CardTitle>
-                <CardDescription>
-                  Reach out to us directly using the following contact details.
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="flex items-start gap-4">
-                  <Mail className="h-5 w-5 text-primary mt-0.5" />
-                  <div>
-                    <h3 className="font-medium">Email</h3>
-                    <p>{PLATFORM_SUPPORT_EMAIL}</p>
-                    {/* <p className="text-sm text-muted-foreground">For general inquiries:</p>
-                    <p className="text-sm text-muted-foreground mt-2">For support:</p>
-                    <p>{PLATFORM_SUPPORT_EMAIL}</p> */}
-                  </div>
-                </div>
-
-                <Separator />
-
-                <div className="flex items-start gap-4">
-                  <Phone className="h-5 w-5 text-primary mt-0.5" />
-                  <div>
-                    <h3 className="font-medium">Phone</h3>
-                    <p className="text-sm text-muted-foreground">Customer Support:</p>
-                    <p>+91 9876543210</p>
-                    {/* <p className="text-sm text-muted-foreground mt-2">Sales:</p>
-                    <p>+1 (800) 765-4321</p> */}
-                  </div>
-                </div>
-
-                <Separator />
-
-                <div className="flex items-start gap-4">
-                  <Clock className="h-5 w-5 text-primary mt-0.5" />
-                  <div>
-                    <h3 className="font-medium">Hours of Operation</h3>
-                    <p className="text-sm text-muted-foreground">Customer Support:</p>
-                    <p>Monday - Sunday: 9:00 AM - 9:00 PM IST</p>
-                  </div>
-                </div>
-
-                <Separator />
-
-                <div className="flex items-start gap-4">
-                  <MapPin className="h-5 w-5 text-primary mt-0.5" />
-                  <div>
-                    <h3 className="font-medium">Office Address</h3>
-                    <p>{PLATFORM_NAME}</p>
-                    <p>Bagwara, Uttar Pradesh, India</p>
-                    {/* <p>Financial District</p>
-                    <p>New York, NY 10001</p>
-                    <p>United States</p> */}
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle>Response Time</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p>
-                  We strive to respond to all inquiries within 24 hours during business days. For urgent matters,
-                  please contact our customer support phone line for immediate assistance.
-                </p>
               </CardContent>
             </Card>
           </div>
