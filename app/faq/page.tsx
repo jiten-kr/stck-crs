@@ -226,7 +226,7 @@ export default function FAQPage() {
                       support@{PLATFORM_NAME}.com
                     </li>
                   </ol>
-                  Our support team is available Monday through Friday, 9 AM to 9 PM IST, and typically responds within
+                  Our support team is available Monday through Sunday, 9 AM to 9 PM IST, and typically responds within
                   24 hours.
                 </AccordionContent>
               </AccordionItem>

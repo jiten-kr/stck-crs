@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Separator } from "@/components/ui/separator"
 import { useToast } from "@/hooks/use-toast"
+import { PLATFORM_NAME } from "@/lib/constants"
 import { Mail, Phone, Clock, MapPin, Send } from 'lucide-react'
 
 export default function ContactPage() {
@@ -139,9 +140,7 @@ export default function ContactPage() {
                   <div>
                     <h3 className="font-medium">Hours of Operation</h3>
                     <p className="text-sm text-muted-foreground">Customer Support:</p>
-                    <p>Monday - Friday: 9:00 AM - 8:00 PM EST</p>
-                    <p>Saturday: 10:00 AM - 6:00 PM EST</p>
-                    <p>Sunday: Closed</p>
+                    <p>Monday - Sunday: 9:00 AM - 9:00 PM IST</p>
                   </div>
                 </div>
 
@@ -151,7 +150,7 @@ export default function ContactPage() {
                   <MapPin className="h-5 w-5 text-primary mt-0.5" />
                   <div>
                     <h3 className="font-medium">Office Address</h3>
-                    <p>Market Mastery</p>
+                    <p>{PLATFORM_NAME}</p>
                     <p>123 Trading Street, Suite 456</p>
                     <p>Financial District</p>
                     <p>New York, NY 10001</p>
