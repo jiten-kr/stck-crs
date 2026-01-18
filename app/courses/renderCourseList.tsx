@@ -12,25 +12,39 @@ import {
 import { Star, Users, Clock } from "lucide-react";
 import { Course } from "@/lib/types";
 
-export default function RenderCourseList({ courses }: { courses: Course[] }) {
+type RenderCourseListProps = {
+  courses: Course[];
+  title?: string;
+  description?: string;
+  disableCta?: boolean;
+  badgeText?: string;
+};
+
+export default function RenderCourseList({
+  courses,
+  title = "Explore Our Courses",
+  description = "Discover our most popular courses chosen by thousands of students",
+  disableCta = false,
+  badgeText,
+}: RenderCourseListProps) {
   return (
     <section className="w-full py-12 md:py-24">
       <div className="container px-4 md:px-6">
         <div className="flex flex-col items-center justify-center space-y-4 text-center">
           <div className="space-y-2">
             <h1 className="text-3xl font-bold tracking-tighter sm:text-4xl">
-              Explore Our Courses
+              {title}
             </h1>
 
             <p className="max-w-[700px] text-muted-foreground md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed">
-              Discover our most popular courses chosen by thousands of students
+              {description}
             </p>
           </div>
         </div>
         <div className="mx-auto grid max-w-5xl grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3 mt-8">
           {courses.map((course) => (
             <Card key={course.id} className="flex flex-col overflow-hidden">
-              <Link href={`/courses/${course.id}`}>
+              {disableCta ? (
                 <div className="relative h-48">
                   <Image
                     src={course.image || "/placeholder.svg"}
@@ -39,17 +53,46 @@ export default function RenderCourseList({ courses }: { courses: Course[] }) {
                     className="object-cover"
                   />
                 </div>
-              </Link>
-              <Link href={`/courses/${course.id}`}>
+              ) : (
+                <Link href={`/courses/${course.id}`}>
+                  <div className="relative h-48">
+                    <Image
+                      src={course.image || "/placeholder.svg"}
+                      alt={course.title}
+                      fill
+                      className="object-cover"
+                    />
+                  </div>
+                </Link>
+              )}
+              {disableCta ? (
                 <CardHeader className="flex-1">
-                  <div className="space-y-1">
-                    <CardTitle className="line-clamp-2">
-                      {course.title}
-                    </CardTitle>
-                    <CardDescription>{course.instructor.name}</CardDescription>
+                  <div className="space-y-2">
+                    {badgeText ? (
+                      <span className="w-fit rounded-full border px-2 py-0.5 text-xs font-medium text-muted-foreground">
+                        {badgeText}
+                      </span>
+                    ) : null}
+                    <div className="space-y-1">
+                      <CardTitle className="line-clamp-2">
+                        {course.title}
+                      </CardTitle>
+                      <CardDescription>{course.instructor.name}</CardDescription>
+                    </div>
                   </div>
                 </CardHeader>
-              </Link>
+              ) : (
+                <Link href={`/courses/${course.id}`}>
+                  <CardHeader className="flex-1">
+                    <div className="space-y-1">
+                      <CardTitle className="line-clamp-2">
+                        {course.title}
+                      </CardTitle>
+                      <CardDescription>{course.instructor.name}</CardDescription>
+                    </div>
+                  </CardHeader>
+                </Link>
+              )}
               <CardContent>
                 <div className="flex items-center justify-between text-sm">
                   <div className="flex items-center gap-1">
@@ -71,7 +114,9 @@ export default function RenderCourseList({ courses }: { courses: Course[] }) {
               </CardContent>
               <CardFooter className="flex items-center justify-between">
                 <div className="flex flex-col">
-                  {course.discountedPrice ? (
+                  {disableCta ? (
+                    <span className="font-bold text-muted-foreground">TBA</span>
+                  ) : course.discountedPrice ? (
                     <>
                       <span className="font-bold">
                         ${course.discountedPrice}
@@ -84,9 +129,13 @@ export default function RenderCourseList({ courses }: { courses: Course[] }) {
                     <span className="font-bold">${course.price}</span>
                   )}
                 </div>
-                <Button asChild>
-                  <Link href={`/courses/${course.id}`}>View Course</Link>
-                </Button>
+                {disableCta ? (
+                  <Button disabled>Coming Soon</Button>
+                ) : (
+                  <Button asChild>
+                    <Link href={`/courses/${course.id}`}>View Course</Link>
+                  </Button>
+                )}
               </CardFooter>
             </Card>
           ))}

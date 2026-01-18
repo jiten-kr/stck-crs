@@ -2,6 +2,7 @@
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { useEffect, useState } from "react";
 import {
   TrendingUp,
   BarChart3,
@@ -17,10 +18,24 @@ import {
 } from "lucide-react";
 
 export default function HomePage() {
+  const [showStickyCta, setShowStickyCta] = useState(false);
 
   const handleClick = () => {
-    console.log("Button clicked");
+    alert("Button clicked");
   };
+
+  useEffect(() => {
+    const handleScroll = () => {
+      const scrollTop = window.scrollY || document.documentElement.scrollTop;
+      const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+      const progress = docHeight > 0 ? scrollTop / docHeight : 0;
+      setShowStickyCta(progress >= 0.6);
+    };
+
+    handleScroll();
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -33,19 +48,19 @@ export default function HomePage() {
               {/* Main Headline */}
               <div className="space-y-4">
                 <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-black leading-tight">
-                Trade With Rules, {" "}
+                  Trade With Rules, {" "}
                   <span className="text-blue-600">Not</span>{" "}
                   <span className="text-blue-600">Emotions</span>
                 </h2>
                 <p className="text-base md:text-lg text-gray-700 leading-relaxed">
-                
-                Most traders don’t lose money because of the market. They lose because they enter without a plan, hesitate to book losses, move stop-loss emotionally, and exit profitable trades too early.
+
+                  Most traders don’t lose money because of the market. They lose because they enter without a plan, hesitate to book losses, move stop-loss emotionally, and exit profitable trades too early.
                 </p>
               </div>
 
               {/* Key Features */}
               <div className="flex flex-col space-y-3 md:space-y-4">
-              <div className="flex items-center space-x-3">
+                <div className="flex items-center space-x-3">
                   <ShieldCheck className="w-5 h-5 md:w-6 md:h-6 text-blue-600 flex-shrink-0" />
                   <span className="text-base md:text-lg text-blue-600 font-medium">
                     A Practical Masterclass on Entry, Stop-Loss & 1:5 Risk-Reward
@@ -80,10 +95,14 @@ export default function HomePage() {
                 >
                   Join Live Class for ₹49
                 </Button>
-                <p className="text-sm text-gray-600">
-                  Limited to 21 participants per batch for focused, high-quality
-                  interaction.
-                </p>
+
+                <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs md:text-sm text-gray-600">
+
+                  <div className="flex items-center gap-2">
+                    <Users className="w-4 h-4 text-blue-600" />
+                    <span>Small-batch focus (21 seats)</span>
+                  </div>
+                </div>
               </div>
             </div>
 
@@ -138,10 +157,13 @@ export default function HomePage() {
             <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-gray-900 mb-3">
               What will you Learn?
             </h2>
+            <p className="text-base md:text-lg text-gray-600 max-w-2xl mx-auto">
+              This masterclass is built from real market experience, not theory.
+            </p>
             <div className="w-24 h-1 bg-gradient-to-r from-blue-600 to-blue-400 mx-auto rounded-full"></div>
           </div>
 
-          
+
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
             <div className="bg-white border border-gray-200 rounded-xl p-6 md:p-8 shadow-sm">
@@ -330,7 +352,7 @@ export default function HomePage() {
               Who is this Masterclass for?
             </h2>
             <p className="text-base md:text-lg text-gray-600 max-w-2xl mx-auto">
-             Designed for individuals who are ready to trade with structure, discipline, and clarity.
+              Designed for individuals who are ready to trade with structure, discipline, and clarity.
             </p>
           </div>
 
@@ -413,6 +435,30 @@ export default function HomePage() {
           </div>
         </div>
       </section>
+
+      {/* Sticky Bottom CTA */}
+      <div
+        className={`fixed inset-x-0 bottom-0 z-50 transition-all duration-300 ease-out ${showStickyCta
+          ? "opacity-100 translate-y-0"
+          : "opacity-0 translate-y-4 pointer-events-none"
+          }`}
+        aria-hidden={!showStickyCta}
+      >
+        <div className="pointer-events-none">
+          <div className="pointer-events-auto px-4 sm:px-6 lg:px-8 pb-[env(safe-area-inset-bottom)]">
+            <div className="mx-auto w-full max-w-xl md:max-w-2xl">
+              <div className="bg-white/95 backdrop-blur border border-gray-200 shadow-lg rounded-xl p-2 md:p-3">
+                <Button
+                  onClick={handleClick}
+                  className="w-full bg-blue-600 hover:bg-blue-700 text-white text-base md:text-lg px-6 py-5 md:py-6 rounded-lg font-semibold"
+                >
+                  Join Live Class for ₹49
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

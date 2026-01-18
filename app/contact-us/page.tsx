@@ -13,11 +13,11 @@ import { Mail, Phone, Clock, MapPin, Send } from 'lucide-react'
 export default function ContactPage() {
   const { toast } = useToast()
   const [isSubmitting, setIsSubmitting] = useState(false)
-  
+
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     setIsSubmitting(true)
-    
+
     // Simulate form submission
     setTimeout(() => {
       setIsSubmitting(false)
@@ -25,13 +25,13 @@ export default function ContactPage() {
         title: "Message Sent",
         description: "We've received your message and will respond shortly.",
       })
-      
+
       // Reset form
       const form = e.target as HTMLFormElement
       form.reset()
     }, 1500)
   }
-  
+
   return (
     <div className="container px-4 py-12 md:px-6 md:py-16">
       <div className="mx-auto max-w-5xl">
@@ -41,7 +41,7 @@ export default function ContactPage() {
             Have questions about our courses or need assistance? We're here to help. Reach out to our team using any of the methods below.
           </p>
         </div>
-        
+
         <div className="grid gap-8 md:grid-cols-2">
           <div>
             <Card>
@@ -63,27 +63,27 @@ export default function ContactPage() {
                       <Input id="lastName" placeholder="Doe" required />
                     </div>
                   </div>
-                  
+
                   <div className="space-y-2">
                     <Label htmlFor="email">Email</Label>
                     <Input id="email" type="email" placeholder="john.doe@example.com" required />
                   </div>
-                  
+
                   <div className="space-y-2">
                     <Label htmlFor="subject">Subject</Label>
                     <Input id="subject" placeholder="Course Inquiry" required />
                   </div>
-                  
+
                   <div className="space-y-2">
                     <Label htmlFor="message">Message</Label>
-                    <Textarea 
-                      id="message" 
-                      placeholder="Please provide details about your inquiry..." 
+                    <Textarea
+                      id="message"
+                      placeholder="Please provide details about your inquiry..."
                       rows={5}
                       required
                     />
                   </div>
-                  
+
                   <Button type="submit" className="w-full" disabled={isSubmitting}>
                     {isSubmitting ? (
                       "Sending..."
@@ -98,7 +98,7 @@ export default function ContactPage() {
               </CardContent>
             </Card>
           </div>
-          
+
           <div className="space-y-6">
             <Card>
               <CardHeader>
@@ -118,22 +118,22 @@ export default function ContactPage() {
                     <p>support@marketmastery.com</p>
                   </div>
                 </div>
-                
+
                 <Separator />
-                
+
                 <div className="flex items-start gap-4">
                   <Phone className="h-5 w-5 text-primary mt-0.5" />
                   <div>
                     <h3 className="font-medium">Phone</h3>
                     <p className="text-sm text-muted-foreground">Customer Support:</p>
-                    <p>+1 (800) 123-4567</p>
-                    <p className="text-sm text-muted-foreground mt-2">Sales:</p>
-                    <p>+1 (800) 765-4321</p>
+                    <p>+91 9876543210</p>
+                    {/* <p className="text-sm text-muted-foreground mt-2">Sales:</p>
+                    <p>+1 (800) 765-4321</p> */}
                   </div>
                 </div>
-                
+
                 <Separator />
-                
+
                 <div className="flex items-start gap-4">
                   <Clock className="h-5 w-5 text-primary mt-0.5" />
                   <div>
@@ -144,9 +144,9 @@ export default function ContactPage() {
                     <p>Sunday: Closed</p>
                   </div>
                 </div>
-                
+
                 <Separator />
-                
+
                 <div className="flex items-start gap-4">
                   <MapPin className="h-5 w-5 text-primary mt-0.5" />
                   <div>
@@ -160,21 +160,21 @@ export default function ContactPage() {
                 </div>
               </CardContent>
             </Card>
-            
+
             <Card>
               <CardHeader>
                 <CardTitle>Response Time</CardTitle>
               </CardHeader>
               <CardContent>
                 <p>
-                  We strive to respond to all inquiries within 24 hours during business days. For urgent matters, 
+                  We strive to respond to all inquiries within 24 hours during business days. For urgent matters,
                   please contact our customer support phone line for immediate assistance.
                 </p>
               </CardContent>
             </Card>
           </div>
         </div>
-        
+
         <div className="mt-12">
           <Card>
             <CardHeader>

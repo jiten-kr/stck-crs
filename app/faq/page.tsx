@@ -1,6 +1,7 @@
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { PLATFORM_NAME } from "@/lib/constants"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import Link from "next/link"
 
@@ -18,7 +19,7 @@ export default function FAQPage() {
         <Tabs defaultValue="general" className="space-y-8">
           <TabsList className="grid grid-cols-2 md:grid-cols-4 w-full">
             <TabsTrigger value="general">General</TabsTrigger>
-            <TabsTrigger value="courses">Courses</TabsTrigger>
+            {/* <TabsTrigger value="courses">Courses</TabsTrigger> */}
             <TabsTrigger value="payment">Payment</TabsTrigger>
             <TabsTrigger value="technical">Technical</TabsTrigger>
           </TabsList>
@@ -26,22 +27,10 @@ export default function FAQPage() {
           <TabsContent value="general" className="space-y-4">
             <Accordion type="single" collapsible className="w-full">
               <AccordionItem value="item-1">
-                <AccordionTrigger>What is Market Mastery?</AccordionTrigger>
+                <AccordionTrigger>What is {PLATFORM_NAME}?</AccordionTrigger>
                 <AccordionContent>
-                  Market Mastery is an online education platform specializing in stock market and investment courses. We
-                  provide comprehensive, expert-led training designed to help individuals at all levels—from beginners
-                  to advanced traders—develop the skills and knowledge needed to navigate the financial markets with
-                  confidence.
-                </AccordionContent>
-              </AccordionItem>
-
-              <AccordionItem value="item-2">
-                <AccordionTrigger>Who are your instructors?</AccordionTrigger>
-                <AccordionContent>
-                  Our instructors are industry professionals with extensive experience in trading, investing, and
-                  financial markets. Each instructor has a minimum of 10 years of real-world experience and a proven
-                  track record in their area of expertise. You can view detailed instructor profiles on each course
-                  page, including their background, experience, and teaching approach.
+                  {PLATFORM_NAME} is an education platform focused on practical, rules-based learning. It helps students
+                  at any level build clarity on entries, stop-loss, and risk-reward.
                 </AccordionContent>
               </AccordionItem>
 
@@ -58,24 +47,21 @@ export default function FAQPage() {
               <AccordionItem value="item-4">
                 <AccordionTrigger>How long do I have access to a course after purchase?</AccordionTrigger>
                 <AccordionContent>
-                  Once you purchase a course, you receive lifetime access to the course materials. This includes all
-                  future updates and improvements to the course content. Our Pro and Premium plans include lifetime
-                  access, while the Basic plan provides 3 months of access to course materials.
+                  You receive lifetime access to the course materials, including future updates and improvements.
                 </AccordionContent>
               </AccordionItem>
 
               <AccordionItem value="item-5">
                 <AccordionTrigger>Do you offer a money-back guarantee?</AccordionTrigger>
                 <AccordionContent>
-                  Yes, we offer a 30-day money-back guarantee for most of our courses. If you're unsatisfied with your
-                  purchase, you can request a refund within 30 days, provided you've completed less than 30% of the
-                  course. Some promotional or heavily discounted courses may have different refund terms, which will be
-                  clearly stated at the time of purchase.
+                  Yes. If you request within 30 days and have completed less than 30% of the course, you’re eligible for
+                  a refund. Any exceptions (such as heavily discounted offers) are shown at checkout.
                 </AccordionContent>
               </AccordionItem>
             </Accordion>
           </TabsContent>
 
+          {/*
           <TabsContent value="courses" className="space-y-4">
             <Accordion type="single" collapsible className="w-full">
               <AccordionItem value="item-1">
@@ -144,51 +130,25 @@ export default function FAQPage() {
               </AccordionItem>
             </Accordion>
           </TabsContent>
+          */}
 
           <TabsContent value="payment" className="space-y-4">
             <Accordion type="single" collapsible className="w-full">
               <AccordionItem value="item-1">
                 <AccordionTrigger>What payment methods do you accept?</AccordionTrigger>
                 <AccordionContent>
-                  We accept all major credit and debit cards (Visa, Mastercard, American Express, Discover), PayPal, and
-                  Apple Pay. For corporate training or bulk purchases, we also offer invoice payment options. All
-                  payments are processed securely through industry-standard encryption.
+                  You can pay using all major credit/debit cards, UPI, and net banking. Payments are processed securely.
                 </AccordionContent>
               </AccordionItem>
 
               <AccordionItem value="item-2">
                 <AccordionTrigger>Are there any hidden fees or subscription charges?</AccordionTrigger>
                 <AccordionContent>
-                  No, there are no hidden fees. The price you see is the full price you pay for the course. For one-time
-                  purchases, you make a single payment and receive lifetime access to the course. If you choose a
-                  subscription plan, the recurring payment terms will be clearly stated before you complete your
-                  purchase.
+                  No. You pay once to book your seat. There are no hidden fees or subscriptions.
                 </AccordionContent>
               </AccordionItem>
 
-              <AccordionItem value="item-3">
-                <AccordionTrigger>Do you offer any discounts or promotions?</AccordionTrigger>
-                <AccordionContent>
-                  Yes, we regularly offer promotions and discounts. To stay informed about special offers:
-                  <ul className="list-disc pl-6 mt-2 space-y-1">
-                    <li>Subscribe to our newsletter</li>
-                    <li>Follow us on social media</li>
-                    <li>Check our website for seasonal sales</li>
-                  </ul>
-                  We also offer special discounts for students, educators, and military personnel. Contact our support
-                  team with appropriate documentation to learn more about these discounts.
-                </AccordionContent>
-              </AccordionItem>
-
-              <AccordionItem value="item-4">
-                <AccordionTrigger>Can I upgrade my plan after purchase?</AccordionTrigger>
-                <AccordionContent>
-                  Yes, you can upgrade from a Basic plan to a Pro or Premium plan at any time. When upgrading, you'll
-                  only pay the difference between your current plan and the new plan. To upgrade, log into your account,
-                  go to "My Courses," and select the upgrade option for your course.
-                </AccordionContent>
-              </AccordionItem>
-
+              {/*
               <AccordionItem value="item-5">
                 <AccordionTrigger>How do refunds work?</AccordionTrigger>
                 <AccordionContent>
@@ -205,6 +165,7 @@ export default function FAQPage() {
                   your original payment method within 5-10 business days.
                 </AccordionContent>
               </AccordionItem>
+              */}
             </Accordion>
           </TabsContent>
 
@@ -213,28 +174,28 @@ export default function FAQPage() {
               <AccordionItem value="item-1">
                 <AccordionTrigger>What are the technical requirements for accessing courses?</AccordionTrigger>
                 <AccordionContent>
-                  Our platform is web-based and compatible with all modern browsers (Chrome, Firefox, Safari, Edge). For
-                  the best experience, we recommend:
+                  Our platform is web-based and works on modern browsers (Chrome, Firefox, Safari, Edge). For the best
+                  experience, we recommend:
                   <ul className="list-disc pl-6 mt-2 space-y-1">
-                    <li>A stable internet connection (minimum 5 Mbps)</li>
-                    <li>An updated web browser</li>
-                    <li>JavaScript enabled</li>
-                    <li>Cookies enabled</li>
+                    <li>A stable internet connection (10 Mbps or higher for smooth HD playback)</li>
+                    <li>Latest or recent browser version</li>
+                    <li>Audio output (speakers/headphones) for video lessons</li>
+                    <li>At least 4 GB RAM and an updated OS for best performance</li>
                   </ul>
-                  Mobile apps for iOS and Android are also available, allowing you to learn on the go.
+                  Mobile apps for iOS and Android are also available, and progress syncs across devices.
                 </AccordionContent>
               </AccordionItem>
 
               <AccordionItem value="item-2">
                 <AccordionTrigger>Can I download course videos for offline viewing?</AccordionTrigger>
                 <AccordionContent>
-                  Yes, Pro and Premium plan members can download video lessons for offline viewing through our mobile
-                  apps. This feature is particularly useful for learning while traveling or in areas with limited
-                  internet access. Downloaded content is available only within our app and cannot be transferred to
-                  other devices.
+                  Not at this time. To protect instructor content and ensure you always have the latest updates, videos
+                  are available for streaming only. You can access your courses anytime with an internet connection on
+                  desktop or mobile.
                 </AccordionContent>
               </AccordionItem>
 
+              {/*
               <AccordionItem value="item-3">
                 <AccordionTrigger>How do I track my progress in a course?</AccordionTrigger>
                 <AccordionContent>
@@ -249,36 +210,37 @@ export default function FAQPage() {
                   You can resume your course exactly where you left off, even if you switch devices.
                 </AccordionContent>
               </AccordionItem>
+              */}
 
               <AccordionItem value="item-4">
                 <AccordionTrigger>What should I do if I encounter technical issues?</AccordionTrigger>
                 <AccordionContent>
-                  If you experience technical difficulties:
+                  If you run into a technical issue, try these quick steps:
                   <ol className="list-decimal pl-6 mt-2 space-y-1">
-                    <li>Check our troubleshooting guide in the Help Center</li>
+                    <li>Visit the Help Center and follow the troubleshooting guide</li>
+                    <li>Refresh the page and sign out/in again</li>
                     <li>Clear your browser cache and cookies</li>
                     <li>Try a different browser or device</li>
                     <li>
                       Contact our technical support team via the "Help" button in your account or email
-                      support@marketmastery.com
+                      support@{PLATFORM_NAME}.com
                     </li>
                   </ol>
-                  Our technical support team is available Monday through Friday, 9 AM to 8 PM EST, and typically
-                  responds within 24 hours.
+                  Our support team is available Monday through Friday, 9 AM to 9 PM IST, and typically responds within
+                  24 hours.
                 </AccordionContent>
               </AccordionItem>
 
               <AccordionItem value="item-5">
                 <AccordionTrigger>Is my personal and payment information secure?</AccordionTrigger>
                 <AccordionContent>
-                  Yes, we take data security very seriously. We implement industry-standard security measures to protect
-                  your information:
+                  Yes. We take security seriously and use industry-standard safeguards to protect your information:
                   <ul className="list-disc pl-6 mt-2 space-y-1">
-                    <li>All data is encrypted using SSL/TLS encryption</li>
-                    <li>Payment processing is handled by trusted third-party providers (Stripe, PayPal)</li>
-                    <li>We do not store complete credit card information</li>
-                    <li>Our systems undergo regular security audits and updates</li>
-                    <li>We comply with data protection regulations</li>
+                    <li>All data is encrypted in transit with SSL/TLS</li>
+                    <li>Payments are processed by trusted providers (Stripe, PayPal)</li>
+                    <li>We do not store full credit card details</li>
+                    <li>Regular security reviews and updates</li>
+                    <li>Compliance with applicable data protection regulations</li>
                   </ul>
                   For more details, please refer to our Privacy Policy.
                 </AccordionContent>
@@ -297,7 +259,7 @@ export default function FAQPage() {
             </CardHeader>
             <CardContent className="flex flex-col sm:flex-row gap-4 justify-center">
               <Button asChild>
-                <Link href="/contact">Contact Support</Link>
+                <Link href="/contact-us">Contact Support</Link>
               </Button>
               <Button variant="outline" asChild>
                 <Link href="/courses">Browse Courses</Link>

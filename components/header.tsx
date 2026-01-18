@@ -49,7 +49,7 @@ export default function Header() {
           </Link>
         </div>
 
-        <div className="flex items-center gap-2">
+        {/* <div className="flex items-center gap-2">
           <Link href="/cart">
             <Button variant="ghost" size="icon" className="relative">
               <ShoppingCart className="h-5 w-5" />
@@ -128,7 +128,7 @@ export default function Header() {
               </div>
             )}
           </div>
-        </div>
+        </div> */}
       </div>
     </header>
   );

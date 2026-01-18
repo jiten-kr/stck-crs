@@ -9,7 +9,7 @@ export default function Footer() {
           <div className="space-y-4">
             <h3 className="text-lg font-medium">{PLATFORM_NAME}</h3>
             <p className="text-sm text-muted-foreground">
-              Discover and master new skills with our expert-led online courses.
+              Master practical skills with expert guidance you can apply immediately.
             </p>
           </div>
           {/* <div className="space-y-4">
