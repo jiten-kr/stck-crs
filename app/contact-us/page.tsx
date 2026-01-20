@@ -95,7 +95,7 @@ export default function ContactPage() {
                   <div>
                     <h3 className="font-medium">Office Address</h3>
                     <p>{PLATFORM_NAME}</p>
-                    <p>Bagwara, Uttar Pradesh, India</p>
+                    <p>Moradabad, Uttar Pradesh, India</p>
                     {/* <p>Financial District</p>
                     <p>New York, NY 10001</p>
                     <p>United States</p> */}
