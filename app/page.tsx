@@ -118,14 +118,14 @@ export default function HomePage() {
 
                 {/* Instructor Photo and Details */}
                 <div className="relative z-10 flex flex-col items-center gap-6">
-                  <div className="relative w-48 h-48 md:w-64 md:h-64 lg:w-80 lg:h-80">
+                  <div className="relative w-40 h-40 md:w-56 md:h-56 lg:w-72 lg:h-72">
                     <div className="relative w-full h-full rounded-full overflow-hidden shadow-xl">
                       <Image
                         src="/mayank_feature_img.png"
                         alt="Mayank Kumar"
                         fill
                         priority
-                        sizes="(min-width: 1024px) 20rem, (min-width: 768px) 16rem, 12rem"
+                        sizes="(min-width: 1024px) 18rem, (min-width: 768px) 14rem, 10rem"
                         className="object-cover object-top"
                       />
                     </div>
