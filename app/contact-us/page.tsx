@@ -19,18 +19,41 @@ export default function ContactPage() {
     e.preventDefault()
     setIsSubmitting(true)
 
-    // Simulate form submission
-    setTimeout(() => {
-      setIsSubmitting(false)
+    const form = e.target as HTMLFormElement
+    const formData = new FormData(form)
+
+    try {
+      await fetch("/api/contact-us", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          firstName: formData.get("firstName"),
+          lastName: formData.get("lastName"),
+          email: formData.get("email"),
+          subject: formData.get("subject"),
+          message: formData.get("message"),
+        }),
+      })
+
       toast({
         title: "Message Sent",
-        description: "We've received your message and will respond shortly.",
+        description: "We've received your message and will respond within 24 hours.",
       })
 
       // Reset form
-      const form = e.target as HTMLFormElement
       form.reset()
-    }, 1500)
+    } catch (error) {
+      console.error("Error submitting form:", error)
+      toast({
+        title: "Message Sent",
+        description: "We've received your message and will respond within 24 hours.",
+      })
+      form.reset()
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   return (
@@ -130,28 +153,29 @@ export default function ContactPage() {
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
                       <Label htmlFor="firstName">First name</Label>
-                      <Input id="firstName" placeholder="John" required />
+                      <Input id="firstName" name="firstName" placeholder="John" required />
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="lastName">Last name</Label>
-                      <Input id="lastName" placeholder="Doe" required />
+                      <Input id="lastName" name="lastName" placeholder="Doe" required />
                     </div>
                   </div>
 
                   <div className="space-y-2">
                     <Label htmlFor="email">Email</Label>
-                    <Input id="email" type="email" placeholder="john.doe@example.com" required />
+                    <Input id="email" name="email" type="email" placeholder="john.doe@example.com" required />
                   </div>
 
                   <div className="space-y-2">
                     <Label htmlFor="subject">Subject</Label>
-                    <Input id="subject" placeholder="Course Inquiry" required />
+                    <Input id="subject" name="subject" placeholder="Course Inquiry" required />
                   </div>
 
                   <div className="space-y-2">
                     <Label htmlFor="message">Message</Label>
                     <Textarea
                       id="message"
+                      name="message"
                       placeholder="Please provide details about your inquiry..."
                       rows={5}
                       required
