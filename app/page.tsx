@@ -2,6 +2,7 @@
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import Image from "next/image";
 import { useEffect, useState } from "react";
 import {
   TrendingUp,
@@ -44,7 +45,7 @@ export default function HomePage() {
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-center">
             {/* Left Section - Content */}
-            <div className="flex flex-col space-y-6 md:space-y-8 order-2 lg:order-1">
+            <div className="flex flex-col space-y-6 md:space-y-8 order-1 lg:order-1">
               {/* Main Headline */}
               <div className="space-y-4">
                 <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-black leading-tight">
@@ -107,40 +108,46 @@ export default function HomePage() {
             </div>
 
             {/* Right Section - Instructor */}
-            <div className="relative order-1 lg:order-2 flex justify-center lg:justify-end">
-              <div className="relative w-full max-w-md">
+            <div className="relative order-2 lg:order-2 flex justify-center lg:justify-end">
+              <div className="relative w-full max-w-xl">
                 {/* Background Circles */}
                 <div className="absolute inset-0 flex items-center justify-center">
-                  <div className="w-64 h-64 md:w-80 md:h-80 lg:w-96 lg:h-96 rounded-full border-2 border-gray-200 opacity-30"></div>
+                  <div className="w-64 h-64 md:w-80 md:h-80 lg:w-[26rem] lg:h-[26rem] rounded-full border-2 border-gray-200 opacity-30"></div>
                   <div className="absolute w-48 h-48 md:w-64 md:h-64 lg:w-80 lg:h-80 rounded-full border-2 border-gray-200 opacity-30"></div>
                 </div>
 
-                {/* Instructor Image Placeholder */}
-                <div className="relative z-10 flex flex-col items-center">
-                  <div className="w-48 h-48 md:w-64 md:h-64 lg:w-80 lg:h-80 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center shadow-xl">
-                    <Users className="w-24 h-24 md:w-32 md:h-32 lg:w-40 lg:h-40 text-white" />
-                  </div>
+                {/* Instructor Photo and Details */}
+                <div className="relative z-10 flex flex-col items-center gap-6">
+                  <div className="relative w-48 h-48 md:w-64 md:h-64 lg:w-80 lg:h-80">
+                    <div className="relative w-full h-full rounded-full overflow-hidden shadow-xl">
+                      <Image
+                        src="/mayank_feature_img.png"
+                        alt="Mayank Kumar"
+                        fill
+                        priority
+                        sizes="(min-width: 1024px) 20rem, (min-width: 768px) 16rem, 12rem"
+                        className="object-cover object-top"
+                      />
+                    </div>
 
-                  {/* Social Proof Cards */}
-                  <div className="absolute -top-4 -right-4 md:-right-8 lg:-right-12">
-                    <Card className="bg-white border-2 border-blue-500 shadow-lg p-2 md:p-3">
-                      <CardContent className="p-0 flex items-center space-x-2">
-                        <GraduationCap className="w-4 h-4 md:w-5 md:h-5 text-blue-600" />
-                        <span className="text-xs md:text-sm font-semibold text-gray-800">
-                          2L+ Student Enrolled
-                        </span>
-                      </CardContent>
-                    </Card>
+                    {/* Social Proof Cards */}
+                    <div className="absolute top-8 left-[85%] z-20 -translate-x-4">
+                      <Card className="bg-white border-2 border-blue-500 shadow-lg p-2 md:p-3 whitespace-nowrap">
+                        <CardContent className="p-0 flex items-center space-x-2">
+                          <GraduationCap className="w-4 h-4 md:w-5 md:h-5 text-blue-600" />
+                          <span className="text-xs md:text-sm font-semibold text-gray-800">
+                            2L+ Student Enrolled
+                          </span>
+                        </CardContent>
+                      </Card>
+                    </div>
                   </div>
 
                   {/* Name and Title */}
-                  <div className="mt-6 md:mt-8 bg-blue-600 rounded-lg px-4 md:px-6 py-3 md:py-4 shadow-xl w-full max-w-xs">
-                    <h3 className="text-lg md:text-xl lg:text-2xl font-bold text-white text-center">
+                  <div className="bg-blue-600 rounded-lg px-6 py-4 shadow-xl text-center">
+                    <h3 className="text-lg md:text-xl lg:text-2xl font-bold text-white">
                       Mayank Kumar
                     </h3>
-                    {/* <p className="text-xs md:text-sm lg:text-base text-white/90 text-center mt-1">
-                      Founder & CEO, Stockwiz Technologies
-                    </p> */}
                   </div>
                 </div>
               </div>
