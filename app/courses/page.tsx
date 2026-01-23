@@ -1,6 +1,82 @@
 import RenderCourseList from "./renderCourseList";
 import { fetchCoursesFromApi } from "@/lib/utils";
 import { Course } from "@/lib/types";
+import type { Metadata } from "next";
+import { PLATFORM_NAME } from "@/lib/constants";
+
+export const metadata: Metadata = {
+  title:
+    PLATFORM_NAME +
+    " - Stock Market & Crypto Trading Courses | Learn at Your Own Pace",
+  description:
+    "Explore beginner-friendly stock market and crypto trading courses by MayankFin. Self-paced, structured lessons covering fundamentals, strategies, and risk management.",
+
+  keywords: [
+    "stock market courses",
+    "crypto trading courses",
+    "online trading courses",
+    "learn stock market",
+    "learn crypto trading",
+    "self paced trading course",
+    "trading courses for beginners",
+    "online trading education india",
+  ],
+
+  authors: [{ name: "Mayank Kumar" }],
+  creator: "Mayank Kumar",
+  publisher: "Mayank Kumar",
+
+  metadataBase: new URL("https://mayankfin.com"),
+
+  alternates: {
+    canonical: "/courses",
+  },
+
+  openGraph: {
+    title:
+      PLATFORM_NAME +
+      " - Stock Market & Crypto Trading Courses",
+    description:
+      "Self-paced stock market and crypto trading courses designed for beginners. Learn fundamentals, strategies, and risk management at your own speed.",
+    url: "https://mayankfin.com/courses",
+    siteName: "MayankFin",
+    images: [
+      {
+        url: "/og-image.png",
+        width: 1200,
+        height: 630,
+        alt: "MayankFin - Stock Market & Crypto Trading Courses",
+      },
+    ],
+    locale: "en_IN",
+    type: "website",
+  },
+
+  twitter: {
+    card: "summary_large_image",
+    title:
+      PLATFORM_NAME +
+      " - Stock Market & Crypto Trading Courses",
+    description:
+      "Learn stock market and crypto trading with self-paced courses designed for beginners.",
+    images: ["/og-image.png"],
+  },
+
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+      "max-video-preview": -1,
+    },
+  },
+
+  category: "education",
+};
+
 
 const upcomingCourses: Course[] = [
   {
