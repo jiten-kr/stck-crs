@@ -119,7 +119,7 @@ export default function HomePage() {
                 {/* Instructor Photo and Details */}
                 <div className="relative z-10 flex flex-col items-center gap-6">
                   <div className="relative w-40 h-40 md:w-56 md:h-56 lg:w-72 lg:h-72">
-                    <div className="relative w-full h-full rounded-full overflow-hidden shadow-xl">
+                    <div className="relative w-full h-full rounded-full overflow-hidden shadow-xl border-[3px] border-blue-500">
                       <Image
                         src="/mayank_feature_img.png"
                         alt="Mayank Kumar"
