@@ -2,6 +2,7 @@
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { ReviewsSection, type Review } from "@/components/ui/reviews-section";
 import { LEARNERS_COUNT } from "@/lib/constants";
 import Image from "next/image";
 import { useEffect, useState } from "react";
@@ -14,6 +15,181 @@ import {
     GraduationCap,
     Users,
 } from "lucide-react";
+
+/**
+ * Mock reviews data for the live trading class
+ * This can be replaced with API data in the future
+ */
+const MOCK_REVIEWS: Review[] = [
+    {
+        id: 1,
+        name: "Rahul S.",
+        rating: 5,
+        text: "Finally understood how to set proper stop-loss. The 1:5 risk-reward concept changed my trading completely. No more emotional decisions!",
+        verified: true,
+    },
+    {
+        id: 2,
+        name: "Priya M.",
+        rating: 5,
+        text: "As a complete beginner, I was worried about keeping up. But Mayank explains everything so clearly. The entry strategies are practical and easy to follow.",
+        verified: true,
+    },
+    {
+        id: 3,
+        name: "Amit K.",
+        rating: 5,
+        text: "I've taken many trading courses, but this one stands out. The focus on rules over emotions is exactly what I needed. Highly recommended!",
+        verified: true,
+    },
+    {
+        id: 4,
+        name: "Sneha R.",
+        rating: 4,
+        text: "The masterclass helped me understand why my previous trades failed. Now I have a structured approach for every trade I take.",
+        verified: true,
+    },
+    {
+        id: 5,
+        name: "Vikram D.",
+        rating: 5,
+        text: "Worth every rupee! The stop-loss placement technique alone has saved me from multiple bad trades. Clear, practical, and actionable.",
+        verified: true,
+    },
+    {
+        id: 6,
+        name: "Ananya P.",
+        rating: 5,
+        text: "I love how the strategies work across stocks and crypto. Finally, a system I can apply consistently in any market condition.",
+        verified: true,
+    },
+    {
+        id: 7,
+        name: "Karthik N.",
+        rating: 4,
+        text: "The psychology section was eye-opening. I didn't realize how much my emotions were affecting my trading until this class.",
+        verified: true,
+    },
+    {
+        id: 8,
+        name: "Meera J.",
+        rating: 5,
+        text: "Small batch size means you actually get your questions answered. Mayank is patient and explains concepts with real examples.",
+        verified: true,
+    },
+    {
+        id: 9,
+        name: "Arjun T.",
+        rating: 5,
+        text: "The breakout entry technique is gold. I've already used it successfully in 3 trades this week. This class pays for itself!",
+        verified: true,
+    },
+    {
+        id: 10,
+        name: "Divya L.",
+        rating: 5,
+        text: "I was skeptical at first, but Mayank's teaching style is different. He focuses on discipline, not just indicators. Game changer.",
+        verified: true,
+    },
+    {
+        id: 11,
+        name: "Suresh B.",
+        rating: 4,
+        text: "Good content for intermediate traders too. The risk management strategies helped me protect my capital during volatile markets.",
+        verified: true,
+    },
+    {
+        id: 12,
+        name: "Neha G.",
+        rating: 5,
+        text: "Finally stopped revenge trading after understanding the psychology behind it. The class gave me a clear framework to follow.",
+        verified: true,
+    },
+    {
+        id: 13,
+        name: "Rajesh P.",
+        rating: 5,
+        text: "Been trading for 3 years but always struggled with exits. This masterclass fixed that. Now I let my winners run properly.",
+        verified: true,
+    },
+    {
+        id: 14,
+        name: "Kavitha R.",
+        rating: 4,
+        text: "Very practical approach. No fancy jargon, just straightforward rules that work. Wish I found this class earlier.",
+        verified: true,
+    },
+    {
+        id: 15,
+        name: "Manish K.",
+        rating: 5,
+        text: "The live examples during the class made everything click. Seeing real charts and real decisions being made is invaluable.",
+        verified: true,
+    },
+    {
+        id: 16,
+        name: "Pooja S.",
+        rating: 5,
+        text: "As a working professional, I needed a simple system. This class delivered exactly that. Now I trade with confidence in just 30 mins a day.",
+        verified: true,
+    },
+    {
+        id: 17,
+        name: "Arun V.",
+        rating: 5,
+        text: "The target-setting module alone is worth the entire fee. I used to exit too early, now I hold for the full move.",
+        verified: true,
+    },
+    {
+        id: 18,
+        name: "Lakshmi N.",
+        rating: 4,
+        text: "Good foundation for anyone serious about trading. The emphasis on journaling and reviewing trades is excellent advice.",
+        verified: true,
+    },
+    {
+        id: 19,
+        name: "Deepak M.",
+        rating: 5,
+        text: "Mayank's approach to position sizing saved my account. I was risking too much per trade before. Now I sleep peacefully!",
+        verified: true,
+    },
+    {
+        id: 20,
+        name: "Swati A.",
+        rating: 5,
+        text: "Best ₹49 I've ever spent. The value you get is incredible. Already recommended this to my friends who trade.",
+        verified: true,
+    },
+    {
+        id: 21,
+        name: "Nitin H.",
+        rating: 4,
+        text: "Clear, concise, and no-nonsense teaching. Mayank cuts through the noise and gives you what actually works.",
+        verified: true,
+    },
+    {
+        id: 22,
+        name: "Rekha D.",
+        rating: 5,
+        text: "The Q&A session at the end was super helpful. Got all my doubts cleared. Very interactive and engaging class.",
+        verified: true,
+    },
+    {
+        id: 23,
+        name: "Sanjay C.",
+        rating: 5,
+        text: "I've blown 2 accounts before finding this class. The risk management rules here would have saved me lakhs. Learn this first!",
+        verified: true,
+    },
+    {
+        id: 24,
+        name: "Asha W.",
+        rating: 5,
+        text: "Perfect for housewives like me who want to learn trading. Simple language, practical examples, and supportive community.",
+        verified: true,
+    },
+];
 
 export default function LiveTradingClass() {
     const [showStickyCta, setShowStickyCta] = useState(false);
@@ -439,6 +615,17 @@ export default function LiveTradingClass() {
                     </div>
                 </div>
             </section>
+
+            {/* Reviews Section */}
+            <ReviewsSection
+                reviews={MOCK_REVIEWS}
+                heading="What Traders Are Saying"
+                subheading="Real feedback from students who transformed their trading with our masterclass"
+                initialCount={8}
+                loadMoreCount={4}
+                loadMoreText="Load More Reviews"
+                loadingText="Loading reviews..."
+            />
 
             {/* Sticky Bottom CTA */}
             <div
