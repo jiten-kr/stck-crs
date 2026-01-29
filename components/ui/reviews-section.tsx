@@ -4,20 +4,10 @@ import { useState, useCallback } from "react"
 import { Star, Loader2 } from "lucide-react"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
+import type { Review } from "@/lib/types"
 
-/**
- * Review data structure for type safety and future API integration
- */
-export interface Review {
-  id: string | number
-  name: string
-  rating: number
-  text: string
-  /** Optional: date of review for future use */
-  date?: string
-  /** Optional: verified purchase badge */
-  verified?: boolean
-}
+// Re-export Review type for convenience
+export type { Review }
 
 /**
  * Props for the ReviewsSection component

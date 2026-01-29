@@ -75,3 +75,18 @@ export type LoginResponse = {
   token: string;
   user: User;
 };
+
+export type Review = {
+  id: string | number;
+  name: string;
+  rating: number;
+  text: string;
+  date?: string;
+  verified?: boolean;
+};
+
+export type ReviewsResponse = {
+  reviews: Review[];
+  total: number;
+  hasMore: boolean;
+};

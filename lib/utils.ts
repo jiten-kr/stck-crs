@@ -14,7 +14,7 @@ export async function buildBaseUrl(): Promise<string> {
   return `${protocol}://${host}`;
 }
 
-import type { Course } from "./types";
+import type { Course, Review, ReviewsResponse } from "./types";
 
 type ApiCourse = {
   course_id: number;
@@ -84,4 +84,51 @@ export async function fetchCoursesFromApi(): Promise<Course[]> {
       },
     ],
   }));
+}
+
+/**
+ * Fetches reviews from the API with pagination support.
+ * Can be used server-side for initial data or client-side for load more.
+ *
+ * @param limit - Number of reviews to fetch (default: 8)
+ * @param offset - Number of reviews to skip (default: 0)
+ * @returns Promise<ReviewsResponse> - Reviews array with pagination info
+ */
+export async function fetchReviewsFromApi(
+  limit: number = 8,
+  offset: number = 0,
+): Promise<ReviewsResponse> {
+  const baseUrl = await buildBaseUrl();
+  const res = await fetch(
+    `${baseUrl}/api/reviews?limit=${limit}&offset=${offset}`,
+    { cache: "no-store" },
+  );
+
+  if (!res.ok) {
+    return { reviews: [], total: 0, hasMore: false };
+  }
+
+  const data: ReviewsResponse = await res.json();
+  return data;
+}
+
+/**
+ * Client-side function to fetch more reviews.
+ * Uses relative URL so it works in browser context.
+ *
+ * @param limit - Number of reviews to fetch
+ * @param offset - Number of reviews to skip
+ * @returns Promise<ReviewsResponse> - Reviews array with pagination info
+ */
+export async function fetchMoreReviews(
+  limit: number,
+  offset: number,
+): Promise<ReviewsResponse> {
+  const res = await fetch(`/api/reviews?limit=${limit}&offset=${offset}`);
+
+  if (!res.ok) {
+    throw new Error("Failed to fetch reviews");
+  }
+
+  return res.json();
 }

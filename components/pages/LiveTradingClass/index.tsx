@@ -1,11 +1,13 @@
 "use client";
 
+import { useCallback, useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { ReviewsSection, type Review } from "@/components/ui/reviews-section";
+import { ReviewsSection } from "@/components/ui/reviews-section";
 import { LEARNERS_COUNT } from "@/lib/constants";
+import { fetchMoreReviews } from "@/lib/utils";
+import type { Review } from "@/lib/types";
 import Image from "next/image";
-import { useEffect, useState } from "react";
 import {
     TrendingUp,
     BarChart3,
@@ -16,180 +18,31 @@ import {
     Users,
 } from "lucide-react";
 
-/**
- * Mock reviews data for the live trading class
- * This can be replaced with API data in the future
- */
-const MOCK_REVIEWS: Review[] = [
-    {
-        id: 1,
-        name: "Rahul S.",
-        rating: 5,
-        text: "Stop loss ka concept pehle bhi suna tha but kab kaise lagana hai samajh nahi aata tha. Is class ke baad clarity aa gayi.",
-        verified: true,
-        date: "2024-12-18",
-    },
-    {
-        id: 2,
-        name: "Priya M.",
-        rating: 5,
-        text: "I am beginner and honestly scared of trading earlier. Mayank sir explains in very simple way. Entry and SL now clear.",
-        verified: true,
-        date: "2024-12-20",
-    },
-    {
-        id: 3,
-        name: "Amit K.",
-        rating: 4,
-        text: "Good session. No gyaan, only practical rules. Especially risk reward part was eye opening.",
-        verified: false,
-        date: "2024-12-22",
-    },
-    {
-        id: 4,
-        name: "Sneha R.",
-        rating: 5,
-        text: "Earlier I used to hold loss and book profit jaldi. Ab exactly ulta kar rahi hu 😅 This class helped a lot.",
-        verified: true,
-        date: "2024-12-24",
-    },
-    {
-        id: 5,
-        name: "Vikram D.",
-        rating: 5,
-        text: "₹49 ke hisaab se value bohot zyada hai. Stop loss placement alone worth it.",
-        verified: false,
-        date: "2024-12-26",
-    },
-    {
-        id: 6,
-        name: "Ananya P.",
-        rating: 4,
-        text: "Stocks aur crypto dono me same rules apply hote hain ye pehli baar samajh aaya.",
-        verified: true,
-        date: "2024-12-28",
-    },
-    {
-        id: 7,
-        name: "Karthik N.",
-        rating: 5,
-        text: "Psychology part hit hard. Galti market ki nahi, meri hi thi mostly.",
-        verified: false,
-        date: "2024-12-30",
-    },
-    {
-        id: 8,
-        name: "Meera J.",
-        rating: 5,
-        text: "Small batch hone ki wajah se question puch paaye. Live interaction was very helpful.",
-        verified: true,
-        date: "2025-01-02",
-    },
-    {
-        id: 9,
-        name: "Arjun T.",
-        rating: 4,
-        text: "Breakout entry concept achha laga. Ab blindly entry nahi leta.",
-        verified: false,
-        date: "2025-01-04",
-    },
-    {
-        id: 10,
-        name: "Divya L.",
-        rating: 5,
-        text: "No indicator overload. Simple price action + rules. Loved it.",
-        verified: true,
-        date: "2025-01-06",
-    },
-    {
-        id: 11,
-        name: "Suresh B.",
-        rating: 4,
-        text: "Intermediate traders ke liye bhi useful hai. Capital protection pe strong focus.",
-        verified: false,
-        date: "2025-01-08",
-    },
-    {
-        id: 12,
-        name: "Neha G.",
-        rating: 5,
-        text: "Revenge trading kyu hoti hai ye samajh aaya. Ab trade skip karna bhi seekh gayi.",
-        verified: true,
-        date: "2025-01-10",
-    },
-    {
-        id: 13,
-        name: "Rajesh P.",
-        rating: 5,
-        text: "3 saal se trade kar raha hu but exits hamesha problem thi. This session fixed that.",
-        verified: true,
-        date: "2025-01-12",
-    },
-    {
-        id: 14,
-        name: "Kavitha R.",
-        rating: 4,
-        text: "Language simple thi. Koi heavy terminology nahi. Easy to follow.",
-        verified: false,
-        date: "2025-01-14",
-    },
-    {
-        id: 15,
-        name: "Manish K.",
-        rating: 5,
-        text: "Live charts dekh ke samajh aaya ki actual decision kaise liya jata hai.",
-        verified: true,
-        date: "2025-01-16",
-    },
-    {
-        id: 16,
-        name: "Pooja S.",
-        rating: 5,
-        text: "Office ke saath trade manage karna mushkil lagta tha. Ab clear process hai.",
-        verified: false,
-        date: "2025-01-18",
-    },
-    {
-        id: 17,
-        name: "Arun V.",
-        rating: 4,
-        text: "Target pehle decide karna wali habit develop hui. Very useful.",
-        verified: true,
-        date: "2025-01-20",
-    },
-    {
-        id: 18,
-        name: "Lakshmi N.",
-        rating: 5,
-        text: "Journal maintain karna kitna important hai ye samajh aaya. Good guidance.",
-        verified: false,
-        date: "2025-01-22",
-    },
-    {
-        id: 19,
-        name: "Deepak M.",
-        rating: 5,
-        text: "Position sizing pehle ignore karta tha. Ab losses controlled hain.",
-        verified: true,
-        date: "2025-01-24",
-    },
-    {
-        id: 20,
-        name: "Swati A.",
-        rating: 5,
-        text: "Honestly best ₹49 spent. Already shared with 2 friends.",
-        verified: false,
-        date: "2025-01-26",
-    },
-];
+interface LiveTradingClassProps {
+    /** Initial reviews fetched server-side for SEO */
+    initialReviews: Review[];
+    /** Total count of reviews in database */
+    totalReviews: number;
+}
 
-
-export default function LiveTradingClass() {
+export default function LiveTradingClass({
+    initialReviews,
+    totalReviews
+}: LiveTradingClassProps) {
     const [showStickyCta, setShowStickyCta] = useState(false);
 
     const handleClick = () => {
         alert("Button clicked");
     };
+
+    /**
+     * Callback for loading more reviews from the API
+     * Used by ReviewsSection when "Load More" is clicked
+     */
+    const handleLoadMoreReviews = useCallback(async (currentCount: number): Promise<Review[]> => {
+        const { reviews } = await fetchMoreReviews(4, currentCount);
+        return reviews;
+    }, []);
 
     useEffect(() => {
         const handleScroll = () => {
@@ -611,13 +464,15 @@ export default function LiveTradingClass() {
 
             {/* Reviews Section */}
             <ReviewsSection
-                reviews={MOCK_REVIEWS}
+                reviews={initialReviews}
                 heading="What Traders Are Saying"
                 subheading="Real feedback from students who transformed their trading with our masterclass"
-                initialCount={8}
+                initialCount={initialReviews.length}
                 loadMoreCount={4}
                 loadMoreText="Load More Reviews"
                 loadingText="Loading reviews..."
+                onLoadMore={handleLoadMoreReviews}
+                totalCount={totalReviews}
             />
 
             {/* Sticky Bottom CTA */}
