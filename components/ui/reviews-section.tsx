@@ -61,8 +61,8 @@ function StarRating({ rating, maxRating = 5 }: { rating: number; maxRating?: num
         <Star
           key={index}
           className={`w-4 h-4 md:w-5 md:h-5 ${index < rating
-              ? "fill-yellow-400 text-yellow-400"
-              : "fill-gray-200 text-gray-200"
+            ? "fill-yellow-400 text-yellow-400"
+            : "fill-gray-200 text-gray-200"
             }`}
           aria-hidden="true"
         />
@@ -96,7 +96,7 @@ function ReviewCard({ review }: { review: Review }) {
               className="text-sm md:text-base text-gray-700 leading-relaxed"
               itemProp="reviewBody"
             >
-              "{review.text}"
+              {review.text}
             </p>
           </blockquote>
 
