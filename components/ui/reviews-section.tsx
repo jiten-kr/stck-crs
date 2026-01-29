@@ -100,16 +100,27 @@ function ReviewCard({ review }: { review: Review }) {
             </p>
           </blockquote>
 
-          {/* Reviewer name */}
+          {/* Reviewer name and date */}
           <footer className="mt-auto pt-3 border-t border-gray-100">
-            <p
-              className="text-sm md:text-base font-semibold text-gray-900"
-              itemProp="author"
-              itemScope
-              itemType="https://schema.org/Person"
-            >
-              <span itemProp="name">{review.name}</span>
-            </p>
+            <div className="flex items-center justify-between gap-2">
+              <p
+                className="text-sm md:text-base font-semibold text-gray-900"
+                itemProp="author"
+                itemScope
+                itemType="https://schema.org/Person"
+              >
+                <span itemProp="name">{review.name}</span>
+              </p>
+              {review.date && (
+                <time
+                  className="text-xs text-gray-500"
+                  itemProp="datePublished"
+                  dateTime={review.date}
+                >
+                  {review.date}
+                </time>
+              )}
+            </div>
             {review.verified && (
               <span className="text-xs text-green-600 font-medium">
                 Verified Student
