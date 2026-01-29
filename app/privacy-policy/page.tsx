@@ -1,4 +1,72 @@
 import { Separator } from "@/components/ui/separator"
+import type { Metadata } from "next";
+import { PLATFORM_NAME } from "@/lib/constants";
+
+export const metadata: Metadata = {
+  title: PLATFORM_NAME + " - Privacy Policy",
+  description:
+    "Read MayankFin’s Privacy Policy to understand how we collect, use, and protect your personal information when you access our website, live trading classes, and services.",
+
+  keywords: [
+    "mayankfin privacy policy",
+    "trading education privacy",
+    "online course data protection",
+    "user data privacy india",
+    "live trading class privacy policy",
+    "mayankfin data security",
+  ],
+
+  authors: [{ name: "Mayank Kumar" }],
+  creator: "Mayank Kumar",
+  publisher: "Mayank Kumar",
+
+  metadataBase: new URL("https://mayankfin.com"),
+
+  alternates: {
+    canonical: "/privacy-policy",
+  },
+
+  openGraph: {
+    title: PLATFORM_NAME + " - Privacy Policy",
+    description:
+      "Learn how MayankFin collects, uses, and safeguards your personal information across our website and live trading classes.",
+    url: "https://mayankfin.com/privacy-policy",
+    siteName: "MayankFin",
+    images: [
+      {
+        url: "/og-image.png",
+        width: 1200,
+        height: 630,
+        alt: "MayankFin Privacy Policy",
+      },
+    ],
+    locale: "en_IN",
+    type: "website",
+  },
+
+  twitter: {
+    card: "summary_large_image",
+    title: PLATFORM_NAME + " - Privacy Policy",
+    description:
+      "Understand how MayankFin handles and protects your personal data.",
+    images: ["/og-image.png"],
+  },
+
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+      "max-video-preview": -1,
+    },
+  },
+
+  category: "education",
+};
+
 
 export default function PrivacyPolicyPage() {
   return (

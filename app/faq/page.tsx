@@ -4,6 +4,76 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { PLATFORM_NAME } from "@/lib/constants"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import Link from "next/link"
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: PLATFORM_NAME + " - FAQs | Live Trading Classes & Courses",
+  description:
+    "Find answers to common questions about MayankFin live trading classes, course access, eligibility, payments, and support. Clear, simple, and transparent.",
+
+  keywords: [
+    "mayankfin faq",
+    "trading class faqs",
+    "live trading course questions",
+    "stock market course faq",
+    "crypto trading class faq",
+    "online trading education help",
+    "trading course support india",
+  ],
+
+  authors: [{ name: "Mayank Kumar" }],
+  creator: "Mayank Kumar",
+  publisher: "Mayank Kumar",
+
+  metadataBase: new URL("https://mayankfin.com"),
+
+  alternates: {
+    canonical: "/faq",
+  },
+
+  openGraph: {
+    title: PLATFORM_NAME + " - Frequently Asked Questions",
+    description:
+      "Get quick answers to frequently asked questions about MayankFin live trading classes, course structure, payments, and support.",
+    url: "https://mayankfin.com/faq",
+    siteName: "MayankFin",
+    images: [
+      {
+        url: "/og-image.png",
+        width: 1200,
+        height: 630,
+        alt: "MayankFin FAQs - Live Trading Classes",
+      },
+    ],
+    locale: "en_IN",
+    type: "website",
+  },
+
+  twitter: {
+    card: "summary_large_image",
+    title: PLATFORM_NAME + " - FAQs",
+    description:
+      "Answers to common questions about MayankFin live trading classes, payments, and course access.",
+    images: ["/og-image.png"],
+  },
+
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+      "max-video-preview": -1,
+    },
+  },
+
+  category: "education",
+};
+
+
+
 
 export default function FAQPage() {
   return (

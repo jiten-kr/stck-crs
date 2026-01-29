@@ -1,4 +1,72 @@
 import { Separator } from "@/components/ui/separator";
+import type { Metadata } from "next";
+import { PLATFORM_NAME } from "@/lib/constants";
+
+export const metadata: Metadata = {
+  title: PLATFORM_NAME + " - Terms of Service",
+  description:
+    "Read the Terms of Service for MayankFin. Understand the rules, responsibilities, and conditions for accessing our live trading classes, courses, and educational content.",
+
+  keywords: [
+    "mayankfin terms of service",
+    "trading course terms",
+    "live trading class terms",
+    "online trading education terms",
+    "course usage terms india",
+    "mayankfin legal terms",
+  ],
+
+  authors: [{ name: "Mayank Kumar" }],
+  creator: "Mayank Kumar",
+  publisher: "Mayank Kumar",
+
+  metadataBase: new URL("https://mayankfin.com"),
+
+  alternates: {
+    canonical: "/terms-of-service",
+  },
+
+  openGraph: {
+    title: PLATFORM_NAME + " - Terms of Service",
+    description:
+      "Review the terms and conditions for using MayankFin’s live trading classes and educational services.",
+    url: "https://mayankfin.com/terms-of-service",
+    siteName: "MayankFin",
+    images: [
+      {
+        url: "/og-image.png",
+        width: 1200,
+        height: 630,
+        alt: "MayankFin Terms of Service",
+      },
+    ],
+    locale: "en_IN",
+    type: "website",
+  },
+
+  twitter: {
+    card: "summary_large_image",
+    title: PLATFORM_NAME + " - Terms of Service",
+    description:
+      "Terms and conditions governing the use of MayankFin live trading classes and educational content.",
+    images: ["/og-image.png"],
+  },
+
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+      "max-video-preview": -1,
+    },
+  },
+
+  category: "education",
+};
+
 
 export default function TermsOfServicePage() {
   return (

@@ -1,4 +1,72 @@
 import { Separator } from "@/components/ui/separator";
+import type { Metadata } from "next";
+import { PLATFORM_NAME } from "@/lib/constants";
+
+export const metadata: Metadata = {
+  title: PLATFORM_NAME + " - Refund & Cancellation Policy",
+  description:
+    "Read MayankFin’s Refund & Cancellation Policy to understand eligibility, conditions, and timelines for refunds related to live trading classes and educational services.",
+
+  keywords: [
+    "mayankfin refund policy",
+    "trading class refund policy",
+    "live trading course cancellation",
+    "online course refund india",
+    "education service refund terms",
+    "mayankfin cancellation policy",
+  ],
+
+  authors: [{ name: "Mayank Kumar" }],
+  creator: "Mayank Kumar",
+  publisher: "Mayank Kumar",
+
+  metadataBase: new URL("https://mayankfin.com"),
+
+  alternates: {
+    canonical: "/refund-policy",
+  },
+
+  openGraph: {
+    title: PLATFORM_NAME + " - Refund & Cancellation Policy",
+    description:
+      "Understand MayankFin’s refund and cancellation rules for live trading classes and educational services.",
+    url: "https://mayankfin.com/refund-policy",
+    siteName: "MayankFin",
+    images: [
+      {
+        url: "/og-image.png",
+        width: 1200,
+        height: 630,
+        alt: "MayankFin Refund & Cancellation Policy",
+      },
+    ],
+    locale: "en_IN",
+    type: "website",
+  },
+
+  twitter: {
+    card: "summary_large_image",
+    title: PLATFORM_NAME + " - Refund & Cancellation Policy",
+    description:
+      "Learn about refund eligibility and cancellation terms for MayankFin live trading classes.",
+    images: ["/og-image.png"],
+  },
+
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+      "max-video-preview": -1,
+    },
+  },
+
+  category: "education",
+};
+
 
 export default function RefundPolicyPage() {
   return (
