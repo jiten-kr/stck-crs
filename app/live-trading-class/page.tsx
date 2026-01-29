@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { PLATFORM_NAME } from "@/lib/constants";
-import { fetchReviewsFromApi } from "@/lib/utils";
+import { fetchReviewsFromDb } from "@/lib/db-utils";
 import LiveTradingClass from "@/components/pages/LiveTradingClass";
 import type { Review } from "@/lib/types";
 
@@ -144,12 +144,22 @@ export const metadata: Metadata = {
 };
 
 export default async function LiveTradingClassPage() {
-  // Fetch initial reviews server-side for SEO
-  const { reviews: dbReviews, total: dbTotal } = await fetchReviewsFromApi(8, 0);
+  let initialReviews: Review[] = FALLBACK_REVIEWS;
+  let totalReviews = FALLBACK_REVIEWS.length;
 
-  // Use fallback data if database is empty
-  const initialReviews = dbReviews.length > 0 ? dbReviews : FALLBACK_REVIEWS;
-  const totalReviews = dbTotal > 0 ? dbTotal : FALLBACK_REVIEWS.length;
+  try {
+    // Fetch initial reviews directly from database (server-side for SEO)
+    const { reviews: dbReviews, total: dbTotal } = await fetchReviewsFromDb(8, 0);
+
+    // Use database data if available
+    if (dbReviews.length > 0) {
+      initialReviews = dbReviews;
+      totalReviews = dbTotal;
+    }
+  } catch (error) {
+    // Log error but continue with fallback data
+    console.error("Failed to fetch reviews, using fallback:", error);
+  }
 
   return (
     <LiveTradingClass
