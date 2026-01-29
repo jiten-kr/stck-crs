@@ -18,30 +18,41 @@ import {
     Users,
 } from "lucide-react";
 
-interface LiveTradingClassProps {
-    /** Initial reviews fetched server-side for SEO */
-    initialReviews: Review[];
-    /** Total count of reviews in database */
-    totalReviews: number;
-}
-
-export default function LiveTradingClass({
-    initialReviews,
-    totalReviews
-}: LiveTradingClassProps) {
+export default function LiveTradingClass() {
     const [showStickyCta, setShowStickyCta] = useState(false);
+    const [reviews, setReviews] = useState<Review[]>([]);
+    const [totalReviews, setTotalReviews] = useState(0);
+    const [isLoadingReviews, setIsLoadingReviews] = useState(true);
 
     const handleClick = () => {
         alert("Button clicked");
     };
 
     /**
+     * Fetch initial reviews on component mount
+     */
+    useEffect(() => {
+        async function loadInitialReviews() {
+            try {
+                const { reviews: fetchedReviews, total } = await fetchMoreReviews(8, 0);
+                setReviews(fetchedReviews);
+                setTotalReviews(total);
+            } catch (error) {
+                console.error("Failed to load reviews:", error);
+            } finally {
+                setIsLoadingReviews(false);
+            }
+        }
+        loadInitialReviews();
+    }, []);
+
+    /**
      * Callback for loading more reviews from the API
      * Used by ReviewsSection when "Load More" is clicked
      */
     const handleLoadMoreReviews = useCallback(async (currentCount: number): Promise<Review[]> => {
-        const { reviews } = await fetchMoreReviews(4, currentCount);
-        return reviews;
+        const { reviews: newReviews } = await fetchMoreReviews(4, currentCount);
+        return newReviews;
     }, []);
 
     useEffect(() => {
@@ -463,17 +474,25 @@ export default function LiveTradingClass({
             </section>
 
             {/* Reviews Section */}
-            <ReviewsSection
-                reviews={initialReviews}
-                heading="What Traders Are Saying"
-                subheading="Real feedback from students who transformed their trading with our masterclass"
-                initialCount={initialReviews.length}
-                loadMoreCount={4}
-                loadMoreText="Load More Reviews"
-                loadingText="Loading reviews..."
-                onLoadMore={handleLoadMoreReviews}
-                totalCount={totalReviews}
-            />
+            {isLoadingReviews ? (
+                <section className="w-full bg-gradient-to-br from-gray-50 via-white to-blue-50 py-12 md:py-16 lg:py-20">
+                    <div className="container mx-auto px-4 text-center">
+                        <p className="text-gray-500">Loading reviews...</p>
+                    </div>
+                </section>
+            ) : reviews.length > 0 ? (
+                <ReviewsSection
+                    reviews={reviews}
+                    heading="What Traders Are Saying"
+                    subheading="Real feedback from students who transformed their trading with our masterclass"
+                    initialCount={reviews.length}
+                    loadMoreCount={4}
+                    loadMoreText="Load More Reviews"
+                    loadingText="Loading reviews..."
+                    onLoadMore={handleLoadMoreReviews}
+                    totalCount={totalReviews}
+                />
+            ) : null}
 
             {/* Sticky Bottom CTA */}
             <div
