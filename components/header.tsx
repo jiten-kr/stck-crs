@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { ShoppingCart, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -15,7 +15,26 @@ export default function Header() {
     (state: RootState) => state.auth
   );
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
+  const userMenuRef = useRef<HTMLDivElement | null>(null);
   const { itemCount } = useCart();
+
+  useEffect(() => {
+    if (!isUserMenuOpen) return;
+
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        userMenuRef.current &&
+        !userMenuRef.current.contains(event.target as Node)
+      ) {
+        setIsUserMenuOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [isUserMenuOpen]);
 
   console.log("isLoggedIn jimmy", isAuthenticated, user);
 
@@ -41,7 +60,7 @@ export default function Header() {
             </Button>
           </Link>
 
-          <div className="relative">
+          <div className="relative" ref={userMenuRef}>
             <Button
               variant="ghost"
               size="icon"
