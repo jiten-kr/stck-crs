@@ -97,3 +97,21 @@ CREATE TABLE IF NOT EXISTS course_ratings (
     -- Ensure a user can rate a course only once
     CONSTRAINT uq_course_user UNIQUE (course_id, user_id)
 );
+
+CREATE TABLE password_reset_codes (
+  id SERIAL PRIMARY KEY,
+  user_id INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+
+  -- 6-digit code (keep as text for leading zeros)
+  code VARCHAR(6) NOT NULL,
+
+  -- Automatically expires 15 minutes after insert
+  expires_at TIMESTAMP WITH TIME ZONE 
+    DEFAULT (NOW() + INTERVAL '15 minutes') NOT NULL,
+
+  used BOOLEAN DEFAULT FALSE,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+
+  CONSTRAINT uq_active_reset_per_user UNIQUE (user_id)
+);
+

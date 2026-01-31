@@ -21,3 +21,7 @@ DROP TABLE IF EXISTS stock_market_courses;
 
 -- Drop users last (referenced by enrollments, ratings, progress)
 DROP TABLE IF EXISTS users;
+
+-- Drop password_reset_codes (depends on users)
+DROP TABLE IF EXISTS password_reset_codes;
+
