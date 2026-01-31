@@ -96,7 +96,7 @@ export default function SignUpPage() {
           <CardContent className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="firstName">Full Name</Label>
-              <Input id="name" name="name" placeholder="Your name" required />
+              <Input id="name" name="name" placeholder="John Doe" required />
             </div>
 
             <div className="space-y-2">
@@ -105,7 +105,7 @@ export default function SignUpPage() {
                 id="email"
                 name="email"
                 type="email"
-                placeholder="name@example.com"
+                placeholder="john.doe@example.com"
                 required
               />
             </div>
@@ -115,7 +115,7 @@ export default function SignUpPage() {
                 id="phone"
                 name="phone"
                 type="tel"
-                placeholder="9876543210"
+                placeholder="+91 98765 43210"
                 required
               />
             </div>
@@ -125,6 +125,7 @@ export default function SignUpPage() {
                 id="password"
                 name="password"
                 type="password"
+                placeholder="Create a password"
                 required
                 autoComplete="new-password"
               />
@@ -138,6 +139,7 @@ export default function SignUpPage() {
                 id="confirmPassword"
                 name="confirmPassword"
                 type="password"
+                placeholder="Re-enter password"
                 required
                 autoComplete="new-password"
               />

@@ -24,7 +24,7 @@ export default function Header() {
     <header className="sticky top-0 z-50 w-full border-b bg-background">
       <div className="container flex h-16 items-center justify-between px-4 md:px-6">
         <div className="flex items-center gap-2">
-          {/* <Sheet>
+          <Sheet>
             <SheetTrigger asChild>
               <Button variant="ghost" size="icon" className="md:hidden">
                 <Menu className="h-6 w-6" />
@@ -43,13 +43,13 @@ export default function Header() {
                 </div>
               </nav>
             </SheetContent>
-          </Sheet> */}
+          </Sheet>
           <Link href="/" className="flex items-center space-x-2">
             <span className="font-bold text-xl">{PLATFORM_NAME}</span>
           </Link>
         </div>
 
-        {/* <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2">
           <Link href="/cart">
             <Button variant="ghost" size="icon" className="relative">
               <ShoppingCart className="h-5 w-5" />
@@ -93,28 +93,28 @@ export default function Header() {
                       Sign Up
                     </Link>
                   )}
-                  <Link
+                  {/* <Link
                     href="/dashboard"
                     className="block px-4 py-2 text-sm hover:bg-muted"
                     onClick={() => setIsUserMenuOpen(false)}
                   >
                     Dashboard
-                  </Link>
-                  <Link
+                  </Link> */}
+                  {isAuthenticated && <Link
                     href="/account"
                     className="block px-4 py-2 text-sm hover:bg-muted"
                     onClick={() => setIsUserMenuOpen(false)}
                   >
                     My Account
-                  </Link>
+                  </Link>}
 
-                  <Link
+                  {/* <Link
                     href="/account/orders"
                     className="block px-4 py-2 text-sm hover:bg-muted"
                     onClick={() => setIsUserMenuOpen(false)}
                   >
                     Order History
-                  </Link>
+                  </Link> */}
                   {isAuthenticated && (
                     <Link
                       href="/auth/signin"
@@ -128,7 +128,7 @@ export default function Header() {
               </div>
             )}
           </div>
-        </div> */}
+        </div>
       </div>
     </header>
   );
