@@ -27,10 +27,12 @@ export default function SignUpPage() {
     e.preventDefault();
     setIsLoading(true);
 
+
+
     const formData = new FormData(e.currentTarget);
     const name = formData.get("name") as string;
     const email = formData.get("email") as string;
-    const phone = formData.get("phone") as string;
+    const phone = (formData.get("phone") as string);
     const password = formData.get("password") as string;
     const confirmPassword = formData.get("confirmPassword") as string;
 
@@ -69,7 +71,7 @@ export default function SignUpPage() {
         description: "Your account has been created successfully.",
       });
 
-      router.push("/account");
+      router.push("/auth/signin");
     } catch (error: any) {
       toast({
         title: "Error",
@@ -109,7 +111,7 @@ export default function SignUpPage() {
                 required
               />
             </div>
-            {/* <div className="space-y-2">
+            <div className="space-y-2">
               <Label htmlFor="phone">Phone</Label>
               <Input
                 id="phone"
@@ -118,7 +120,7 @@ export default function SignUpPage() {
                 placeholder="+91 98765 43210"
                 required
               />
-            </div> */}
+            </div>
             <div className="space-y-2">
               <Label htmlFor="password">Password</Label>
               <Input

@@ -51,7 +51,7 @@ export default function SignInPage() {
         description: `Welcome back, ${data.user.name}!`,
       });
 
-      router.push("/dashboard"); // redirect to dashboard after login
+      router.push("/"); // redirect to dashboard after login
     } catch (error: any) {
       console.error("Login error:", error);
       toast({
