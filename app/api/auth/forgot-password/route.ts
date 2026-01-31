@@ -1,81 +1,45 @@
-import { sub } from "date-fns";
 import { NextResponse } from "next/server";
-// import jwt from 'jsonwebtoken'; // Importing jsonwebtoken for signing
-const jwt = require('jsonwebtoken'); // Importing jsonwebtoken for signing
+import { Resend } from "resend";
 
-// We've created some helper functions for Node to make your signing-life easier
-const Mux = require('@mux/mux-node');
-const mux = new Mux({
-    tokenId: process.env.MUX_ACCESS_TOKEN, // Enter your Mux access token here
-    tokenSecret: process.env.MUX_SECRET_KEY, // Enter your Mux secret key here
-});
+const resend = new Resend(process.env.RESEND_TOKEN);
 
-async function createTokens () {
-    const signing_key_secret = process.env.MUX_SIGNING_SECRET;
-    const signing_key = process.env.MUX_SIGNING_KEY;
+export async function POST(request: Request) {
+  try {
+    const { email } = await request.json();
 
-    if (!signing_key_secret) throw new Error('Missing secret!');
-    if (!signing_key) throw new Error('Missing key!');
+    if (!email) {
+      return NextResponse.json({ error: "Email is required" }, { status: 400 });
+    }
 
-    console.log('signing_key_secret', signing_key_secret);
-    console.log('signing_key', signing_key);
+    const { data, error } = await resend.emails.send({
+      from: "MayankFin <security@mayankfin.com>",
+      to: email,
+      subject: "Reset your password",
+      html: "Use this link to reset your password.",
+    });
 
-    const decodedSigningKeySecret = Buffer.from(signing_key_secret, "base64").toString("ascii");
-    console.log('decodedSigningKeySecret', decodedSigningKeySecret);
-    const jwtExpiration = Math.floor(Date.now() / 1000) + 60 * 60 * 24; // 1 day from now
-    console.log('jwtExpiration', jwtExpiration);
-    
-    const playbackId = '0002ftXmVTti824sYSFrxcQb9CSugN1ShtIuOLwys1JPI'; // Enter your signed playback id here
-    const vToken = jwt.sign({
-        sub: playbackId, 
-        aud: 'v',
-        exp: jwtExpiration, // E.g 60, "2 days", "10h", "7d", numeric value interpreted as seconds
-        kid: signing_key, // Enter your signing key id here
-    }, decodedSigningKeySecret, { algorithm: 'RS256' }) // Enter your signing key secret here)
+    if (error) {
+      console.error("Forgot Password Email Failed:", error, { email });
+      return NextResponse.json(
+        { error: "Failed to send reset email" },
+        { status: 500 },
+      );
+    }
 
-    console.log('video token----', vToken);
+    console.log("Forgot Password Email Sent:", {
+      email,
+      id: data?.id,
+    });
 
-  // Set some base options we can use for a few different signing types
-  // Type can be either video, thumbnail, gif, or storyboard
-  let baseOptions = {
-    keyId: signing_key, // Enter your signing key id here
-    keySecret: decodedSigningKeySecret,
-    expiration: jwtExpiration, // E.g 60, "2 days", "10h", "7d", numeric value interpreted as seconds
-  };
-
-  const token = await mux.jwt.signPlaybackId(playbackId, { ...baseOptions, type: 'video' });
-  console.log('video token', token);
-
-
-
-
-  // Then, use this token in a URL like this:
-  // https://image.mux.com/${playbackId}/animated.gif?token=${gifToken}
-
-  // A final example, if you wanted to sign a thumbnail url with a playback restriction
-  const thumbnailToken = await mux.jwt.signPlaybackId(playbackId, {
-    ...baseOptions,
-    type: 'thumbnail',
-    // params: { playback_restriction_id: YOUR_PLAYBACK_RESTRICTION_ID },
-  });
-  console.log('thumbnail token', thumbnailToken);
-
-  // When used in a URL, it should look like this:
-  // https://image.mux.com/${playbackId}/thumbnail.png?token=${thumbnailToken}
-    return { videoToken: token, thumbnailToken, playbackId };
-}
-
-export async function GET(request: Request) {
-    const {videoToken, thumbnailToken, playbackId} = await createTokens();
     return NextResponse.json({
-        message: "Hello from the auth API route!",
-        method: request.method,
-        url: request.url,
-        data: {
-            p: videoToken,
-            t: thumbnailToken ,
-            playbackId: playbackId
-        }
-    })
+      message: "Reset password email sent",
+      id: data?.id,
+    });
+  } catch (error) {
+    console.error("Forgot Password Error:", error);
+    return NextResponse.json(
+      { error: "Failed to send reset email" },
+      { status: 500 },
+    );
+  }
 }
-
