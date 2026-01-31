@@ -109,7 +109,7 @@ export default function SignUpPage() {
                 required
               />
             </div>
-            <div className="space-y-2">
+            {/* <div className="space-y-2">
               <Label htmlFor="phone">Phone</Label>
               <Input
                 id="phone"
@@ -118,7 +118,7 @@ export default function SignUpPage() {
                 placeholder="+91 98765 43210"
                 required
               />
-            </div>
+            </div> */}
             <div className="space-y-2">
               <Label htmlFor="password">Password</Label>
               <Input
