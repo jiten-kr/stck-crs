@@ -4,7 +4,7 @@ import type React from "react";
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import Image from "next/image";
+import AuthBrandingGraphic from "@/components/auth/AuthBrandingGraphic";
 import { Button } from "@/components/ui/button";
 import {
     Card,
@@ -80,13 +80,7 @@ export default function SignInForm() {
                     {/* Content */}
                     <div className="relative z-10 flex flex-col justify-center px-12 xl:px-20">
                         <div className="mb-8">
-                            <Image
-                                src="/mayank_feature_img.png"
-                                alt="Mayank Kumar"
-                                width={120}
-                                height={120}
-                                className="rounded-full border-4 border-white/30 shadow-2xl"
-                            />
+                            <AuthBrandingGraphic />
                         </div>
                         <h1 className="text-4xl xl:text-5xl font-bold text-white mb-6 leading-tight">
                             Welcome Back to<br />
@@ -96,16 +90,7 @@ export default function SignInForm() {
                             Continue your trading journey with our practical masterclass on entry,
                             stop-loss, and risk-reward strategies.
                         </p>
-                        <div className="mt-8 flex items-center gap-4">
-                            <div className="flex -space-x-3">
-                                <div className="w-10 h-10 rounded-full bg-blue-400 border-2 border-white"></div>
-                                <div className="w-10 h-10 rounded-full bg-blue-300 border-2 border-white"></div>
-                                <div className="w-10 h-10 rounded-full bg-blue-200 border-2 border-white"></div>
-                            </div>
-                            <p className="text-sm text-blue-100">
-                                Join 10,000+ traders learning with us
-                            </p>
-                        </div>
+
                     </div>
                 </div>
 
