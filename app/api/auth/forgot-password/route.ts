@@ -3,9 +3,9 @@ import { Resend } from "resend";
 import crypto from "crypto";
 import pool from "@/lib/db";
 
-const resend = new Resend(process.env.RESEND_TOKEN);
-
 export async function POST(request: Request) {
+  const resend = new Resend(process.env.RESEND_TOKEN);
+
   try {
     const { email } = await request.json();
     console.log("Forgot Password: request received", { email });
