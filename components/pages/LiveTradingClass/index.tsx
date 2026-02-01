@@ -156,9 +156,28 @@ export default function LiveTradingClass() {
                                     </div>
                                     {reviewStats && reviewStats.totalReviews > 0 && (
                                         <div className="flex items-center gap-2">
-                                            <Star className="w-4 h-4 text-yellow-500 fill-yellow-500" />
+                                            <div className="flex items-center gap-0.5">
+                                                {Array.from({ length: 5 }, (_, index) => {
+                                                    const fillPercentage = Math.min(Math.max(reviewStats.averageRating - index, 0), 1) * 100;
+                                                    return (
+                                                        <div key={index} className="relative w-4 h-4">
+                                                            {/* Background star (gray) */}
+                                                            <Star className="absolute inset-0 w-4 h-4 fill-gray-200 text-gray-200" />
+                                                            {/* Filled star (yellow) with clip */}
+                                                            {fillPercentage > 0 && (
+                                                                <div
+                                                                    className="absolute inset-0 overflow-hidden"
+                                                                    style={{ width: `${fillPercentage}%` }}
+                                                                >
+                                                                    <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
+                                                                </div>
+                                                            )}
+                                                        </div>
+                                                    );
+                                                })}
+                                            </div>
                                             <span>
-                                                {reviewStats.averageRating} rating ({reviewStats.totalReviews} reviews)
+                                                {reviewStats.averageRating} ({reviewStats.totalReviews} reviews)
                                             </span>
                                         </div>
                                     )}
