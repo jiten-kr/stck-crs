@@ -64,7 +64,7 @@ export const metadata: Metadata = {
     },
   },
 
-  category: "education",
+  category: "legal",
 };
 
 

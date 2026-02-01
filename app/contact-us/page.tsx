@@ -67,7 +67,7 @@ export const metadata: Metadata = {
     },
   },
 
-  category: "education",
+  category: "contact",
 }
 
 export default function ContactPage() {
