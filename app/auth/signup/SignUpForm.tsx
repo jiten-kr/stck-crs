@@ -4,7 +4,7 @@ import type React from "react";
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import Image from "next/image";
+import AuthBrandingGraphic from "@/components/auth/AuthBrandingGraphic";
 import { Button } from "@/components/ui/button";
 import {
     Card,
@@ -98,13 +98,7 @@ export default function SignUpForm() {
                     {/* Content */}
                     <div className="relative z-10 flex flex-col justify-center px-12 xl:px-20">
                         <div className="mb-8">
-                            <Image
-                                src="/mayank_feature_img.png"
-                                alt="Mayank Kumar"
-                                width={120}
-                                height={120}
-                                className="rounded-full border-4 border-white/30 shadow-2xl"
-                            />
+                            <AuthBrandingGraphic />
                         </div>
                         <h1 className="text-4xl xl:text-5xl font-bold text-white mb-6 leading-tight">
                             Start Your<br />
