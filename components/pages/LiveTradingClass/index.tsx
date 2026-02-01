@@ -155,7 +155,14 @@ export default function LiveTradingClass() {
                                         <span>Small-batch focus (21 seats)</span>
                                     </div>
                                     {reviewStats && reviewStats.totalReviews > 0 && (
-                                        <div className="flex items-center gap-2">
+                                        <a
+                                            href="#reviews-section"
+                                            className="flex items-center gap-2 hover:opacity-80 transition-opacity cursor-pointer"
+                                            onClick={(e) => {
+                                                e.preventDefault();
+                                                document.getElementById('reviews-section')?.scrollIntoView({ behavior: 'smooth' });
+                                            }}
+                                        >
                                             <div className="flex items-center gap-0.5">
                                                 {Array.from({ length: 5 }, (_, index) => {
                                                     const fillPercentage = Math.min(Math.max(reviewStats.averageRating - index, 0), 1) * 100;
@@ -176,10 +183,10 @@ export default function LiveTradingClass() {
                                                     );
                                                 })}
                                             </div>
-                                            <span>
+                                            <span className="underline underline-offset-2">
                                                 {reviewStats.averageRating} ({reviewStats.totalReviews} reviews)
                                             </span>
-                                        </div>
+                                        </a>
                                     )}
                                 </div>
                             </div>
@@ -243,6 +250,7 @@ export default function LiveTradingClass() {
                 </section>
             ) : reviews.length > 0 ? (
                 <ReviewsSection
+                    id="reviews-section"
                     reviews={reviews}
                     heading="What Traders Are Saying"
                     subheading="Real feedback from students who transformed their trading with our masterclass"

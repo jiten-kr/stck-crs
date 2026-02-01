@@ -13,6 +13,8 @@ export type { Review }
  * Props for the ReviewsSection component
  */
 export interface ReviewsSectionProps {
+  /** Optional id for the section element (for anchor links) */
+  id?: string
   /** Array of reviews to display */
   reviews: Review[]
   /** Section heading - defaults to "What Traders Are Saying" */
@@ -179,6 +181,7 @@ function ReviewCardSkeleton() {
  * ```
  */
 export function ReviewsSection({
+  id,
   reviews,
   heading = "What Traders Are Saying",
   subheading,
@@ -228,6 +231,7 @@ export function ReviewsSection({
 
   return (
     <section
+      id={id}
       className={`w-full bg-gradient-to-br from-gray-50 via-white to-blue-50 py-12 md:py-16 lg:py-20 ${className}`}
       aria-labelledby="reviews-heading"
       itemScope
