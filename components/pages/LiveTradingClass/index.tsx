@@ -19,52 +19,28 @@ import {
     Star,
 } from "lucide-react";
 
-export default function LiveTradingClass() {
+type ReviewStats = { totalReviews: number; averageRating: number } | null;
+
+type LiveTradingClassProps = {
+    initialReviews: Review[];
+    initialTotalReviews: number;
+    initialReviewStats: ReviewStats;
+};
+
+export default function LiveTradingClass({
+    initialReviews,
+    initialTotalReviews,
+    initialReviewStats,
+}: LiveTradingClassProps) {
     const [showStickyCta, setShowStickyCta] = useState(false);
-    const [reviews, setReviews] = useState<Review[]>([]);
-    const [totalReviews, setTotalReviews] = useState(0);
-    const [isLoadingReviews, setIsLoadingReviews] = useState(true);
-    const [reviewStats, setReviewStats] = useState<{ totalReviews: number; averageRating: number } | null>(null);
+    const reviews = initialReviews;
+    const totalReviews = initialTotalReviews;
+    const reviewStats = initialReviewStats;
+    const isLoadingReviews = false;
 
     const handleClick = () => {
         alert("Button clicked");
     };
-
-    /**
-     * Fetch review stats on component mount
-     */
-    useEffect(() => {
-        async function loadReviewStats() {
-            try {
-                const response = await fetch("/api/reviews/stats");
-                if (response.ok) {
-                    const data = await response.json();
-                    setReviewStats(data);
-                }
-            } catch (error) {
-                console.error("Failed to load review stats:", error);
-            }
-        }
-        loadReviewStats();
-    }, []);
-
-    /**
-     * Fetch initial reviews on component mount
-     */
-    useEffect(() => {
-        async function loadInitialReviews() {
-            try {
-                const { reviews: fetchedReviews, total } = await fetchMoreReviews(8, 0);
-                setReviews(fetchedReviews);
-                setTotalReviews(total);
-            } catch (error) {
-                console.error("Failed to load reviews:", error);
-            } finally {
-                setIsLoadingReviews(false);
-            }
-        }
-        loadInitialReviews();
-    }, []);
 
     /**
      * Callback for loading more reviews from the API

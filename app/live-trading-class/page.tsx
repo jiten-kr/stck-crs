@@ -1,5 +1,8 @@
 import type { Metadata } from "next";
+import { unstable_noStore as noStore } from "next/cache";
 import { PLATFORM_NAME } from "@/lib/constants";
+import type { Review } from "@/lib/types";
+import pool from "@/lib/db";
 import LiveTradingClass from "@/components/pages/LiveTradingClass";
 
 export const metadata: Metadata = {
@@ -70,6 +73,60 @@ export const metadata: Metadata = {
   category: "education",
 };
 
-export default function LiveTradingClassPage() {
-  return <LiveTradingClass />;
+type ReviewRow = {
+  id: number;
+  name: string;
+  rating: number;
+  text: string;
+  verified: boolean;
+  date: string;
+};
+
+type ReviewStatsRow = {
+  total_reviews: string;
+  average_rating: string | null;
+};
+
+export default async function LiveTradingClassPage() {
+  noStore();
+
+  const reviewsResult = await pool.query<ReviewRow>(
+    `SELECT id, name, rating, text, verified, date::text
+     FROM reviews
+     ORDER BY date DESC, id DESC
+     LIMIT $1 OFFSET $2`,
+    [8, 0]
+  );
+
+  const statsResult = await pool.query<ReviewStatsRow>(
+    `SELECT 
+       COUNT(*) as total_reviews,
+       ROUND(AVG(rating)::numeric, 1) as average_rating
+     FROM reviews`
+  );
+
+  const reviews: Review[] = reviewsResult.rows.map((row) => ({
+    id: row.id,
+    name: row.name,
+    rating: row.rating,
+    text: row.text,
+    verified: row.verified,
+    date: row.date,
+  }));
+
+  const totalReviews = parseInt(statsResult.rows[0]?.total_reviews || "0", 10);
+  const averageRating = statsResult.rows[0]?.average_rating
+    ? parseFloat(statsResult.rows[0].average_rating)
+    : 0;
+
+  const initialReviewStats =
+    totalReviews > 0 ? { totalReviews, averageRating } : null;
+
+  return (
+    <LiveTradingClass
+      initialReviews={reviews}
+      initialTotalReviews={totalReviews}
+      initialReviewStats={initialReviewStats}
+    />
+  );
 }
