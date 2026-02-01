@@ -16,6 +16,7 @@ import {
     CheckCircle2,
     GraduationCap,
     Users,
+    Star,
 } from "lucide-react";
 
 export default function LiveTradingClass() {
@@ -23,10 +24,29 @@ export default function LiveTradingClass() {
     const [reviews, setReviews] = useState<Review[]>([]);
     const [totalReviews, setTotalReviews] = useState(0);
     const [isLoadingReviews, setIsLoadingReviews] = useState(true);
+    const [reviewStats, setReviewStats] = useState<{ totalReviews: number; averageRating: number } | null>(null);
 
     const handleClick = () => {
         alert("Button clicked");
     };
+
+    /**
+     * Fetch review stats on component mount
+     */
+    useEffect(() => {
+        async function loadReviewStats() {
+            try {
+                const response = await fetch("/api/reviews/stats");
+                if (response.ok) {
+                    const data = await response.json();
+                    setReviewStats(data);
+                }
+            } catch (error) {
+                console.error("Failed to load review stats:", error);
+            }
+        }
+        loadReviewStats();
+    }, []);
 
     /**
      * Fetch initial reviews on component mount
@@ -134,6 +154,14 @@ export default function LiveTradingClass() {
                                         <Users className="w-4 h-4 text-blue-600" />
                                         <span>Small-batch focus (21 seats)</span>
                                     </div>
+                                    {reviewStats && reviewStats.totalReviews > 0 && (
+                                        <div className="flex items-center gap-2">
+                                            <Star className="w-4 h-4 text-yellow-500 fill-yellow-500" />
+                                            <span>
+                                                {reviewStats.averageRating} rating ({reviewStats.totalReviews} reviews)
+                                            </span>
+                                        </div>
+                                    )}
                                 </div>
                             </div>
                         </div>
