@@ -3,9 +3,16 @@ import { Resend } from "resend";
 import crypto from "crypto";
 import pool from "@/lib/db";
 
-export async function POST(request: Request) {
-  const resend = new Resend(process.env.RESEND_TOKEN);
+// Lazy-initialized singleton to avoid build-time env access
+let resend: Resend | null = null;
+function getResend(): Resend {
+  if (!resend) {
+    resend = new Resend(process.env.RESEND_TOKEN);
+  }
+  return resend;
+}
 
+export async function POST(request: Request) {
   try {
     const { email } = await request.json();
     console.log("Forgot Password: request received", { email });
@@ -65,7 +72,7 @@ export async function POST(request: Request) {
     `;
 
     console.log("Forgot Password: sending email", { email, userId });
-    const { data, error } = await resend.emails.send({
+    const { data, error } = await getResend().emails.send({
       from: "MayankFin <security@mayankfin.com>",
       to: email,
       subject: "Your password reset code",
