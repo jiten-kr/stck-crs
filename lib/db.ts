@@ -1,7 +1,12 @@
 import { Pool } from "pg";
 
+// Append libpq compatibility params to connection string
+const connectionString = process.env.DATABASE_URL || "";
+const separator = connectionString.includes("?") ? "&" : "?";
+const connectionStringWithSSL = `${connectionString}${separator}sslmode=require&uselibpqcompat=true`;
+
 const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
+  connectionString: connectionStringWithSSL,
   // SSL required for Neon and most cloud databases
   ssl: {
     rejectUnauthorized: false,
