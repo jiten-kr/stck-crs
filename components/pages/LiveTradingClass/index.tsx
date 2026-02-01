@@ -187,6 +187,121 @@ export default function LiveTradingClass() {
                 </div>
             </section>
 
+            {/* Reviews Section */}
+            {isLoadingReviews ? (
+                <section className="w-full bg-gradient-to-br from-gray-50 via-white to-blue-50 py-12 md:py-16 lg:py-20">
+                    <div className="container mx-auto px-4 text-center">
+                        <p className="text-gray-500">Loading reviews...</p>
+                    </div>
+                </section>
+            ) : reviews.length > 0 ? (
+                <ReviewsSection
+                    reviews={reviews}
+                    heading="What Traders Are Saying"
+                    subheading="Real feedback from students who transformed their trading with our masterclass"
+                    initialCount={reviews.length}
+                    loadMoreCount={4}
+                    loadMoreText="Load More Reviews"
+                    loadingText="Loading reviews..."
+                    onLoadMore={handleLoadMoreReviews}
+                    totalCount={totalReviews}
+                />
+            ) : null}
+
+            {/* Who is this Masterclass for Section */}
+            <section className="w-full bg-gradient-to-br from-slate-50 via-gray-50 to-slate-100 py-12 md:py-16 lg:py-20">
+                <div className="container mx-auto px-4 sm:px-6 md:px-8 lg:px-12 xl:px-16 2xl:px-20">
+                    {/* Section Title */}
+                    <div className="text-center mb-12 md:mb-16">
+                        <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-gray-900 mb-4">
+                            Who is this Masterclass for?
+                        </h2>
+                        <p className="text-base md:text-lg text-gray-600 max-w-2xl mx-auto">
+                            Designed for individuals who are ready to trade with structure,
+                            discipline, and clarity.
+                        </p>
+                    </div>
+
+                    {/* Cards Grid */}
+                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 md:gap-10">
+                        {/* Card 1: Traders */}
+                        <div className="relative group">
+                            <div className="absolute inset-0 bg-gradient-to-br from-blue-600 to-blue-700 rounded-2xl transform rotate-3 group-hover:rotate-6 transition-transform duration-300 opacity-20"></div>
+                            <Card className="relative bg-white rounded-2xl p-8 md:p-10 shadow-lg border border-gray-100 h-full flex flex-col group-hover:shadow-2xl transition-all duration-300">
+                                <CardContent className="p-0 flex flex-col h-full">
+                                    <div className="flex items-start gap-4 mb-6">
+                                        <div className="w-14 h-14 md:w-16 md:h-16 rounded-2xl bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center shadow-md flex-shrink-0">
+                                            <TrendingUp className="w-7 h-7 md:w-8 md:h-8 text-white" />
+                                        </div>
+                                        <div className="flex-1">
+                                            <h3 className="text-2xl md:text-3xl font-bold text-gray-900 mb-2">
+                                                Traders
+                                            </h3>
+                                            <div className="w-12 h-1 bg-blue-500 rounded-full"></div>
+                                        </div>
+                                    </div>
+                                    <p className="text-base md:text-lg text-gray-700 leading-relaxed flex-1">
+                                        Beginners, intermediate, and professional traders who want
+                                        a rules-based system for entries, stop-loss, and targets to
+                                        trade with confidence.
+                                    </p>
+                                </CardContent>
+                            </Card>
+                        </div>
+
+                        {/* Card 2: Investors */}
+                        <div className="relative group">
+                            <div className="absolute inset-0 bg-gradient-to-br from-emerald-600 to-emerald-700 rounded-2xl transform -rotate-3 group-hover:-rotate-6 transition-transform duration-300 opacity-20"></div>
+                            <Card className="relative bg-white rounded-2xl p-8 md:p-10 shadow-lg border border-gray-100 h-full flex flex-col group-hover:shadow-2xl transition-all duration-300">
+                                <CardContent className="p-0 flex flex-col h-full">
+                                    <div className="flex items-start gap-4 mb-6">
+                                        <div className="w-14 h-14 md:w-16 md:h-16 rounded-2xl bg-gradient-to-br from-emerald-500 to-emerald-600 flex items-center justify-center shadow-md flex-shrink-0">
+                                            <BarChart3 className="w-7 h-7 md:w-8 md:h-8 text-white" />
+                                        </div>
+                                        <div className="flex-1">
+                                            <h3 className="text-2xl md:text-3xl font-bold text-gray-900 mb-2">
+                                                Investors
+                                            </h3>
+                                            <div className="w-12 h-1 bg-emerald-500 rounded-full"></div>
+                                        </div>
+                                    </div>
+                                    <p className="text-base md:text-lg text-gray-700 leading-relaxed flex-1">
+                                        First-time or seasoned investors who want a clear framework
+                                        to time entries, manage risk, and improve overall portfolio
+                                        performance.
+                                    </p>
+                                </CardContent>
+                            </Card>
+                        </div>
+
+                        {/* Card 3: Learners */}
+                        <div className="relative group">
+                            <div className="absolute inset-0 bg-gradient-to-br from-violet-600 to-violet-700 rounded-2xl transform rotate-3 group-hover:rotate-6 transition-transform duration-300 opacity-20"></div>
+                            <Card className="relative bg-white rounded-2xl p-8 md:p-10 shadow-lg border border-gray-100 h-full flex flex-col group-hover:shadow-2xl transition-all duration-300">
+                                <CardContent className="p-0 flex flex-col h-full">
+                                    <div className="flex items-start gap-4 mb-6">
+                                        <div className="w-14 h-14 md:w-16 md:h-16 rounded-2xl bg-gradient-to-br from-violet-500 to-violet-600 flex items-center justify-center shadow-md flex-shrink-0">
+                                            <GraduationCap className="w-7 h-7 md:w-8 md:h-8 text-white" />
+                                        </div>
+                                        <div className="flex-1">
+                                            <h3 className="text-2xl md:text-3xl font-bold text-gray-900 mb-2">
+                                                Learners
+                                            </h3>
+                                            <div className="w-12 h-1 bg-violet-500 rounded-full"></div>
+                                        </div>
+                                    </div>
+                                    <p className="text-base md:text-lg text-gray-700 leading-relaxed flex-1">
+                                        Working professionals, homemakers, or students who want a
+                                        simple, repeatable process to build trading skills and
+                                        create active income.
+                                    </p>
+                                </CardContent>
+                            </Card>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
             {/* What will you Learn Section */}
             <section className="w-full bg-gradient-to-br from-gray-50 via-white to-blue-50 py-12 md:py-16 lg:py-20">
                 <div className="container mx-auto px-4 sm:px-6 md:px-8 lg:px-12 xl:px-16 2xl:px-20">
@@ -378,121 +493,6 @@ export default function LiveTradingClass() {
                     </div>
                 </div>
             </section>
-
-            {/* Who is this Masterclass for Section */}
-            <section className="w-full bg-gradient-to-br from-slate-50 via-gray-50 to-slate-100 py-12 md:py-16 lg:py-20">
-                <div className="container mx-auto px-4 sm:px-6 md:px-8 lg:px-12 xl:px-16 2xl:px-20">
-                    {/* Section Title */}
-                    <div className="text-center mb-12 md:mb-16">
-                        <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-gray-900 mb-4">
-                            Who is this Masterclass for?
-                        </h2>
-                        <p className="text-base md:text-lg text-gray-600 max-w-2xl mx-auto">
-                            Designed for individuals who are ready to trade with structure,
-                            discipline, and clarity.
-                        </p>
-                    </div>
-
-                    {/* Cards Grid */}
-                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 md:gap-10">
-                        {/* Card 1: Traders */}
-                        <div className="relative group">
-                            <div className="absolute inset-0 bg-gradient-to-br from-blue-600 to-blue-700 rounded-2xl transform rotate-3 group-hover:rotate-6 transition-transform duration-300 opacity-20"></div>
-                            <Card className="relative bg-white rounded-2xl p-8 md:p-10 shadow-lg border border-gray-100 h-full flex flex-col group-hover:shadow-2xl transition-all duration-300">
-                                <CardContent className="p-0 flex flex-col h-full">
-                                    <div className="flex items-start gap-4 mb-6">
-                                        <div className="w-14 h-14 md:w-16 md:h-16 rounded-2xl bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center shadow-md flex-shrink-0">
-                                            <TrendingUp className="w-7 h-7 md:w-8 md:h-8 text-white" />
-                                        </div>
-                                        <div className="flex-1">
-                                            <h3 className="text-2xl md:text-3xl font-bold text-gray-900 mb-2">
-                                                Traders
-                                            </h3>
-                                            <div className="w-12 h-1 bg-blue-500 rounded-full"></div>
-                                        </div>
-                                    </div>
-                                    <p className="text-base md:text-lg text-gray-700 leading-relaxed flex-1">
-                                        Beginners, intermediate, and professional traders who want
-                                        a rules-based system for entries, stop-loss, and targets to
-                                        trade with confidence.
-                                    </p>
-                                </CardContent>
-                            </Card>
-                        </div>
-
-                        {/* Card 2: Investors */}
-                        <div className="relative group">
-                            <div className="absolute inset-0 bg-gradient-to-br from-emerald-600 to-emerald-700 rounded-2xl transform -rotate-3 group-hover:-rotate-6 transition-transform duration-300 opacity-20"></div>
-                            <Card className="relative bg-white rounded-2xl p-8 md:p-10 shadow-lg border border-gray-100 h-full flex flex-col group-hover:shadow-2xl transition-all duration-300">
-                                <CardContent className="p-0 flex flex-col h-full">
-                                    <div className="flex items-start gap-4 mb-6">
-                                        <div className="w-14 h-14 md:w-16 md:h-16 rounded-2xl bg-gradient-to-br from-emerald-500 to-emerald-600 flex items-center justify-center shadow-md flex-shrink-0">
-                                            <BarChart3 className="w-7 h-7 md:w-8 md:h-8 text-white" />
-                                        </div>
-                                        <div className="flex-1">
-                                            <h3 className="text-2xl md:text-3xl font-bold text-gray-900 mb-2">
-                                                Investors
-                                            </h3>
-                                            <div className="w-12 h-1 bg-emerald-500 rounded-full"></div>
-                                        </div>
-                                    </div>
-                                    <p className="text-base md:text-lg text-gray-700 leading-relaxed flex-1">
-                                        First-time or seasoned investors who want a clear framework
-                                        to time entries, manage risk, and improve overall portfolio
-                                        performance.
-                                    </p>
-                                </CardContent>
-                            </Card>
-                        </div>
-
-                        {/* Card 3: Learners */}
-                        <div className="relative group">
-                            <div className="absolute inset-0 bg-gradient-to-br from-violet-600 to-violet-700 rounded-2xl transform rotate-3 group-hover:rotate-6 transition-transform duration-300 opacity-20"></div>
-                            <Card className="relative bg-white rounded-2xl p-8 md:p-10 shadow-lg border border-gray-100 h-full flex flex-col group-hover:shadow-2xl transition-all duration-300">
-                                <CardContent className="p-0 flex flex-col h-full">
-                                    <div className="flex items-start gap-4 mb-6">
-                                        <div className="w-14 h-14 md:w-16 md:h-16 rounded-2xl bg-gradient-to-br from-violet-500 to-violet-600 flex items-center justify-center shadow-md flex-shrink-0">
-                                            <GraduationCap className="w-7 h-7 md:w-8 md:h-8 text-white" />
-                                        </div>
-                                        <div className="flex-1">
-                                            <h3 className="text-2xl md:text-3xl font-bold text-gray-900 mb-2">
-                                                Learners
-                                            </h3>
-                                            <div className="w-12 h-1 bg-violet-500 rounded-full"></div>
-                                        </div>
-                                    </div>
-                                    <p className="text-base md:text-lg text-gray-700 leading-relaxed flex-1">
-                                        Working professionals, homemakers, or students who want a
-                                        simple, repeatable process to build trading skills and
-                                        create active income.
-                                    </p>
-                                </CardContent>
-                            </Card>
-                        </div>
-                    </div>
-                </div>
-            </section>
-
-            {/* Reviews Section */}
-            {isLoadingReviews ? (
-                <section className="w-full bg-gradient-to-br from-gray-50 via-white to-blue-50 py-12 md:py-16 lg:py-20">
-                    <div className="container mx-auto px-4 text-center">
-                        <p className="text-gray-500">Loading reviews...</p>
-                    </div>
-                </section>
-            ) : reviews.length > 0 ? (
-                <ReviewsSection
-                    reviews={reviews}
-                    heading="What Traders Are Saying"
-                    subheading="Real feedback from students who transformed their trading with our masterclass"
-                    initialCount={reviews.length}
-                    loadMoreCount={4}
-                    loadMoreText="Load More Reviews"
-                    loadingText="Loading reviews..."
-                    onLoadMore={handleLoadMoreReviews}
-                    totalCount={totalReviews}
-                />
-            ) : null}
 
             {/* Sticky Bottom CTA */}
             <div
