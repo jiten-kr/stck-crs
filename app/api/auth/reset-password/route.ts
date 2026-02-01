@@ -7,11 +7,18 @@ export async function POST(request: Request) {
   let code = "";
 
   try {
+    console.log("[RESET_PASSWORD] Request received");
     const body = await request.json();
     email = (body?.email || "").trim();
     code = (body?.code || "").trim();
     const password = body?.password || "";
     const confirmPassword = body?.confirmPassword || "";
+    console.log("[RESET_PASSWORD] Parsed body", {
+      email,
+      hasCode: Boolean(code),
+      hasPassword: Boolean(password),
+      hasConfirmPassword: Boolean(confirmPassword),
+    });
 
     if (!email || !code || !password || !confirmPassword) {
       return NextResponse.json(
@@ -30,7 +37,7 @@ export async function POST(request: Request) {
     const client = await pool.connect();
 
     try {
-      console.log("Reset Password: checking user", { email });
+      console.log("[RESET_PASSWORD] Checking user", { email });
       await client.query("BEGIN");
 
       const userResult = await client.query<{ id: number }>(
@@ -48,7 +55,7 @@ export async function POST(request: Request) {
 
       const userId = userResult.rows[0].id;
 
-      console.log("Reset Password: verifying code", { email, userId });
+      console.log("[RESET_PASSWORD] Verifying code", { email, userId });
       const codeResult = await client.query<{
         id: number;
         used: boolean;
@@ -84,7 +91,7 @@ export async function POST(request: Request) {
       }
 
       const hashedPassword = await bcrypt.hash(password, 10);
-      console.log("Reset Password: updating password", { email, userId });
+      console.log("[RESET_PASSWORD] Updating password", { email, userId });
 
       await client.query("UPDATE users SET password = $1 WHERE id = $2", [
         hashedPassword,
@@ -97,12 +104,12 @@ export async function POST(request: Request) {
       );
 
       await client.query("COMMIT");
-      console.log("Reset Password: success", { email, userId });
+      console.log("[RESET_PASSWORD] Success", { email, userId });
 
       return NextResponse.json({ message: "Password updated" });
     } catch (error) {
       await client.query("ROLLBACK");
-      console.error("Reset Password Error:", error, { email });
+      console.error("[RESET_PASSWORD] Error:", error, { email });
       return NextResponse.json(
         { error: "Failed to reset password" },
         { status: 500 },
@@ -111,7 +118,7 @@ export async function POST(request: Request) {
       client.release();
     }
   } catch (error) {
-    console.error("Reset Password Error:", error, { email, code });
+    console.error("[RESET_PASSWORD] Error:", error, { email, code });
     return NextResponse.json(
       { error: "Failed to reset password" },
       { status: 500 },

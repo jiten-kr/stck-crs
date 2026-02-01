@@ -11,6 +11,7 @@ const mux = new Mux({
 });
 
 async function createTokens() {
+  console.log("[AUTH_T] Creating tokens");
   const signing_key_secret = process.env.MUX_SIGNING_SECRET;
   const signing_key = process.env.MUX_SIGNING_KEY;
 
@@ -22,7 +23,7 @@ async function createTokens() {
 
   const decodedSigningKeySecret = Buffer.from(
     signing_key_secret,
-    "base64"
+    "base64",
   ).toString("ascii");
   console.log("decodedSigningKeySecret", decodedSigningKeySecret);
   const jwtExpiration = Math.floor(Date.now() / 1000) + 60 * 60 * 24; // 1 day from now
@@ -37,7 +38,7 @@ async function createTokens() {
       kid: signing_key, // Enter your signing key id here
     },
     decodedSigningKeySecret,
-    { algorithm: "RS256" }
+    { algorithm: "RS256" },
   ); // Enter your signing key secret here)
 
   console.log("video token----", vToken);
@@ -69,11 +70,17 @@ async function createTokens() {
 
   // When used in a URL, it should look like this:
   // https://image.mux.com/${playbackId}/thumbnail.png?token=${thumbnailToken}
+  console.log("[AUTH_T] Tokens created");
   return { videoToken: token, thumbnailToken, playbackId };
 }
 
 export async function GET(request: Request) {
+  console.log("[AUTH_T] Request received", {
+    method: request.method,
+    url: request.url,
+  });
   const { videoToken, thumbnailToken, playbackId } = await createTokens();
+  console.log("[AUTH_T] Response ready", { playbackId });
   return NextResponse.json({
     message: "Hello from the auth API route!",
     method: request.method,

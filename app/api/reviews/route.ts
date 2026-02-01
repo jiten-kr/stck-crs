@@ -29,6 +29,7 @@ interface ReviewRow {
  */
 export async function GET(request: NextRequest) {
   try {
+    console.log("[REVIEWS] Request received", { url: request.url });
     const { searchParams } = new URL(request.url);
 
     // Parse pagination params with defaults and limits
@@ -37,6 +38,7 @@ export async function GET(request: NextRequest) {
       50,
     );
     const offset = Math.max(parseInt(searchParams.get("offset") || "0", 10), 0);
+    console.log("[REVIEWS] Pagination", { limit, offset });
 
     // Fetch reviews ordered by date DESC
     const reviewsResult = await pool.query<ReviewRow>(
@@ -63,13 +65,19 @@ export async function GET(request: NextRequest) {
       date: row.date,
     }));
 
+    console.log("[REVIEWS] Reviews fetched", {
+      returned: reviews.length,
+      total,
+      hasMore: offset + reviews.length < total,
+    });
+
     return NextResponse.json({
       reviews,
       total,
       hasMore: offset + reviews.length < total,
     });
   } catch (error) {
-    console.error("Error fetching reviews:", error);
+    console.error("[REVIEWS] Error:", error);
     return NextResponse.json(
       { error: "Failed to fetch reviews" },
       { status: 500 },

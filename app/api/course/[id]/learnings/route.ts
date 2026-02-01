@@ -13,11 +13,13 @@ interface CourseLearning {
 
 export async function GET(
   _req: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: { id: string } },
 ) {
   try {
+    console.log("[COURSE_LEARNINGS] Request received", { id: params.id });
     const courseId = parseInt(params.id, 10);
     if (Number.isNaN(courseId)) {
+      console.warn("[COURSE_LEARNINGS] Invalid course_id", { id: params.id });
       return NextResponse.json({ error: "Invalid course_id" }, { status: 400 });
     }
 
@@ -26,16 +28,20 @@ export async function GET(
        FROM course_learnings
        WHERE course_id = $1
        ORDER BY display_order ASC, learning_id ASC`,
-      [courseId]
+      [courseId],
     );
 
     const learnings: CourseLearning[] = result.rows as CourseLearning[];
+    console.log("[COURSE_LEARNINGS] Learnings fetched", {
+      courseId,
+      count: learnings.length,
+    });
     return NextResponse.json({ learnings });
   } catch (error) {
-    console.error("Fetch course learnings error:", error);
+    console.error("[COURSE_LEARNINGS] Error:", error);
     return NextResponse.json(
       { error: "Failed to fetch course learnings" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

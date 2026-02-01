@@ -12,6 +12,7 @@ import pool from "@/lib/db";
  */
 export async function GET() {
   try {
+    console.log("[REVIEW_STATS] Request received");
     const result = await pool.query<{
       total_reviews: string;
       average_rating: string | null;
@@ -28,12 +29,17 @@ export async function GET() {
       ? parseFloat(row.average_rating)
       : 0;
 
+    console.log("[REVIEW_STATS] Stats fetched", {
+      totalReviews,
+      averageRating,
+    });
+
     return NextResponse.json({
       totalReviews,
       averageRating,
     });
   } catch (error) {
-    console.error("Failed to fetch review stats:", error);
+    console.error("[REVIEW_STATS] Error:", error);
     return NextResponse.json(
       { error: "Failed to fetch review statistics" },
       { status: 500 },
