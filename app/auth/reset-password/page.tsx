@@ -4,6 +4,7 @@ import type React from "react";
 
 import { useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -19,14 +20,19 @@ import { useToast } from "@/hooks/use-toast";
 
 
 export default function ResetPasswordPage() {
+  const router = useRouter();
   const { toast } = useToast();
-  const [isLoading, setIsLoading] = useState(false);
-  const [isSubmitted, setIsSubmitted] = useState(false);
   const [email, setEmail] = useState("");
+  const [code, setCode] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [isSending, setIsSending] = useState(false);
+  const [isResetting, setIsResetting] = useState(false);
+  const [hasSentCode, setHasSentCode] = useState(false);
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSendCode = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    setIsLoading(true);
+    setIsSending(true);
 
     try {
       const res = await fetch("/api/auth/forgot-password", {
@@ -41,58 +47,66 @@ export default function ResetPasswordPage() {
         throw new Error(data.error || "Failed to send reset link.");
       }
 
-      setIsSubmitted(true);
+      setHasSentCode(true);
       toast({
-        title: "Reset link sent",
-        description: "Check your email for a password reset link.",
+        title: "Reset code sent",
+        description: "Check your email for the 6-digit code.",
       });
     } catch (error: any) {
       toast({
-        title: "Failed to send reset link",
+        title: "Failed to send reset code",
         description: error.message || "Please try again.",
         variant: "destructive",
       });
     } finally {
-      setIsLoading(false);
+      setIsSending(false);
     }
   };
 
-  if (isSubmitted) {
-    return (
-      <div className="flex min-h-[calc(100vh-4rem)] items-center justify-center py-12">
-        <Card className="w-full max-w-md">
-          <CardHeader className="space-y-1">
-            <CardTitle className="text-2xl font-bold">Check your email</CardTitle>
-            <CardDescription>
-              We've sent you a password reset link. Please check your email.
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <p className="text-center text-muted-foreground">
-              Didn&apos;t receive an email? Check your spam folder or try again.
-            </p>
-          </CardContent>
-          <CardFooter className="flex flex-col space-y-4">
-            <Button
-              variant="outline"
-              className="w-full"
-              onClick={() => setIsSubmitted(false)}
-            >
-              Try again
-            </Button>
-            <div className="text-center text-sm">
-              <Link
-                href="/auth/signin"
-                className="text-primary underline-offset-4 hover:underline"
-              >
-                Back to sign in
-              </Link>
-            </div>
-          </CardFooter>
-        </Card>
-      </div>
-    );
-  }
+  const handleResetPassword = async (
+    e: React.FormEvent<HTMLFormElement>,
+  ) => {
+    e.preventDefault();
+
+    if (password !== confirmPassword) {
+      toast({
+        title: "Passwords do not match",
+        description: "Please make sure both passwords match.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsResetting(true);
+
+    try {
+      const res = await fetch("/api/auth/reset-password", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, code, password, confirmPassword }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data.error || "Failed to reset password.");
+      }
+
+      toast({
+        title: "Password updated",
+        description: "You can now sign in with your new password.",
+      });
+      router.push("/auth/signin");
+    } catch (error: any) {
+      toast({
+        title: "Failed to reset password",
+        description: error.message || "Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsResetting(false);
+    }
+  };
 
   return (
     <div className="flex min-h-[calc(100vh-4rem)] items-center justify-center py-12">
@@ -104,8 +118,8 @@ export default function ResetPasswordPage() {
             password
           </CardDescription>
         </CardHeader>
-        <form onSubmit={handleSubmit}>
-          <CardContent className="space-y-4">
+        <CardContent className="space-y-6">
+          <form onSubmit={handleSendCode} className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
               <Input
@@ -117,21 +131,72 @@ export default function ResetPasswordPage() {
                 onChange={(e) => setEmail(e.target.value)}
               />
             </div>
-          </CardContent>
-          <CardFooter className="flex flex-col space-y-4">
-            <Button type="submit" className="w-full" disabled={isLoading}>
-              {isLoading ? "Sending reset link..." : "Send reset link"}
+            <Button type="submit" className="w-full" disabled={isSending}>
+              {isSending ? "Sending code..." : "Send reset code"}
             </Button>
-            <div className="text-center text-sm">
-              <Link
-                href="/auth/signin"
-                className="text-primary underline-offset-4 hover:underline"
-              >
-                Back to sign in
-              </Link>
+          </form>
+
+          <form onSubmit={handleResetPassword} className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="code">6-digit code</Label>
+              <Input
+                id="code"
+                type="text"
+                inputMode="numeric"
+                placeholder="Enter code"
+                required
+                value={code}
+                onChange={(e) => setCode(e.target.value)}
+              />
             </div>
-          </CardFooter>
-        </form>
+            <div className="space-y-2">
+              <Label htmlFor="password">New password</Label>
+              <Input
+                id="password"
+                type="password"
+                placeholder="Enter new password"
+                required
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                autoComplete="new-password"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="confirmPassword">Confirm password</Label>
+              <Input
+                id="confirmPassword"
+                type="password"
+                placeholder="Re-enter new password"
+                required
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                autoComplete="new-password"
+              />
+            </div>
+            <Button
+              type="submit"
+              className="w-full"
+              disabled={isResetting || !hasSentCode}
+            >
+              {isResetting ? "Resetting password..." : "Reset password"}
+            </Button>
+            {!hasSentCode && (
+              <p className="text-xs text-muted-foreground text-center">
+                Send the reset code to your email first.
+              </p>
+            )}
+          </form>
+        </CardContent>
+        <CardFooter className="flex flex-col space-y-4">
+          <div className="text-center text-sm">
+            <Link
+              href="/auth/signin"
+              className="text-primary underline-offset-4 hover:underline"
+            >
+              Back to sign in
+            </Link>
+          </div>
+        </CardFooter>
       </Card>
     </div>
   );
