@@ -112,7 +112,7 @@ export default function LiveTradingClass() {
                                 {reviewStats && reviewStats.totalReviews > 0 && (
                                     <a
                                         href="#reviews-section"
-                                        className="inline-flex items-center gap-2 text-xs md:text-sm text-gray-600 hover:opacity-80 transition-opacity cursor-pointer"
+                                        className="inline-flex flex-wrap items-center gap-2 gap-y-1 text-xs md:text-sm text-gray-600 hover:opacity-80 transition-opacity cursor-pointer"
                                         onClick={(e) => {
                                             e.preventDefault();
                                             document
@@ -120,7 +120,7 @@ export default function LiveTradingClass() {
                                                 ?.scrollIntoView({ behavior: "smooth" });
                                         }}
                                     >
-                                        <div className="flex items-center gap-0.5">
+                                        <div className="flex items-center gap-0.5 shrink-0">
                                             {Array.from({ length: 5 }, (_, index) => {
                                                 const fillPercentage =
                                                     Math.min(
@@ -145,7 +145,7 @@ export default function LiveTradingClass() {
                                                 );
                                             })}
                                         </div>
-                                        <span className="underline underline-offset-2">
+                                        <span className="underline underline-offset-2 leading-tight">
                                             {reviewStats.averageRating} ({reviewStats.totalReviews} reviews)
                                         </span>
                                     </a>
@@ -223,8 +223,8 @@ export default function LiveTradingClass() {
                                         </div>
 
                                         {/* Social Proof Cards */}
-                                        <div className="absolute top-8 left-[85%] z-20 -translate-x-4">
-                                            <Card className="bg-white border-2 border-blue-500 shadow-lg p-2 md:p-3 whitespace-nowrap">
+                                        <div className="absolute top-8 left-[70%] sm:left-[80%] lg:left-[85%] z-20 -translate-x-4">
+                                            <Card className="bg-white border-2 border-blue-500 shadow-lg p-2 md:p-3 whitespace-normal sm:whitespace-nowrap">
                                                 <CardContent className="p-0 flex items-center space-x-2">
                                                     <GraduationCap className="w-4 h-4 md:w-5 md:h-5 text-blue-600" />
                                                     <span className="text-xs md:text-sm font-semibold text-gray-800">
