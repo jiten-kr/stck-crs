@@ -109,6 +109,47 @@ export default function LiveTradingClass() {
                                     move stop-loss emotionally, and exit profitable trades too
                                     early.
                                 </p>
+                                {reviewStats && reviewStats.totalReviews > 0 && (
+                                    <a
+                                        href="#reviews-section"
+                                        className="inline-flex items-center gap-2 text-xs md:text-sm text-gray-600 hover:opacity-80 transition-opacity cursor-pointer"
+                                        onClick={(e) => {
+                                            e.preventDefault();
+                                            document
+                                                .getElementById("reviews-section")
+                                                ?.scrollIntoView({ behavior: "smooth" });
+                                        }}
+                                    >
+                                        <div className="flex items-center gap-0.5">
+                                            {Array.from({ length: 5 }, (_, index) => {
+                                                const fillPercentage =
+                                                    Math.min(
+                                                        Math.max(
+                                                            reviewStats.averageRating - index,
+                                                            0,
+                                                        ),
+                                                        1,
+                                                    ) * 100;
+                                                return (
+                                                    <div key={index} className="relative w-4 h-4">
+                                                        <Star className="absolute inset-0 w-4 h-4 fill-gray-200 text-gray-200" />
+                                                        {fillPercentage > 0 && (
+                                                            <div
+                                                                className="absolute inset-0 overflow-hidden"
+                                                                style={{ width: `${fillPercentage}%` }}
+                                                            >
+                                                                <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                );
+                                            })}
+                                        </div>
+                                        <span className="underline underline-offset-2">
+                                            {reviewStats.averageRating} ({reviewStats.totalReviews} reviews)
+                                        </span>
+                                    </a>
+                                )}
                             </div>
 
                             {/* Key Features */}
@@ -154,40 +195,6 @@ export default function LiveTradingClass() {
                                         <Users className="w-4 h-4 text-blue-600" />
                                         <span>Small-batch focus (21 seats)</span>
                                     </div>
-                                    {reviewStats && reviewStats.totalReviews > 0 && (
-                                        <a
-                                            href="#reviews-section"
-                                            className="flex items-center gap-2 hover:opacity-80 transition-opacity cursor-pointer"
-                                            onClick={(e) => {
-                                                e.preventDefault();
-                                                document.getElementById('reviews-section')?.scrollIntoView({ behavior: 'smooth' });
-                                            }}
-                                        >
-                                            <div className="flex items-center gap-0.5">
-                                                {Array.from({ length: 5 }, (_, index) => {
-                                                    const fillPercentage = Math.min(Math.max(reviewStats.averageRating - index, 0), 1) * 100;
-                                                    return (
-                                                        <div key={index} className="relative w-4 h-4">
-                                                            {/* Background star (gray) */}
-                                                            <Star className="absolute inset-0 w-4 h-4 fill-gray-200 text-gray-200" />
-                                                            {/* Filled star (yellow) with clip */}
-                                                            {fillPercentage > 0 && (
-                                                                <div
-                                                                    className="absolute inset-0 overflow-hidden"
-                                                                    style={{ width: `${fillPercentage}%` }}
-                                                                >
-                                                                    <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
-                                                                </div>
-                                                            )}
-                                                        </div>
-                                                    );
-                                                })}
-                                            </div>
-                                            <span className="underline underline-offset-2">
-                                                {reviewStats.averageRating} ({reviewStats.totalReviews} reviews)
-                                            </span>
-                                        </a>
-                                    )}
                                 </div>
                             </div>
                         </div>
