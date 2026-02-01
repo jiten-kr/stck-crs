@@ -4,10 +4,12 @@ import { useCallback, useEffect, useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { ReviewsSection } from "@/components/ui/reviews-section";
+import WriteReview from "@/components/reviews/write-review";
 import { LEARNERS_COUNT } from "@/lib/constants";
 import { fetchMoreReviews } from "@/lib/utils";
 import type { Review } from "@/lib/types";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 import {
     TrendingUp,
     BarChart3,
@@ -32,6 +34,7 @@ export default function LiveTradingClass({
     initialTotalReviews,
     initialReviewStats,
 }: LiveTradingClassProps) {
+    const router = useRouter();
     const [showStickyCta, setShowStickyCta] = useState(false);
     const heroCtaRef = useRef<HTMLButtonElement>(null);
     const reviews = initialReviews;
@@ -238,7 +241,7 @@ export default function LiveTradingClass({
 
             {/* Reviews Section */}
             {isLoadingReviews ? (
-                <section className="w-full bg-gradient-to-br from-gray-50 via-white to-blue-50 py-12 md:py-16 lg:py-20">
+                <section className="w-full bg-white text-gray-900 py-12 md:py-16 lg:py-20">
                     <div className="container mx-auto px-4 text-center">
                         <p className="text-gray-500">Loading reviews...</p>
                     </div>
@@ -249,6 +252,12 @@ export default function LiveTradingClass({
                     reviews={reviews}
                     heading="What Traders Are Saying"
                     subheading="Real feedback from students who transformed their trading with our masterclass"
+                    footerContent={
+                        <WriteReview
+                            onSubmitted={() => router.refresh()}
+                            className="mx-auto max-w-4xl"
+                        />
+                    }
                     initialCount={reviews.length}
                     loadMoreCount={4}
                     loadMoreText="Load More Reviews"

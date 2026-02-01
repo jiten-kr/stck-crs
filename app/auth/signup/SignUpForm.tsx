@@ -290,6 +290,18 @@ export default function SignUpForm() {
                                 </CardFooter>
                             </form>
                         </Card>
+
+                        {/* Footer */}
+                        <p className="text-center text-xs text-gray-500 mt-6">
+                            By signing up, you agree to our{" "}
+                            <Link href="/terms-of-service" className="text-blue-600 hover:underline">
+                                Terms of Service
+                            </Link>{" "}
+                            and{" "}
+                            <Link href="/privacy-policy" className="text-blue-600 hover:underline">
+                                Privacy Policy
+                            </Link>
+                        </p>
                     </div>
                 </div>
             </div>

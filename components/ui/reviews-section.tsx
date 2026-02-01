@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useCallback } from "react"
+import { useState, useCallback, type ReactNode } from "react"
 import { Star, Loader2 } from "lucide-react"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -41,6 +41,10 @@ export interface ReviewsSectionProps {
   onLoadMore?: (currentCount: number) => Promise<Review[]>
   /** Total count of reviews (for showing "X of Y reviews") */
   totalCount?: number
+  /** Optional content rendered below heading/subheading */
+  headerContent?: ReactNode
+  /** Optional content rendered after the review count */
+  footerContent?: ReactNode
 }
 
 /**
@@ -193,6 +197,8 @@ export function ReviewsSection({
   simulatedDelay = 800,
   onLoadMore,
   totalCount,
+  headerContent,
+  footerContent,
 }: ReviewsSectionProps) {
   const [displayedCount, setDisplayedCount] = useState(initialCount)
   const [isLoading, setIsLoading] = useState(false)
@@ -232,7 +238,7 @@ export function ReviewsSection({
   return (
     <section
       id={id}
-      className={`w-full bg-gradient-to-br from-gray-50 via-white to-blue-50 py-12 md:py-16 lg:py-20 ${className}`}
+      className={`w-full bg-white text-gray-900 py-12 md:py-16 lg:py-20 ${className}`}
       aria-labelledby="reviews-heading"
       itemScope
       itemType="https://schema.org/Product"
@@ -253,6 +259,7 @@ export function ReviewsSection({
             </p>
           )}
           <div className="w-24 h-1 bg-gradient-to-r from-blue-600 to-blue-400 mx-auto rounded-full" />
+          {headerContent && <div className="mt-6">{headerContent}</div>}
         </header>
 
         {/* Reviews Grid */}
@@ -296,14 +303,20 @@ export function ReviewsSection({
             <p className="text-sm text-gray-500">
               Showing {visibleReviews.length} of {effectiveTotalCount} reviews
             </p>
+            {footerContent && <div className="w-full mt-4">{footerContent}</div>}
           </div>
         )}
 
         {/* All loaded message */}
-        {!hasMore && visibleReviews.length > initialCount && (
-          <p className="mt-8 text-center text-sm text-gray-500">
-            You've seen all {effectiveTotalCount} reviews
-          </p>
+        {!hasMore && (
+          <div className="mt-8 flex flex-col items-center gap-4">
+            {visibleReviews.length > initialCount && (
+              <p className="text-center text-sm text-gray-500">
+                You've seen all {effectiveTotalCount} reviews
+              </p>
+            )}
+            {footerContent && <div className="w-full">{footerContent}</div>}
+          </div>
         )}
       </div>
     </section>

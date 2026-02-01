@@ -84,3 +84,68 @@ export async function GET(request: NextRequest) {
     );
   }
 }
+
+/**
+ * POST /api/reviews
+ *
+ * Creates a new review entry.
+ * Body: { name: string, rating: number, text: string }
+ */
+export async function POST(request: NextRequest) {
+  try {
+    console.log("[CREATE_REVIEW] Request received", { url: request.url });
+    const body = await request.json();
+    const name = typeof body?.name === "string" ? body.name.trim() : "";
+    const rating = Number(body?.rating);
+    const text = typeof body?.text === "string" ? body.text.trim() : "";
+
+    console.log("[CREATE_REVIEW] Payload", {
+      nameLength: name.length,
+      rating,
+      textLength: text.length,
+    });
+
+    if (!name || name.length < 2 || name.length > 100) {
+      console.log("[CREATE_REVIEW] Validation failed", { field: "name" });
+      return NextResponse.json(
+        { error: "Name is required and must be between 2 and 100 characters." },
+        { status: 400 },
+      );
+    }
+
+    if (!Number.isFinite(rating) || rating < 1 || rating > 5) {
+      console.log("[CREATE_REVIEW] Validation failed", { field: "rating" });
+      return NextResponse.json(
+        { error: "Rating must be a number between 1 and 5." },
+        { status: 400 },
+      );
+    }
+
+    if (!text || text.length < 10 || text.length > 2000) {
+      console.log("[CREATE_REVIEW] Validation failed", { field: "text" });
+      return NextResponse.json(
+        { error: "Review text must be between 10 and 2000 characters." },
+        { status: 400 },
+      );
+    }
+
+    const insertResult = await pool.query<ReviewRow>(
+      `INSERT INTO reviews (name, rating, text, verified, date)
+       VALUES ($1, $2, $3, $4, CURRENT_DATE)
+       RETURNING id, name, rating, text, verified, date::text`,
+      [name, rating, text, false],
+    );
+
+    const review = insertResult.rows[0];
+
+    console.log("[CREATE_REVIEW] Review created", { id: review?.id });
+
+    return NextResponse.json({ review }, { status: 201 });
+  } catch (error) {
+    console.error("[CREATE_REVIEW] Error:", error);
+    return NextResponse.json(
+      { error: "Failed to create review" },
+      { status: 500 },
+    );
+  }
+}
