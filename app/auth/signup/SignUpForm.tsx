@@ -4,7 +4,6 @@ import type React from "react";
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import AuthBrandingGraphic from "@/components/auth/AuthBrandingGraphic";
 import { Button } from "@/components/ui/button";
 import {
     Card,
@@ -96,36 +95,35 @@ export default function SignUpForm() {
                     </div>
 
                     {/* Content */}
-                    <div className="relative z-10 flex flex-col justify-center px-12 xl:px-20">
-                        <div className="mb-8">
-                            <AuthBrandingGraphic />
-                        </div>
-                        <h1 className="text-4xl xl:text-5xl font-bold text-white mb-6 leading-tight">
-                            Start Your<br />
-                            <span className="text-blue-200">Trading Journey</span>
-                        </h1>
-                        <p className="text-lg text-blue-100 leading-relaxed max-w-md">
-                            Join thousands of traders who are mastering the markets with our
-                            practical, rules-based approach to trading.
-                        </p>
-                        <div className="mt-8 space-y-4">
-                            <div className="flex items-center gap-3">
-                                <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center">
-                                    <span className="text-white text-sm font-bold">✓</span>
+                    <div className="relative z-10 flex flex-col justify-center px-12 xl:px-20 h-full">
+                        <div className="flex-1 flex flex-col justify-center">
+                            <h1 className="text-4xl xl:text-5xl font-bold text-white mb-6 leading-tight">
+                                Start Your<br />
+                                <span className="text-blue-200">Trading Journey</span>
+                            </h1>
+                            <p className="text-lg text-blue-100 leading-relaxed max-w-md">
+                                Join thousands of traders who are mastering the markets with our
+                                practical, rules-based approach to trading.
+                            </p>
+                            <div className="mt-8 space-y-4">
+                                <div className="flex items-center gap-3">
+                                    <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center">
+                                        <span className="text-white text-sm font-bold">✓</span>
+                                    </div>
+                                    <span className="text-blue-100">Learn entry & exit strategies</span>
                                 </div>
-                                <span className="text-blue-100">Learn entry & exit strategies</span>
-                            </div>
-                            <div className="flex items-center gap-3">
-                                <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center">
-                                    <span className="text-white text-sm font-bold">✓</span>
+                                <div className="flex items-center gap-3">
+                                    <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center">
+                                        <span className="text-white text-sm font-bold">✓</span>
+                                    </div>
+                                    <span className="text-blue-100">Master risk management</span>
                                 </div>
-                                <span className="text-blue-100">Master risk management</span>
-                            </div>
-                            <div className="flex items-center gap-3">
-                                <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center">
-                                    <span className="text-white text-sm font-bold">✓</span>
+                                <div className="flex items-center gap-3">
+                                    <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center">
+                                        <span className="text-white text-sm font-bold">✓</span>
+                                    </div>
+                                    <span className="text-blue-100">Trade with confidence</span>
                                 </div>
-                                <span className="text-blue-100">Trade with confidence</span>
                             </div>
                         </div>
                     </div>

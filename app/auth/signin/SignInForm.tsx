@@ -4,7 +4,6 @@ import type React from "react";
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import AuthBrandingGraphic from "@/components/auth/AuthBrandingGraphic";
 import { Button } from "@/components/ui/button";
 import {
     Card,
@@ -78,19 +77,17 @@ export default function SignInForm() {
                     </div>
 
                     {/* Content */}
-                    <div className="relative z-10 flex flex-col justify-center px-12 xl:px-20">
-                        <div className="mb-8">
-                            <AuthBrandingGraphic />
+                    <div className="relative z-10 flex flex-col justify-center px-12 xl:px-20 h-full">
+                        <div className="flex-1 flex flex-col justify-center">
+                            <h1 className="text-4xl xl:text-5xl font-bold text-white mb-6 leading-tight">
+                                Welcome Back to<br />
+                                <span className="text-blue-200">MayankFin</span>
+                            </h1>
+                            <p className="text-lg text-blue-100 leading-relaxed max-w-md">
+                                Continue your trading journey with our practical masterclass on entry,
+                                stop-loss, and risk-reward strategies.
+                            </p>
                         </div>
-                        <h1 className="text-4xl xl:text-5xl font-bold text-white mb-6 leading-tight">
-                            Welcome Back to<br />
-                            <span className="text-blue-200">MayankFin</span>
-                        </h1>
-                        <p className="text-lg text-blue-100 leading-relaxed max-w-md">
-                            Continue your trading journey with our practical masterclass on entry,
-                            stop-loss, and risk-reward strategies.
-                        </p>
-
                     </div>
                 </div>
 
