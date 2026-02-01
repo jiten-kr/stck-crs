@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { ReviewsSection } from "@/components/ui/reviews-section";
@@ -33,6 +33,7 @@ export default function LiveTradingClass({
     initialReviewStats,
 }: LiveTradingClassProps) {
     const [showStickyCta, setShowStickyCta] = useState(false);
+    const heroCtaRef = useRef<HTMLButtonElement>(null);
     const reviews = initialReviews;
     const totalReviews = initialTotalReviews;
     const reviewStats = initialReviewStats;
@@ -51,17 +52,27 @@ export default function LiveTradingClass({
         return newReviews;
     }, []);
 
+    /**
+     * Show sticky CTA when hero button scrolls out of view
+     */
     useEffect(() => {
-        const handleScroll = () => {
-            const scrollTop = window.scrollY || document.documentElement.scrollTop;
-            const docHeight = document.documentElement.scrollHeight - window.innerHeight;
-            const progress = docHeight > 0 ? scrollTop / docHeight : 0;
-            setShowStickyCta(progress >= 0.6);
-        };
+        const heroButton = heroCtaRef.current;
+        if (!heroButton) return;
 
-        handleScroll();
-        window.addEventListener("scroll", handleScroll, { passive: true });
-        return () => window.removeEventListener("scroll", handleScroll);
+        const observer = new IntersectionObserver(
+            ([entry]) => {
+                // Show sticky CTA when hero button is NOT visible
+                setShowStickyCta(!entry.isIntersecting);
+            },
+            {
+                root: null,
+                rootMargin: "0px",
+                threshold: 0,
+            }
+        );
+
+        observer.observe(heroButton);
+        return () => observer.disconnect();
     }, []);
 
     return (
@@ -160,6 +171,7 @@ export default function LiveTradingClass({
                             {/* CTA Button */}
                             <div className="flex flex-col space-y-2 pt-4">
                                 <Button
+                                    ref={heroCtaRef}
                                     onClick={handleClick}
                                     className="w-full md:w-auto bg-blue-600 hover:bg-blue-700 text-white text-base md:text-lg px-8 py-6 md:py-7 rounded-lg font-semibold"
                                 >
