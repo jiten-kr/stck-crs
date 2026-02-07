@@ -25,3 +25,13 @@ DROP TABLE IF EXISTS users;
 -- Drop password_reset_codes (depends on users)
 DROP TABLE IF EXISTS password_reset_codes;
 
+DROP TABLE IF EXISTS payment_webhook_events;
+
+DROP TABLE IF EXISTS payments;
+
+DROP TABLE IF EXISTS payment_orders;
+
+
+DROP TABLE IF EXISTS orders;
+
+

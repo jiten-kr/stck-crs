@@ -22,6 +22,8 @@ CREATE TABLE IF NOT EXISTS stock_market_courses (
     -- Useful flags
     is_active BOOLEAN DEFAULT TRUE
 );
+ALTER TABLE stock_market_courses ADD COLUMN is_live BOOLEAN NOT NULL DEFAULT FALSE;
+
 
 -- What you will learn (pointers)
 CREATE TABLE IF NOT EXISTS course_learnings (
@@ -98,7 +100,7 @@ CREATE TABLE IF NOT EXISTS course_ratings (
     CONSTRAINT uq_course_user UNIQUE (course_id, user_id)
 );
 
-CREATE TABLE password_reset_codes (
+CREATE TABLE IF NOT EXISTS  password_reset_codes (
   id SERIAL PRIMARY KEY,
   user_id INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
 
@@ -114,4 +116,94 @@ CREATE TABLE password_reset_codes (
 
   CONSTRAINT uq_active_reset_per_user UNIQUE (user_id)
 );
+
+
+-- Orders table to track purchases (linked to users and courses)    
+
+CREATE TABLE IF NOT EXISTS  orders (
+    id BIGSERIAL PRIMARY KEY,
+
+    user_id BIGINT NOT NULL,
+    currency VARCHAR(10) NOT NULL DEFAULT 'INR',
+
+    total_amount INT NOT NULL,        -- in paise
+    discount_amount INT DEFAULT 0,
+    payable_amount INT NOT NULL,      -- final amount
+
+    item_id BIGINT NOT NULL REFERENCES stock_market_courses(course_id) ON DELETE CASCADE,  -- course_id or live_class_id
+
+
+    status VARCHAR(30) NOT NULL,      -- CREATED, PAID, PARTIALLY_PAID, CANCELLED
+
+    created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMP NOT NULL DEFAULT NOW()
+);
+
+
+
+CREATE TABLE IF NOT EXISTS  payment_orders (
+    id BIGSERIAL PRIMARY KEY,
+
+    order_id BIGINT NOT NULL REFERENCES orders(id) ON DELETE CASCADE,
+
+    user_id INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+
+    gateway VARCHAR(20) NOT NULL,       -- RAZORPAY
+    gateway_order_id VARCHAR(100) NOT NULL,
+
+    amount INT NOT NULL,
+    currency VARCHAR(10) NOT NULL,
+
+    status VARCHAR(30) NOT NULL,        -- CREATED, ATTEMPTED, PAID, FAILED
+
+    created_at TIMESTAMP DEFAULT NOW(),
+    updated_at TIMESTAMP DEFAULT NOW(),
+
+    UNIQUE(gateway, gateway_order_id)
+);
+
+CREATE TABLE IF NOT EXISTS payments (
+    id BIGSERIAL PRIMARY KEY,
+
+    order_id BIGINT NOT NULL,
+    payment_order_id BIGINT NOT NULL,
+
+    gateway VARCHAR(20) NOT NULL,          -- RAZORPAY
+    gateway_payment_id VARCHAR(100) NOT NULL,
+
+    amount INT NOT NULL,
+    currency VARCHAR(10) NOT NULL,
+
+    method VARCHAR(30),                    -- card, upi, netbanking
+    status VARCHAR(30) NOT NULL,           -- authorized, captured, failed
+
+    captured BOOLEAN DEFAULT FALSE,
+
+    error_code VARCHAR(50),
+    error_description TEXT,
+
+    created_at TIMESTAMP DEFAULT NOW(),
+
+    UNIQUE(gateway, gateway_payment_id)
+);
+
+CREATE TABLE IF NOT EXISTS payment_webhook_events (
+    id BIGSERIAL PRIMARY KEY,
+
+    gateway VARCHAR(20) NOT NULL,
+    event_id VARCHAR(100) NOT NULL,
+    event_type VARCHAR(100) NOT NULL,
+
+    payload JSONB NOT NULL,
+
+    processed BOOLEAN DEFAULT FALSE,
+    received_at TIMESTAMP DEFAULT NOW(),
+
+    UNIQUE(gateway, event_id)
+);
+
+
+
+
+
 
