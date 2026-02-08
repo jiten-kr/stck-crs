@@ -1,13 +1,16 @@
 "use client";
 
 import { useCallback, useEffect, useState, useRef } from "react";
+import { useSelector } from "react-redux";
 import { Button } from "@/components/ui/button";
+import Script from 'next/script';
 import { Card, CardContent } from "@/components/ui/card";
 import { ReviewsSection } from "@/components/ui/reviews-section";
 import WriteReview from "@/components/reviews/write-review";
-import { LEARNERS_COUNT } from "@/lib/constants";
+import { LEARNERS_COUNT, PLATFORM_NAME } from "@/lib/constants";
 import { fetchMoreReviews } from "@/lib/utils";
 import type { Review } from "@/lib/types";
+import { selectAuthUser, selectIsAuthenticated } from "@/app/auth/authSelector";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import {
@@ -37,13 +40,110 @@ export default function LiveTradingClass({
     const router = useRouter();
     const [showStickyCta, setShowStickyCta] = useState(false);
     const heroCtaRef = useRef<HTMLButtonElement>(null);
+    const user = useSelector(selectAuthUser);
+    const isAuthenticated = useSelector(selectIsAuthenticated);
     const reviews = initialReviews;
     const totalReviews = initialTotalReviews;
     const reviewStats = initialReviewStats;
     const isLoadingReviews = false;
 
-    const handleClick = () => {
-        alert("Button clicked");
+    const createOrderId = async () => {
+        try {
+            if (!isAuthenticated || !user?.id) {
+                console.warn("[LIVE_TRADING_CLASS] User not authenticated");
+                router.push("/auth/signin");
+                return null;
+            }
+
+            const response = await fetch('/api/create-order', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    amount: 100,
+                    itemId: 2,
+                    userId: user.id,
+                }),
+            });
+
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+
+            const data = await response.json();
+            return data.orderId;
+        } catch (error) {
+            console.error('There was a problem with your fetch operation:', error);
+            return null;
+        }
+    };
+
+    const handleClick = async () => {
+        const orderId = await createOrderId();
+        if (!orderId) {
+            console.error("[LIVE_TRADING_CLASS] Missing order id");
+            return;
+        }
+
+        if (!(window as any).Razorpay) {
+            console.error("[LIVE_TRADING_CLASS] Razorpay script not loaded");
+            return;
+        }
+
+        const key = process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID;
+        if (!key) {
+            console.error("[LIVE_TRADING_CLASS] Missing Razorpay key");
+            return;
+        }
+
+        const options = {
+            key,
+            one_click_checkout: true,
+            name: PLATFORM_NAME,
+            order_id: orderId,
+            show_coupons: false,
+            handler: function (response: {
+                razorpay_payment_id: string;
+                razorpay_order_id: string;
+                razorpay_signature: string;
+            }) {
+                console.log(response.razorpay_payment_id);
+                console.log(response.razorpay_order_id);
+                console.log(response.razorpay_signature);
+            },
+            prefill: {
+                name: user?.name || "",
+                email: user?.email || "",
+                contact: user?.phone || "",
+            },
+            notes: {
+                address: "ABC Office",
+            },
+        };
+        const rzp1 = new (window as any).Razorpay(options);
+        rzp1.on("payment.failed", function (response: {
+            error: {
+                code: string;
+                description: string;
+                source: string;
+                step: string;
+                reason: string;
+                metadata: {
+                    order_id: string;
+                    payment_id: string;
+                };
+            };
+        }) {
+            console.error(response.error.code);
+            console.error(response.error.description);
+            console.error(response.error.source);
+            console.error(response.error.step);
+            console.error(response.error.reason);
+            console.error(response.error.metadata.order_id);
+            console.error(response.error.metadata.payment_id);
+        });
+        rzp1.open();
     };
 
     /**
@@ -80,6 +180,10 @@ export default function LiveTradingClass({
 
     return (
         <div className="flex flex-col min-h-screen">
+            <Script
+                id="razorpay-checkout-js"
+                src="https://checkout.razorpay.com/v1/checkout.js"
+            />
             {/* Hero Section */}
             <section className="relative w-full bg-gradient-to-br from-blue-50 via-white to-blue-50 py-8 md:py-16 lg:py-24">
                 <div className="container mx-auto px-4 sm:px-6 lg:px-8">
