@@ -24,6 +24,56 @@ import {
     Star,
 } from "lucide-react";
 
+type RazorpaySuccessResponse = {
+    razorpay_payment_id: string;
+    razorpay_order_id: string;
+    razorpay_signature: string;
+};
+
+type RazorpayFailureResponse = {
+    error: {
+        code: string;
+        description: string;
+        source: string;
+        step: string;
+        reason: string;
+        metadata: {
+            order_id: string;
+            payment_id: string;
+        };
+    };
+};
+
+type RazorpayOptions = {
+    key: string;
+    one_click_checkout?: boolean;
+    name: string;
+    order_id: string;
+    show_coupons?: boolean;
+    handler: (response: RazorpaySuccessResponse) => void;
+    prefill?: {
+        name?: string;
+        email?: string;
+        contact?: string;
+    };
+    notes?: {
+        address?: string;
+    };
+};
+
+type RazorpayInstance = {
+    on: (event: "payment.failed", handler: (response: RazorpayFailureResponse) => void) => void;
+    open: () => void;
+};
+
+type RazorpayConstructor = new (options: RazorpayOptions) => RazorpayInstance;
+
+declare global {
+    interface Window {
+        Razorpay?: RazorpayConstructor;
+    }
+}
+
 type ReviewStats = { totalReviews: number; averageRating: number } | null;
 
 type LiveTradingClassProps = {
@@ -86,7 +136,7 @@ export default function LiveTradingClass({
             return;
         }
 
-        if (!(window as any).Razorpay) {
+        if (!window.Razorpay) {
             console.error("[LIVE_TRADING_CLASS] Razorpay script not loaded");
             return;
         }
@@ -97,17 +147,14 @@ export default function LiveTradingClass({
             return;
         }
 
-        const options = {
+        const options: RazorpayOptions = {
             key,
             one_click_checkout: true,
             name: PLATFORM_NAME,
             order_id: orderId,
             show_coupons: false,
-            handler: function (response: {
-                razorpay_payment_id: string;
-                razorpay_order_id: string;
-                razorpay_signature: string;
-            }) {
+            handler: function (response) {
+                console.log("[LIVE_TRADING_CLASS] Payment successful", response);
                 console.log(response.razorpay_payment_id);
                 console.log(response.razorpay_order_id);
                 console.log(response.razorpay_signature);
@@ -121,20 +168,9 @@ export default function LiveTradingClass({
                 address: "ABC Office",
             },
         };
-        const rzp1 = new (window as any).Razorpay(options);
-        rzp1.on("payment.failed", function (response: {
-            error: {
-                code: string;
-                description: string;
-                source: string;
-                step: string;
-                reason: string;
-                metadata: {
-                    order_id: string;
-                    payment_id: string;
-                };
-            };
-        }) {
+        const rzp1 = new window.Razorpay(options);
+        rzp1.on("payment.failed", function (response) {
+            console.error("[LIVE_TRADING_CLASS] Payment failed", response);
             console.error(response.error.code);
             console.error(response.error.description);
             console.error(response.error.source);
