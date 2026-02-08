@@ -37,7 +37,9 @@ function verifySignature(rawBody: string, signature: string, secret: string) {
 }
 
 export async function POST(request: NextRequest) {
-  console.log("[RAZORPAY_WEBHOOK] Webhook received");
+  let eventId: string | undefined;
+
+  console.log("[RAZORPAY_WEBHOOK] Webhook received", { eventId });
 
   const signature =
     request.headers.get("x-razorpay-signature") ||
@@ -45,24 +47,28 @@ export async function POST(request: NextRequest) {
   const secret = process.env.RAZORPAY_WEBHOOK_SECRET;
 
   if (!secret) {
-    console.error("[RAZORPAY_WEBHOOK] Missing secret");
+    console.error("[RAZORPAY_WEBHOOK] Missing secret", { eventId });
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
   if (!signature) {
-    console.error("[RAZORPAY_WEBHOOK] Missing signature");
+    console.error("[RAZORPAY_WEBHOOK] Missing signature", { eventId });
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
   let rawBody = "";
   try {
-    console.log("[RAZORPAY_WEBHOOK] Reading raw body");
+    console.log("[RAZORPAY_WEBHOOK] Reading raw body", { eventId });
     rawBody = await request.text();
     console.log("[RAZORPAY_WEBHOOK] Raw body read successfully", {
+      eventId,
       length: rawBody.length,
     });
   } catch (error) {
-    console.error("[RAZORPAY_WEBHOOK] Failed to read raw body", error);
+    console.error("[RAZORPAY_WEBHOOK] Failed to read raw body", {
+      eventId,
+      error,
+    });
     return NextResponse.json({ error: "Invalid payload" }, { status: 400 });
   }
 
@@ -76,17 +82,24 @@ export async function POST(request: NextRequest) {
   try {
     console.log(
       "[RAZORPAY_WEBHOOK] Verifying signature successful, parsing payload",
+      { eventId },
     );
     payload = JSON.parse(rawBody) as RazorpayWebhookPayload;
-    console.log("[RAZORPAY_WEBHOOK] Parsed JSON payload", payload);
+    console.log("[RAZORPAY_WEBHOOK] Parsed JSON payload", {
+      eventId,
+      payload,
+    });
   } catch (error) {
-    console.error("[RAZORPAY_WEBHOOK] Invalid JSON payload", error);
+    console.error("[RAZORPAY_WEBHOOK] Invalid JSON payload", {
+      eventId,
+      error,
+    });
     return NextResponse.json({ error: "Invalid payload" }, { status: 400 });
   }
 
   const eventType = payload.event;
   const paymentEntity = payload.payload?.payment?.entity;
-  const eventId = payload.id
+  eventId = payload.id
     ? payload.id
     : eventType?.startsWith("payment.") && paymentEntity?.id
       ? `${eventType}:${paymentEntity.id}`
@@ -120,7 +133,10 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ ok: true }, { status: 200 });
     }
   } catch (error) {
-    console.error("[RAZORPAY_WEBHOOK] Failed to store event", error);
+    console.error("[RAZORPAY_WEBHOOK] Failed to store event", {
+      eventId,
+      error,
+    });
     return NextResponse.json(
       { error: "Failed to store event" },
       { status: 500 },
@@ -128,7 +144,7 @@ export async function POST(request: NextRequest) {
   }
 
   if (eventType !== "payment.captured" && eventType !== "payment.failed") {
-    console.log("[RAZORPAY_WEBHOOK] Ignoring event", { eventType });
+    console.log("[RAZORPAY_WEBHOOK] Ignoring event", { eventId, eventType });
     return NextResponse.json({ ok: true }, { status: 200 });
   }
 
@@ -151,6 +167,7 @@ export async function POST(request: NextRequest) {
 
   if (eventType === "payment.failed") {
     console.log("[RAZORPAY_WEBHOOK] Payment failed", {
+      eventId,
       gatewayOrderId,
       gatewayPaymentId,
       amount,
@@ -167,16 +184,17 @@ export async function POST(request: NextRequest) {
   }
 
   console.log("[RAZORPAY_WEBHOOK] Processing captured payment", {
+    eventId,
     gatewayOrderId,
     gatewayPaymentId,
   });
 
   const client = await pool.connect();
   try {
-    console.log("[RAZORPAY_WEBHOOK] Starting transaction");
+    console.log("[RAZORPAY_WEBHOOK] Starting transaction", { eventId });
     await client.query("BEGIN");
 
-    console.log("[RAZORPAY_WEBHOOK] Fetching payment order");
+    console.log("[RAZORPAY_WEBHOOK] Fetching payment order", { eventId });
     const paymentOrderResult = await client.query<{
       id: number;
       order_id: number;
@@ -191,26 +209,28 @@ export async function POST(request: NextRequest) {
     const paymentOrder = paymentOrderResult.rows[0];
     if (!paymentOrder) {
       console.error("[RAZORPAY_WEBHOOK] Payment order not found", {
+        eventId,
         gatewayOrderId,
       });
       await client.query("ROLLBACK");
       return NextResponse.json({ ok: true }, { status: 200 });
     }
 
-    console.log("[RAZORPAY_WEBHOOK] Inserting payment record");
+    console.log("[RAZORPAY_WEBHOOK] Inserting payment record", { eventId });
     await client.query(
       `INSERT INTO payments (
-				order_id,
-				payment_order_id,
-				gateway,
-				gateway_payment_id,
-				amount,
-				currency,
-				method,
-				status
-			)
-			VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
-			ON CONFLICT (gateway, gateway_payment_id) DO NOTHING`,
+        order_id,
+        payment_order_id,
+        gateway,
+        gateway_payment_id,
+        amount,
+        currency,
+        method,
+        status,
+        captured
+      )
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+      ON CONFLICT (gateway, gateway_payment_id) DO NOTHING`,
       [
         paymentOrder.order_id,
         paymentOrder.id,
@@ -220,10 +240,13 @@ export async function POST(request: NextRequest) {
         currency,
         method,
         status,
+        true,
       ],
     );
 
-    console.log("[RAZORPAY_WEBHOOK] Updating payment_orders status");
+    console.log("[RAZORPAY_WEBHOOK] Updating payment_orders status", {
+      eventId,
+    });
     await client.query(
       `UPDATE payment_orders
 			 SET status = $1, updated_at = NOW()
@@ -231,7 +254,7 @@ export async function POST(request: NextRequest) {
       ["PAID", paymentOrder.id],
     );
 
-    console.log("[RAZORPAY_WEBHOOK] Updating orders status");
+    console.log("[RAZORPAY_WEBHOOK] Updating orders status", { eventId });
     await client.query(
       `UPDATE orders
 			 SET status = $1, updated_at = NOW()
@@ -240,9 +263,9 @@ export async function POST(request: NextRequest) {
     );
 
     await client.query("COMMIT");
-    console.log("[RAZORPAY_WEBHOOK] Transaction committed");
+    console.log("[RAZORPAY_WEBHOOK] Transaction committed", { eventId });
   } catch (error) {
-    console.error("[RAZORPAY_WEBHOOK] Transaction failed", error);
+    console.error("[RAZORPAY_WEBHOOK] Transaction failed", { eventId, error });
     await client.query("ROLLBACK");
   } finally {
     client.release();
