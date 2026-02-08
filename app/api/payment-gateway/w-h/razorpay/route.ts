@@ -217,10 +217,6 @@ export async function POST(request: NextRequest) {
         eventId,
         error,
       });
-      return NextResponse.json(
-        { error: "Failed to process event" },
-        { status: 500 },
-      );
     }
     return NextResponse.json({ ok: true }, { status: 200 });
   }
