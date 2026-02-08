@@ -117,14 +117,14 @@ export async function POST(request: NextRequest) {
   try {
     const insertEventResult = await pool.query<{ id: number }>(
       `INSERT INTO payment_webhook_events (
-				gateway,
-				event_id,
-				event_type,
-				payload
-			)
-			VALUES ($1, $2, $3, $4::jsonb)
-			ON CONFLICT (gateway, event_id) DO NOTHING
-			RETURNING id`,
+        gateway,
+        event_id,
+        event_type,
+        payload
+      )
+      VALUES ($1, $2, $3, $4::jsonb)
+      ON CONFLICT (gateway, event_id) DO NOTHING
+      RETURNING id`,
       ["RAZORPAY", eventId, eventType, rawBody],
     );
 
@@ -145,6 +145,20 @@ export async function POST(request: NextRequest) {
 
   if (eventType !== "payment.captured" && eventType !== "payment.failed") {
     console.log("[RAZORPAY_WEBHOOK] Ignoring event", { eventId, eventType });
+    try {
+      console.log("[RAZORPAY_WEBHOOK] Marking event processed", { eventId });
+      await pool.query(
+        `UPDATE payment_webhook_events
+         SET processed = true
+         WHERE gateway = $1 AND event_id = $2`,
+        ["RAZORPAY", eventId],
+      );
+    } catch (error) {
+      console.error("[RAZORPAY_WEBHOOK] Failed to mark event processed", {
+        eventId,
+        error,
+      });
+    }
     return NextResponse.json({ ok: true }, { status: 200 });
   }
 
@@ -180,6 +194,20 @@ export async function POST(request: NextRequest) {
       errorStep,
       errorReason,
     });
+    try {
+      console.log("[RAZORPAY_WEBHOOK] Marking event processed", { eventId });
+      await pool.query(
+        `UPDATE payment_webhook_events
+         SET processed = true
+         WHERE gateway = $1 AND event_id = $2`,
+        ["RAZORPAY", eventId],
+      );
+    } catch (error) {
+      console.error("[RAZORPAY_WEBHOOK] Failed to mark event processed", {
+        eventId,
+        error,
+      });
+    }
     return NextResponse.json({ ok: true }, { status: 200 });
   }
 
@@ -264,6 +292,14 @@ export async function POST(request: NextRequest) {
 
     await client.query("COMMIT");
     console.log("[RAZORPAY_WEBHOOK] Transaction committed", { eventId });
+
+    console.log("[RAZORPAY_WEBHOOK] Marking event processed", { eventId });
+    await client.query(
+      `UPDATE payment_webhook_events
+       SET processed = true
+       WHERE gateway = $1 AND event_id = $2`,
+      ["RAZORPAY", eventId],
+    );
   } catch (error) {
     console.error("[RAZORPAY_WEBHOOK] Transaction failed", { eventId, error });
     await client.query("ROLLBACK");
