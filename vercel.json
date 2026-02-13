@@ -3,5 +3,11 @@
   "buildCommand": "yarn build",
   "devCommand": "yarn dev",
   "installCommand": "yarn install",
-  "outputDirectory": ".next"
+  "outputDirectory": ".next",
+  "crons": [
+    {
+      "path": "/api/cron/reprocess-razorpay-webhooks",
+      "schedule": "0 15 * * *"
+    }
+  ]
 }
