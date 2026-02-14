@@ -9,10 +9,11 @@ import { ReviewsSection } from "@/components/ui/reviews-section";
 import WriteReview from "@/components/reviews/write-review";
 import { LEARNERS_COUNT, PLATFORM_NAME } from "@/lib/constants";
 import { fetchMoreReviews } from "@/lib/utils";
-import type { Review } from "@/lib/types";
+import type { Review, User } from "@/lib/types";
 import { selectAuthUser, selectIsAuthenticated } from "@/app/auth/authSelector";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
+import ContactAuthModal from "@/components/auth/ContactAuthModal";
 import {
     TrendingUp,
     BarChart3,
@@ -88,6 +89,7 @@ export default function LiveTradingClass({
     initialReviewStats,
 }: LiveTradingClassProps) {
     const router = useRouter();
+    const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
     const [showStickyCta, setShowStickyCta] = useState(false);
     const heroCtaRef = useRef<HTMLButtonElement>(null);
     const user = useSelector(selectAuthUser);
@@ -97,7 +99,7 @@ export default function LiveTradingClass({
     const reviewStats = initialReviewStats;
     const isLoadingReviews = false;
 
-    const createOrderId = async () => {
+    const createOrderId = async (userId: number) => {
         try {
             const response = await fetch('/api/create-order', {
                 method: 'POST',
@@ -105,9 +107,9 @@ export default function LiveTradingClass({
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({
-                    amount: 100,
+                    amount: 1 * 100, // Amount in paise 
                     itemId: 2,
-                    userId: user.id,
+                    userId,
                 }),
             });
 
@@ -123,14 +125,14 @@ export default function LiveTradingClass({
         }
     };
 
-    const handleClick = async () => {
-        if (!isAuthenticated || !user?.id) {
-            console.warn("[LIVE_TRADING_CLASS] User not authenticated");
-            router.push("/auth/signin");
-            return null;
+    const startCheckout = async (checkoutUser?: User) => {
+        const activeUser = checkoutUser ?? user;
+        if (!activeUser?.id) {
+            console.warn("[LIVE_TRADING_CLASS] Missing user for checkout");
+            return;
         }
 
-        const orderId = await createOrderId();
+        const orderId = await createOrderId(activeUser.id);
         if (!orderId) {
             console.error("[LIVE_TRADING_CLASS] Missing order id");
             return;
@@ -160,9 +162,9 @@ export default function LiveTradingClass({
                 console.log(response.razorpay_signature);
             },
             prefill: {
-                name: user?.name || "",
-                email: user?.email || "",
-                contact: user?.phone || "",
+                name: activeUser?.name || "",
+                email: activeUser?.email || "",
+                contact: activeUser?.phone || "",
             },
             notes: {
                 address: "ABC Office",
@@ -180,6 +182,16 @@ export default function LiveTradingClass({
             console.error(response.error.metadata.payment_id);
         });
         rzp1.open();
+    };
+
+    const handleClick = async () => {
+        if (!isAuthenticated || !user?.id) {
+            console.warn("[LIVE_TRADING_CLASS] User not authenticated");
+            setIsAuthModalOpen(true);
+            return;
+        }
+
+        await startCheckout(user);
     };
 
     /**
@@ -216,6 +228,17 @@ export default function LiveTradingClass({
 
     return (
         <div className="flex flex-col min-h-screen">
+            <ContactAuthModal
+                open={isAuthModalOpen}
+                onOpenChange={setIsAuthModalOpen}
+                onUserResolved={async (authenticatedUser) => {
+                    setIsAuthModalOpen(false);
+                    await startCheckout(authenticatedUser);
+                }}
+                title="Join to continue"
+                description="Enter your details to proceed with Live Trading Class enrollment."
+                submitLabel="Continue"
+            />
             <Script
                 id="razorpay-checkout-js"
                 src="https://checkout.razorpay.com/v1/checkout.js"
