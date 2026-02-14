@@ -111,7 +111,10 @@ export async function POST(request: NextRequest) {
     }
 
     console.log("[CREATE_ORDER] Responding with order id");
-    return NextResponse.json({ orderId: order.id }, { status: 200 });
+    return NextResponse.json(
+      { orderId: order.id, bookingId: businessOrderId },
+      { status: 200 },
+    );
   } catch (error) {
     (console.error("[CREATE_ORDER] Razorpay error:", error), options);
     return NextResponse.json(

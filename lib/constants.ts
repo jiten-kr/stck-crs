@@ -11,3 +11,4 @@ export const GENERAL_SUPPORT_EMAIL = "mayankfinhub@gmail.com";
 export const LEARNERS_COUNT = "2,000+";
 export const LIVE_TRADING_CLASS_ITEM_ID = 2;
 export const LIVE_TRADING_CLASS_PRICE_INR = 1;
+export const LIVE_TRADING_CLASS_NAME = "Live Trading Class";

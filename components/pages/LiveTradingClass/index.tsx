@@ -10,6 +10,7 @@ import WriteReview from "@/components/reviews/write-review";
 import {
     LEARNERS_COUNT,
     LIVE_TRADING_CLASS_ITEM_ID,
+    LIVE_TRADING_CLASS_NAME,
     LIVE_TRADING_CLASS_PRICE_INR,
     PLATFORM_NAME,
 } from "@/lib/constants";
@@ -124,7 +125,10 @@ export default function LiveTradingClass({
             }
 
             const data = await response.json();
-            return data.orderId;
+            return {
+                orderId: data.orderId as string | undefined,
+                bookingId: data.bookingId as number | undefined,
+            };
         } catch (error) {
             console.error('There was a problem with your fetch operation:', error);
             return null;
@@ -138,8 +142,8 @@ export default function LiveTradingClass({
             return;
         }
 
-        const orderId = await createOrderId(activeUser.id);
-        if (!orderId) {
+        const createdOrder = await createOrderId(activeUser.id);
+        if (!createdOrder?.orderId) {
             console.error("[LIVE_TRADING_CLASS] Missing order id");
             return;
         }
@@ -159,13 +163,30 @@ export default function LiveTradingClass({
             key,
             one_click_checkout: true,
             name: PLATFORM_NAME,
-            order_id: orderId,
+            order_id: createdOrder.orderId,
             show_coupons: false,
             handler: function (response) {
                 console.log("[LIVE_TRADING_CLASS] Payment successful", response);
                 console.log(response.razorpay_payment_id);
                 console.log(response.razorpay_order_id);
                 console.log(response.razorpay_signature);
+
+                const bookingId = createdOrder.bookingId
+                    ? createdOrder.bookingId.toString()
+                    : response.razorpay_order_id;
+                const params = new URLSearchParams({
+                    userName: activeUser?.name || "",
+                    email: activeUser?.email || "",
+                    phone: activeUser?.phone || "",
+                    bookingId,
+                    paymentId: response.razorpay_payment_id,
+                    orderId: response.razorpay_order_id,
+                    amount: LIVE_TRADING_CLASS_PRICE_INR.toString(),
+                    currency: "INR",
+                    className: LIVE_TRADING_CLASS_NAME,
+                    paymentDate: new Date().toISOString(),
+                });
+                router.push(`/payment-success?${params.toString()}`);
             },
             prefill: {
                 name: activeUser?.name || "",
