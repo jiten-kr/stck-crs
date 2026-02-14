@@ -738,7 +738,7 @@ export default function LiveTradingClass({
                                     onClick={handleClick}
                                     className="w-full bg-blue-600 hover:bg-blue-700 text-white text-base md:text-lg px-6 py-5 md:py-6 rounded-lg font-semibold"
                                 >
-                                    Join Live Class for ₹49
+                                    Join Live Class for ₹{LIVE_TRADING_CLASS_PRICE_INR}
                                 </Button>
                             </div>
                         </div>
