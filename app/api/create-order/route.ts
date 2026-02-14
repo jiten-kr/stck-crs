@@ -36,10 +36,7 @@ export async function POST(request: NextRequest) {
 
     if (!Number.isFinite(resolvedAmount)) {
       console.warn("[CREATE_ORDER] Unsupported item", { itemId });
-      return NextResponse.json(
-        { error: "Invalid item" },
-        { status: 400 },
-      );
+      return NextResponse.json({ error: "Invalid item" }, { status: 400 });
     }
 
     console.log("[CREATE_ORDER] Creating DB order");
