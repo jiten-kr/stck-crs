@@ -6,14 +6,18 @@ import { ShoppingCart, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useCart } from "@/components/cart-provider";
 import { Badge } from "@/components/ui/badge";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "@/lib/store";
 import { PLATFORM_NAME } from "@/lib/constants";
+import { logout } from "@/app/auth/authSlice";
+import { useRouter } from "next/navigation";
 
 export default function Header() {
   const { user, isAuthenticated } = useSelector(
     (state: RootState) => state.auth
   );
+  const dispatch = useDispatch();
+  const router = useRouter();
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const userMenuRef = useRef<HTMLDivElement | null>(null);
   const { itemCount } = useCart();
@@ -36,7 +40,12 @@ export default function Header() {
     };
   }, [isUserMenuOpen]);
 
-  console.log("isLoggedIn jimmy", isAuthenticated, user);
+  const handleLogout = () => {
+    dispatch(logout());
+    localStorage.removeItem("token");
+    setIsUserMenuOpen(false);
+    router.push("/auth/signin");
+  };
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background">
@@ -114,13 +123,13 @@ export default function Header() {
                     Order History
                   </Link> */}
                   {isAuthenticated && (
-                    <Link
-                      href="/auth/signin"
-                      className="block px-4 py-2 text-sm hover:bg-muted"
-                      onClick={() => setIsUserMenuOpen(false)}
+                    <button
+                      type="button"
+                      className="block w-full px-4 py-2 text-left text-sm hover:bg-muted"
+                      onClick={handleLogout}
                     >
                       Logout
-                    </Link>
+                    </button>
                   )}
                 </div>
               </div>
