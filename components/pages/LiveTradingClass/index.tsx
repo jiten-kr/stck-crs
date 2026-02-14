@@ -99,12 +99,6 @@ export default function LiveTradingClass({
 
     const createOrderId = async () => {
         try {
-            if (!isAuthenticated || !user?.id) {
-                console.warn("[LIVE_TRADING_CLASS] User not authenticated");
-                router.push("/auth/signin");
-                return null;
-            }
-
             const response = await fetch('/api/create-order', {
                 method: 'POST',
                 headers: {
@@ -130,6 +124,12 @@ export default function LiveTradingClass({
     };
 
     const handleClick = async () => {
+        if (!isAuthenticated || !user?.id) {
+            console.warn("[LIVE_TRADING_CLASS] User not authenticated");
+            router.push("/auth/signin");
+            return null;
+        }
+
         const orderId = await createOrderId();
         if (!orderId) {
             console.error("[LIVE_TRADING_CLASS] Missing order id");
