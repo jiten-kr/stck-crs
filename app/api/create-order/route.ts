@@ -1,6 +1,10 @@
 import Razorpay from "razorpay";
 import { NextRequest, NextResponse } from "next/server";
 import pool from "@/lib/db";
+import {
+  LIVE_TRADING_CLASS_ITEM_ID,
+  LIVE_TRADING_CLASS_PRICE_INR,
+} from "@/lib/constants";
 
 const razorpay = new Razorpay({
   key_id: process.env.RAZORPAY_KEY_ID!,
@@ -25,8 +29,25 @@ export async function POST(request: NextRequest) {
       hasItemId: Number.isFinite(itemId),
     });
 
+    const pricingByItemId: Record<number, number> = {
+      [LIVE_TRADING_CLASS_ITEM_ID]: LIVE_TRADING_CLASS_PRICE_INR * 100,
+    };
+    const resolvedAmount = pricingByItemId[itemId];
+
+    if (!Number.isFinite(resolvedAmount)) {
+      console.warn("[CREATE_ORDER] Unsupported item", { itemId });
+      return NextResponse.json(
+        { error: "Invalid item" },
+        { status: 400 },
+      );
+    }
+
     console.log("[CREATE_ORDER] Creating DB order");
-    const { orderId, err } = await createBusinessOrder(userId, amount, itemId);
+    const { orderId, err } = await createBusinessOrder(
+      userId,
+      resolvedAmount,
+      itemId,
+    );
 
     if (err) {
       console.error("[CREATE_ORDER] Database error:", err);
@@ -39,9 +60,9 @@ export async function POST(request: NextRequest) {
     console.log("[CREATE_ORDER] Building Razorpay options", { orderId });
     businessOrderId = orderId;
     requestUserId = userId;
-    requestAmount = amount;
+    requestAmount = resolvedAmount;
     var options = {
-      amount: amount,
+      amount: resolvedAmount,
       currency: "INR",
       receipt: orderId.toString() + "_" + userId.toString(),
     };

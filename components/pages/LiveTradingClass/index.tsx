@@ -7,7 +7,12 @@ import Script from 'next/script';
 import { Card, CardContent } from "@/components/ui/card";
 import { ReviewsSection } from "@/components/ui/reviews-section";
 import WriteReview from "@/components/reviews/write-review";
-import { LEARNERS_COUNT, PLATFORM_NAME } from "@/lib/constants";
+import {
+    LEARNERS_COUNT,
+    LIVE_TRADING_CLASS_ITEM_ID,
+    LIVE_TRADING_CLASS_PRICE_INR,
+    PLATFORM_NAME,
+} from "@/lib/constants";
 import { fetchMoreReviews } from "@/lib/utils";
 import type { Review, User } from "@/lib/types";
 import { selectAuthUser, selectIsAuthenticated } from "@/app/auth/authSelector";
@@ -98,6 +103,7 @@ export default function LiveTradingClass({
     const totalReviews = initialTotalReviews;
     const reviewStats = initialReviewStats;
     const isLoadingReviews = false;
+    const classPriceInPaise = LIVE_TRADING_CLASS_PRICE_INR * 100;
 
     const createOrderId = async (userId: number) => {
         try {
@@ -107,8 +113,8 @@ export default function LiveTradingClass({
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({
-                    amount: 1 * 100, // Amount in paise 
-                    itemId: 2,
+                    amount: classPriceInPaise,
+                    itemId: LIVE_TRADING_CLASS_ITEM_ID,
                     userId,
                 }),
             });
@@ -341,7 +347,7 @@ export default function LiveTradingClass({
                                     onClick={handleClick}
                                     className="w-full md:w-auto bg-blue-600 hover:bg-blue-700 text-white text-base md:text-lg px-8 py-6 md:py-7 rounded-lg font-semibold"
                                 >
-                                    Join Live Class for ₹49
+                                    Join Live Class for ₹{LIVE_TRADING_CLASS_PRICE_INR}
                                 </Button>
 
                                 <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs md:text-sm text-gray-600">
