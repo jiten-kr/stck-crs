@@ -5,7 +5,11 @@ import { CheckCircle2, AlertTriangle, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { jsPDF } from "jspdf";
-import { PLATFORM_NAME } from "@/lib/constants";
+import {
+    PLATFORM_NAME,
+    PLATFORM_SUPPORT_EMAIL,
+    PLATFORM_SUPPORT_PHONE,
+} from "@/lib/constants";
 
 export type PaymentSuccessData = {
     userName: string;
@@ -227,10 +231,16 @@ export default function PaymentSuccessPage({
                         Payment details unavailable
                     </h1>
                     <p className="mt-2 text-sm text-slate-600">{error}</p>
-                    <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:justify-center">
-                        <Button asChild className="w-full sm:w-auto">
-                            <Link href="/dashboard">Go to Dashboard</Link>
-                        </Button>
+                    <div className="mt-4 rounded-xl border border-emerald-100 bg-emerald-50/60 p-4 text-left text-sm text-slate-700">
+                        <p className="font-medium text-slate-900">
+                            We are here to help.
+                        </p>
+                        <p className="mt-2">
+                            Contact us at {PLATFORM_SUPPORT_EMAIL} or {PLATFORM_SUPPORT_PHONE}.
+                        </p>
+                        <p className="mt-2 text-slate-600">
+                            Your payment is secure. Our team will verify and get you enrolled quickly.
+                        </p>
                     </div>
                 </div>
             </main>
@@ -248,10 +258,16 @@ export default function PaymentSuccessPage({
                     <p className="mt-2 text-sm text-slate-600">
                         Please check your confirmation email or contact support if you need help.
                     </p>
-                    <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:justify-center">
-                        <Button asChild className="w-full sm:w-auto">
-                            <Link href="/dashboard">Go to Dashboard</Link>
-                        </Button>
+                    <div className="mt-4 rounded-xl border border-emerald-100 bg-emerald-50/60 p-4 text-left text-sm text-slate-700">
+                        <p className="font-medium text-slate-900">
+                            Your payment is safe.
+                        </p>
+                        <p className="mt-2">
+                            Reach us at {PLATFORM_SUPPORT_EMAIL} or {PLATFORM_SUPPORT_PHONE}.
+                        </p>
+                        <p className="mt-2 text-slate-600">
+                            We will verify your payment and confirm your enrollment shortly.
+                        </p>
                     </div>
                 </div>
             </main>
@@ -308,9 +324,6 @@ export default function PaymentSuccessPage({
                             <p className="text-sm text-slate-600">Attendee: {data.userName}</p>
                         </div>
                         <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-                            <Button asChild className="w-full sm:w-auto">
-                                <Link href="/dashboard">Go to Dashboard</Link>
-                            </Button>
                             <Button
                                 variant="outline"
                                 className="w-full sm:w-auto"
