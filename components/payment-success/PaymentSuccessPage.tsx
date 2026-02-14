@@ -4,6 +4,8 @@ import type { ReactNode } from "react";
 import { CheckCircle2, AlertTriangle, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import { jsPDF } from "jspdf";
+import { PLATFORM_NAME } from "@/lib/constants";
 
 export type PaymentSuccessData = {
     userName: string;
@@ -36,6 +38,19 @@ const formatAmount = (amount: number, currency: string) => {
     }
 };
 
+const formatAmountForPdf = (amount: number, currency: string) => {
+    try {
+        return new Intl.NumberFormat("en-IN", {
+            style: "currency",
+            currency,
+            currencyDisplay: "code",
+            maximumFractionDigits: 2,
+        }).format(amount);
+    } catch {
+        return `${amount.toFixed(2)} ${currency}`.trim();
+    }
+};
+
 const formatDate = (value: string) => {
     const parsed = new Date(value);
     if (Number.isNaN(parsed.getTime())) {
@@ -45,6 +60,105 @@ const formatDate = (value: string) => {
         dateStyle: "medium",
         timeStyle: "short",
     });
+};
+
+const buildReceiptPdf = (data: PaymentSuccessData) => {
+    const doc = new jsPDF({
+        unit: "pt",
+        format: "a4",
+    });
+
+    const pageWidth = doc.internal.pageSize.getWidth();
+    const margin = 48;
+    const lineHeight = 18;
+    let cursorY = 72;
+
+    doc.setFillColor(243, 248, 255);
+    doc.rect(margin, cursorY - 32, pageWidth - margin * 2, 80, "F");
+
+    doc.setTextColor(13, 40, 76);
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(20);
+    doc.text("Payment Receipt", margin + 16, cursorY);
+
+    doc.setFontSize(12);
+    doc.setFont("helvetica", "normal");
+    doc.text(PLATFORM_NAME, margin + 16, cursorY + 20);
+
+    cursorY += 80;
+    doc.setDrawColor(226, 232, 240);
+    doc.line(margin, cursorY, pageWidth - margin, cursorY);
+    cursorY += 28;
+
+    const leftColX = margin;
+    const rightColX = pageWidth / 2;
+
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(13);
+    doc.setTextColor(15, 23, 42);
+    doc.text("Enrollment Details", leftColX, cursorY);
+
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(11);
+    doc.setTextColor(71, 85, 105);
+    cursorY += 20;
+    doc.text(`Class: ${data.className}`, leftColX, cursorY);
+    cursorY += lineHeight;
+    doc.text(`Attendee: ${data.userName}`, leftColX, cursorY);
+    cursorY += lineHeight;
+    doc.text(`Email: ${data.email}`, leftColX, cursorY);
+    cursorY += lineHeight;
+    doc.text(`Phone: ${data.phone}`, leftColX, cursorY);
+
+    cursorY -= lineHeight * 3;
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(13);
+    doc.setTextColor(15, 23, 42);
+    doc.text("Payment Summary", rightColX, cursorY);
+
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(11);
+    doc.setTextColor(71, 85, 105);
+    cursorY += 20;
+    doc.text(
+        `Amount Paid: ${formatAmountForPdf(data.amount, data.currency)}`,
+        rightColX,
+        cursorY,
+    );
+    cursorY += lineHeight;
+    doc.text(`Payment Date: ${formatDate(data.paymentDate)}`, rightColX, cursorY);
+
+    cursorY += 36;
+    doc.setDrawColor(226, 232, 240);
+    doc.line(margin, cursorY, pageWidth - margin, cursorY);
+    cursorY += 24;
+
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(12);
+    doc.setTextColor(15, 23, 42);
+    doc.text("Booking IDs", margin, cursorY);
+    cursorY += 18;
+
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(11);
+    doc.setTextColor(71, 85, 105);
+    doc.text(`Booking ID: ${data.bookingId}`, margin, cursorY);
+    cursorY += lineHeight;
+    doc.text(`Payment ID: ${data.paymentId}`, margin, cursorY);
+    cursorY += lineHeight;
+    doc.text(`Order ID: ${data.orderId}`, margin, cursorY);
+
+    cursorY += 32;
+    doc.setFontSize(10);
+    doc.setTextColor(100, 116, 139);
+    doc.text(
+        "This receipt confirms your enrollment. A joining link will be shared 2 hours before the class.",
+        margin,
+        cursorY,
+        { maxWidth: pageWidth - margin * 2 },
+    );
+
+    return doc;
 };
 
 type SectionCardProps = {
@@ -85,6 +199,13 @@ export default function PaymentSuccessPage({
     error,
 }: PaymentSuccessPageProps) {
     const hasData = Boolean(data);
+
+    const handleDownloadReceipt = () => {
+        if (!data) return;
+
+        const doc = buildReceiptPdf(data);
+        doc.save(`receipt-${data.bookingId}.pdf`);
+    };
 
     if (isLoading) {
         return (
@@ -190,7 +311,11 @@ export default function PaymentSuccessPage({
                             <Button asChild className="w-full sm:w-auto">
                                 <Link href="/dashboard">Go to Dashboard</Link>
                             </Button>
-                            <Button variant="outline" className="w-full sm:w-auto">
+                            <Button
+                                variant="outline"
+                                className="w-full sm:w-auto"
+                                onClick={handleDownloadReceipt}
+                            >
                                 Download Receipt
                             </Button>
                         </div>
