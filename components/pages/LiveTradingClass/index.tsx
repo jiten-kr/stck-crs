@@ -20,6 +20,7 @@ import { selectAuthUser, selectIsAuthenticated } from "@/app/auth/authSelector";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import ContactAuthModal from "@/components/auth/ContactAuthModal";
+import { setPaymentSuccessData } from "@/lib/paymentSuccessStore";
 import {
     TrendingUp,
     BarChart3,
@@ -171,22 +172,32 @@ export default function LiveTradingClass({
                 console.log(response.razorpay_order_id);
                 console.log(response.razorpay_signature);
 
-                const bookingId = createdOrder.bookingId
-                    ? createdOrder.bookingId.toString()
-                    : response.razorpay_order_id;
-                const params = new URLSearchParams({
-                    userName: activeUser?.name || "",
-                    email: activeUser?.email || "",
-                    phone: activeUser?.phone || "",
-                    bookingId,
-                    paymentId: response.razorpay_payment_id,
-                    orderId: response.razorpay_order_id,
-                    amount: LIVE_TRADING_CLASS_PRICE_INR.toString(),
-                    currency: "INR",
-                    className: LIVE_TRADING_CLASS_NAME,
-                    paymentDate: new Date().toISOString(),
-                });
-                router.push(`/payment-success?${params.toString()}`);
+                (async () => {
+                    try {
+                        const { nextLiveClassDate, nextLiveClassTime } =
+                            getNextLiveClassSchedule();
+
+                        await setPaymentSuccessData({
+                            userName: activeUser?.name || "",
+                            email: activeUser?.email || "",
+                            phone: activeUser?.phone || "",
+                            bookingId: createdOrder.bookingId
+                                ? createdOrder.bookingId.toString()
+                                : response.razorpay_order_id,
+                            paymentId: response.razorpay_payment_id,
+                            orderId: response.razorpay_order_id,
+                            amount: LIVE_TRADING_CLASS_PRICE_INR,
+                            currency: "INR",
+                            nextLiveClassDate,
+                            nextLiveClassTime,
+                        });
+
+                        router.push("/payment-success");
+                    } catch (error) {
+                        console.error("[LIVE_TRADING_CLASS] Local storage error", error);
+                        router.push("/payment-failed");
+                    }
+                })();
             },
             prefill: {
                 name: activeUser?.name || "",
@@ -219,6 +230,28 @@ export default function LiveTradingClass({
         }
 
         await startCheckout(user);
+    };
+
+    const getNextLiveClassSchedule = () => {
+        const istOffsetMinutes = 330;
+        const now = new Date();
+        const istNow = new Date(now.getTime() + istOffsetMinutes * 60000);
+        const dayOfWeek = istNow.getDay();
+        let daysUntilSunday = (7 - dayOfWeek) % 7;
+
+        const targetIst = new Date(istNow);
+        targetIst.setDate(istNow.getDate() + daysUntilSunday);
+        targetIst.setHours(20, 0, 0, 0);
+
+        if (daysUntilSunday === 0 && istNow.getTime() >= targetIst.getTime()) {
+            targetIst.setDate(targetIst.getDate() + 7);
+        }
+
+        const targetUtc = new Date(targetIst.getTime() - istOffsetMinutes * 60000);
+        return {
+            nextLiveClassDate: targetUtc.toISOString(),
+            nextLiveClassTime: "8 PM IST",
+        };
     };
 
     /**

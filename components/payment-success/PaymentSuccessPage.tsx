@@ -1,28 +1,23 @@
 "use client";
 
 import type { ReactNode } from "react";
+import { useEffect, useState } from "react";
 import { CheckCircle2, AlertTriangle, Loader2 } from "lucide-react";
-import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { jsPDF } from "jspdf";
 import {
     PLATFORM_NAME,
+    LIVE_TRADING_CLASS_NAME,
     PLATFORM_SUPPORT_EMAIL,
     PLATFORM_SUPPORT_PHONE,
 } from "@/lib/constants";
+import {
+    clearPaymentSuccessData,
+    getPaymentSuccessData,
+    type PaymentSuccessStoredData,
+} from "@/lib/paymentSuccessStore";
 
-export type PaymentSuccessData = {
-    userName: string;
-    email: string;
-    phone: string;
-    bookingId: string;
-    paymentId: string;
-    orderId: string;
-    amount: number;
-    currency: string;
-    className: string;
-    paymentDate: string;
-};
+export type PaymentSuccessData = PaymentSuccessStoredData;
 
 type PaymentSuccessPageProps = {
     data?: PaymentSuccessData | null;
@@ -66,6 +61,20 @@ const formatDate = (value: string) => {
     });
 };
 
+const formatClassDate = (value: string) => {
+    const parsed = new Date(value);
+    if (Number.isNaN(parsed.getTime())) {
+        return value;
+    }
+    return new Intl.DateTimeFormat("en-IN", {
+        weekday: "long",
+        day: "numeric",
+        month: "short",
+        year: "numeric",
+        timeZone: "Asia/Kolkata",
+    }).format(parsed);
+};
+
 const buildReceiptPdf = (data: PaymentSuccessData) => {
     const doc = new jsPDF({
         unit: "pt",
@@ -106,7 +115,7 @@ const buildReceiptPdf = (data: PaymentSuccessData) => {
     doc.setFontSize(11);
     doc.setTextColor(71, 85, 105);
     cursorY += 20;
-    doc.text(`Class: ${data.className}`, leftColX, cursorY);
+    doc.text(`Class: ${LIVE_TRADING_CLASS_NAME}`, leftColX, cursorY);
     cursorY += lineHeight;
     doc.text(`Attendee: ${data.userName}`, leftColX, cursorY);
     cursorY += lineHeight;
@@ -130,7 +139,7 @@ const buildReceiptPdf = (data: PaymentSuccessData) => {
         cursorY,
     );
     cursorY += lineHeight;
-    doc.text(`Payment Date: ${formatDate(data.paymentDate)}`, rightColX, cursorY);
+    doc.text(`Receipt Generated: ${formatDate(new Date().toISOString())}`, rightColX, cursorY);
 
     cursorY += 36;
     doc.setDrawColor(226, 232, 240);
@@ -202,16 +211,76 @@ export default function PaymentSuccessPage({
     isLoading = false,
     error,
 }: PaymentSuccessPageProps) {
-    const hasData = Boolean(data);
+    const [storedData, setStoredData] = useState<PaymentSuccessData | null>(
+        data ?? null,
+    );
+    const [isLoadingData, setIsLoadingData] = useState(!data);
+    const [errorMessage, setErrorMessage] = useState<string | null>(
+        error ?? null,
+    );
+
+    useEffect(() => {
+        if (data) return;
+
+        let isMounted = true;
+
+        const load = async () => {
+            try {
+                const stored = await getPaymentSuccessData();
+                if (!stored) {
+                    if (isMounted) {
+                        setErrorMessage("Payment details not found.");
+                    }
+                    return;
+                }
+
+                const classDate = new Date(stored.nextLiveClassDate);
+                if (
+                    Number.isNaN(classDate.getTime()) ||
+                    Date.now() > classDate.getTime()
+                ) {
+                    await clearPaymentSuccessData();
+                    if (isMounted) {
+                        setErrorMessage("Your class session has ended.");
+                    }
+                    return;
+                }
+
+                if (isMounted) {
+                    setStoredData(stored);
+                }
+            } catch (loadError) {
+                if (isMounted) {
+                    setErrorMessage(
+                        loadError instanceof Error
+                            ? loadError.message
+                            : "Unable to load payment details.",
+                    );
+                }
+            } finally {
+                if (isMounted) {
+                    setIsLoadingData(false);
+                }
+            }
+        };
+
+        load();
+
+        return () => {
+            isMounted = false;
+        };
+    }, [data]);
+
+    const hasData = Boolean(storedData);
 
     const handleDownloadReceipt = () => {
-        if (!data) return;
+        if (!storedData) return;
 
-        const doc = buildReceiptPdf(data);
-        doc.save(`receipt-${data.bookingId}.pdf`);
+        const doc = buildReceiptPdf(storedData);
+        doc.save(`receipt-${storedData.bookingId}.pdf`);
     };
 
-    if (isLoading) {
+    if (isLoading || isLoadingData) {
         return (
             <main className="flex min-h-screen items-center justify-center bg-slate-50 px-4 py-10">
                 <div className="flex flex-col items-center gap-3 text-center">
@@ -222,7 +291,7 @@ export default function PaymentSuccessPage({
         );
     }
 
-    if (error) {
+    if (errorMessage) {
         return (
             <main className="flex min-h-screen items-center justify-center bg-slate-50 px-4 py-10">
                 <div className="w-full max-w-lg rounded-2xl border border-rose-100 bg-white p-6 text-center shadow-sm sm:p-8">
@@ -230,7 +299,7 @@ export default function PaymentSuccessPage({
                     <h1 className="mt-4 text-xl font-semibold text-slate-900">
                         Payment details unavailable
                     </h1>
-                    <p className="mt-2 text-sm text-slate-600">{error}</p>
+                    <p className="mt-2 text-sm text-slate-600">{errorMessage}</p>
                     <div className="mt-4 rounded-xl border border-emerald-100 bg-emerald-50/60 p-4 text-left text-sm text-slate-700">
                         <p className="font-medium text-slate-900">
                             We are here to help.
@@ -289,13 +358,17 @@ export default function PaymentSuccessPage({
 
                 <SectionCard title="Class Details">
                     <p className="text-sm text-slate-700 sm:text-base">
-                        Live Class Timing: <span className="font-semibold">Sunday 8 PM IST</span>
+                        Live Class Timing:{" "}
+                        <span className="font-semibold">
+                            {formatClassDate(storedData?.nextLiveClassDate || "")} at{" "}
+                            {storedData?.nextLiveClassTime}
+                        </span>
                     </p>
                     <p>
-                        <span className="font-medium text-slate-900">Email:</span> {data.email}
+                        <span className="font-medium text-slate-900">Email:</span> {storedData?.email}
                     </p>
                     <p>
-                        <span className="font-medium text-slate-900">Phone:</span> {data.phone}
+                        <span className="font-medium text-slate-900">Phone:</span> {storedData?.phone}
                     </p>
                     <p className="text-sm text-slate-600">
                         Confirmation will be sent to the above email and phone.
@@ -306,22 +379,28 @@ export default function PaymentSuccessPage({
                 </SectionCard>
 
                 <SectionCard title="Booking Details">
-                    <InfoRow label="Booking ID" value={data.bookingId} />
-                    <InfoRow label="Payment ID" value={data.paymentId} />
-                    <InfoRow label="Order ID" value={data.orderId} />
+                    <InfoRow label="Booking ID" value={storedData?.bookingId} />
+                    <InfoRow label="Payment ID" value={storedData?.paymentId} />
+                    <InfoRow label="Order ID" value={storedData?.orderId} />
                     <InfoRow
                         label="Amount Paid"
-                        value={formatAmount(data.amount, data.currency)}
+                        value={formatAmount(
+                            storedData?.amount || 0,
+                            storedData?.currency || "INR",
+                        )}
                     />
-                    <InfoRow label="Payment Date" value={formatDate(data.paymentDate)} />
                 </SectionCard>
 
                 <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
                     <div className="flex flex-col gap-3 sm:flex-row sm:justify-between">
                         <div>
                             <p className="text-sm font-medium text-slate-600">Booked for</p>
-                            <p className="text-lg font-semibold text-slate-900">{data.className}</p>
-                            <p className="text-sm text-slate-600">Attendee: {data.userName}</p>
+                            <p className="text-lg font-semibold text-slate-900">
+                                {LIVE_TRADING_CLASS_NAME}
+                            </p>
+                            <p className="text-sm text-slate-600">
+                                Attendee: {storedData?.userName}
+                            </p>
                         </div>
                         <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
                             <Button
