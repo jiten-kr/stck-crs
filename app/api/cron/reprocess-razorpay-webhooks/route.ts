@@ -33,6 +33,7 @@ export async function GET(req: Request) {
     console.debug("[REPROCESS_RAZORPAY_WEBHOOK] Event payload", {
       event_id,
       payload,
+      row,
     });
 
     try {
