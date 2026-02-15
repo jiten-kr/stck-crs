@@ -37,8 +37,8 @@ export async function GET(req: Request) {
     });
 
     try {
-      const data = JSON.parse(payload);
-      const payment = data.payload?.payment?.entity;
+      // const data = JSON.parse(payload);
+      const payment = payload.payload?.payment?.entity;
 
       if (!payment) {
         console.warn(
