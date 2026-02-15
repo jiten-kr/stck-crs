@@ -27,9 +27,13 @@ export async function GET(req: Request) {
   for (const row of result.rows) {
     const { id, event_id, event_type, payload } = row;
     console.info(
-      `[REPROCESS_RAZORPAY_WEBHOOK] Processing event ${event_id} of type ${event_type}`,
+      `[REPROCESS_RAZORPAY_WEBHOOK] Processing event '${event_id}' of type '${event_type}'`,
       { event_id, event_type },
     );
+    console.debug("[REPROCESS_RAZORPAY_WEBHOOK] Event payload", {
+      event_id,
+      payload,
+    });
 
     try {
       const data = JSON.parse(payload);
