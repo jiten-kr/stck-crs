@@ -88,6 +88,7 @@ export async function GET(req: Request) {
         SELECT id, payload
         FROM payment_webhook_events
         WHERE id = $1
+          AND gateway = 'RAZORPAY'
           AND processed = false
         FOR UPDATE SKIP LOCKED
         `,
