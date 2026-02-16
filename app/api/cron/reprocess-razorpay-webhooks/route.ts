@@ -174,6 +174,7 @@ export async function GET(req: Request) {
 
       if (!poRes.rows[0]) {
         await client.query("ROLLBACK");
+        await client.query("BEGIN");
         const attemptResult = await client.query<{ processing_attempts: number }>(
           `UPDATE payment_webhook_events
            SET processing_attempts = COALESCE(processing_attempts, 0) + 1
@@ -197,6 +198,7 @@ export async function GET(req: Request) {
             { event_id, gatewayOrderId, attempts, outcome: "no_payment_order" },
           );
         }
+        await client.query("COMMIT");
         continue;
       }
 
@@ -331,8 +333,9 @@ export async function GET(req: Request) {
         );
         // Ignore rollback error
       }
-      // Increment processing attempts; dead-letter after max to avoid infinite retries
+      // Increment processing attempts; dead-letter after max to avoid infinite retries (explicit BEGIN/COMMIT)
       try {
+        await client.query("BEGIN");
         const attemptResult = await client.query<{
           processing_attempts: number;
         }>(
@@ -358,7 +361,13 @@ export async function GET(req: Request) {
             { event_id, attempts, outcome: "error", error: err },
           );
         }
+        await client.query("COMMIT");
       } catch (attemptErr) {
+        try {
+          await client.query("ROLLBACK");
+        } catch {
+          // ignore
+        }
         console.error(
           "[REPROCESS_RAZORPAY_WEBHOOK] Error processing event; failed to increment attempts",
           { event_id, error: err, attemptError: attemptErr },
