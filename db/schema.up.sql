@@ -198,6 +198,7 @@ CREATE TABLE IF NOT EXISTS payment_webhook_events (
 
     processed BOOLEAN DEFAULT FALSE,
     received_at TIMESTAMP DEFAULT NOW(),
+    processing_attempts INT NOT NULL DEFAULT 0,
 
     UNIQUE(gateway, event_id)
 );

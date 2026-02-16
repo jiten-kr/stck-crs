@@ -7,6 +7,8 @@ import {
 export const dynamic = "force-dynamic";
 export const maxDuration = 60; // 60 seconds max for cron
 
+const MAX_WEBHOOK_PROCESSING_ATTEMPTS = 50;
+
 type PaymentEntity = {
   id?: string;
   order_id?: string;
@@ -39,11 +41,13 @@ export async function GET(req: Request) {
     id: number;
     event_id: string;
     event_type: string;
+    received_at: Date;
   }>(
     `
-    SELECT id, event_id, event_type
+    SELECT id, event_id, event_type, received_at
     FROM payment_webhook_events
     WHERE processed = false
+      AND gateway = 'RAZORPAY'
       AND event_type IN ('payment.captured', 'payment.failed')
     ORDER BY received_at
     LIMIT 10
@@ -58,10 +62,14 @@ export async function GET(req: Request) {
 
   // Process each event individually with proper locking
   for (const candidate of candidates.rows) {
-    const { id: webhookEventId, event_id, event_type } = candidate;
+    const { id: eventRowId, event_id, event_type, received_at } = candidate;
+    const eventAgeSeconds = received_at
+      ? Math.round((Date.now() - new Date(received_at).getTime()) / 1000)
+      : null;
 
     console.info(
       `[REPROCESS_RAZORPAY_WEBHOOK] Attempting to process event '${event_id}'`,
+      { eventRowId, eventAgeSeconds },
     );
 
     // Track details for post-commit notification
@@ -83,13 +91,14 @@ export async function GET(req: Request) {
           AND processed = false
         FOR UPDATE SKIP LOCKED
         `,
-        [webhookEventId],
+        [eventRowId],
       );
 
       if (!lockResult.rows[0]) {
         await client.query("ROLLBACK");
         console.info(
           `[REPROCESS_RAZORPAY_WEBHOOK] Event '${event_id}' already locked or processed, skipping`,
+          { outcome: "skipped_locked_or_processed" },
         );
         continue;
       }
@@ -101,12 +110,13 @@ export async function GET(req: Request) {
         // Mark as processed since it's invalid
         await client.query(
           `UPDATE payment_webhook_events SET processed = true WHERE id = $1`,
-          [webhookEventId],
+          [eventRowId],
         );
         await client.query("COMMIT");
+        processedCount++;
         console.warn(
           "[REPROCESS_RAZORPAY_WEBHOOK] No payment entity found in payload",
-          { event_id },
+          { event_id, outcome: "invalid_payload" },
         );
         continue;
       }
@@ -118,12 +128,13 @@ export async function GET(req: Request) {
         // Mark as processed since it's invalid
         await client.query(
           `UPDATE payment_webhook_events SET processed = true WHERE id = $1`,
-          [webhookEventId],
+          [eventRowId],
         );
         await client.query("COMMIT");
+        processedCount++;
         console.warn(
           "[REPROCESS_RAZORPAY_WEBHOOK] Missing gatewayOrderId or gatewayPaymentId",
-          { event_id, gatewayOrderId, gatewayPaymentId },
+          { event_id, outcome: "invalid_payload" },
         );
         continue;
       }
@@ -132,14 +143,14 @@ export async function GET(req: Request) {
       if (event_type === "payment.failed") {
         await client.query(
           `UPDATE payment_webhook_events SET processed = true WHERE id = $1`,
-          [webhookEventId],
+          [eventRowId],
         );
         await client.query("COMMIT");
+        processedCount++;
         console.info(
           "[REPROCESS_RAZORPAY_WEBHOOK] Marked payment.failed event as processed",
-          { event_id },
+          { event_id, outcome: "payment_failed" },
         );
-        processedCount++;
         continue;
       }
 
@@ -148,9 +159,11 @@ export async function GET(req: Request) {
         id: number;
         order_id: number;
         user_id: number;
+        amount: number;
+        currency: string;
       }>(
         `
-        SELECT id, order_id, user_id
+        SELECT id, order_id, user_id, amount, currency
         FROM payment_orders
         WHERE gateway = 'RAZORPAY'
           AND gateway_order_id = $1
@@ -161,14 +174,62 @@ export async function GET(req: Request) {
 
       if (!poRes.rows[0]) {
         await client.query("ROLLBACK");
-        console.warn(
-          "[REPROCESS_RAZORPAY_WEBHOOK] No payment order found for gatewayOrderId",
-          { event_id, gatewayOrderId },
+        const attemptResult = await client.query<{ processing_attempts: number }>(
+          `UPDATE payment_webhook_events
+           SET processing_attempts = COALESCE(processing_attempts, 0) + 1
+           WHERE id = $1
+           RETURNING processing_attempts`,
+          [eventRowId],
         );
+        const attempts = attemptResult.rows[0]?.processing_attempts ?? 1;
+        if (attempts >= MAX_WEBHOOK_PROCESSING_ATTEMPTS) {
+          await client.query(
+            `UPDATE payment_webhook_events SET processed = true WHERE id = $1`,
+            [eventRowId],
+          );
+          console.warn(
+            "[REPROCESS_RAZORPAY_WEBHOOK] No payment order found, max attempts reached - marked as processed (dead letter)",
+            { event_id, gatewayOrderId, attempts, outcome: "dead_letter" },
+          );
+        } else {
+          console.warn(
+            "[REPROCESS_RAZORPAY_WEBHOOK] No payment order found for gatewayOrderId",
+            { event_id, gatewayOrderId, attempts, outcome: "no_payment_order" },
+          );
+        }
         continue;
       }
 
       const paymentOrder = poRes.rows[0];
+
+      // Validate amount and currency match order (full payments only)
+      const paymentAmount = payment.amount ?? 0;
+      const paymentCurrency = (payment.currency ?? "").toUpperCase();
+      const orderCurrency = (paymentOrder.currency ?? "").toUpperCase();
+      if (
+        paymentAmount !== paymentOrder.amount ||
+        paymentCurrency !== orderCurrency
+      ) {
+        await client.query(
+          `UPDATE payment_webhook_events SET processed = true WHERE id = $1`,
+          [eventRowId],
+        );
+        await client.query("COMMIT");
+        processedCount++;
+        console.warn(
+          "[REPROCESS_RAZORPAY_WEBHOOK] Amount or currency mismatch, marking event processed",
+          {
+            event_id,
+            orderId: paymentOrder.order_id,
+            paymentAmount,
+            orderAmount: paymentOrder.amount,
+            paymentCurrency,
+            orderCurrency,
+            outcome: "amount_currency_mismatch",
+          },
+        );
+        continue;
+      }
 
       // Check if order is already PAID (idempotency)
       const orderStatus = await client.query<{ status: string }>(
@@ -180,17 +241,16 @@ export async function GET(req: Request) {
         // Already paid - just mark webhook as processed
         await client.query(
           `UPDATE payment_webhook_events SET processed = true WHERE id = $1`,
-          [webhookEventId],
+          [eventRowId],
         );
         await client.query("COMMIT");
+        processedCount++;
+        completedOrderId = paymentOrder.order_id;
         console.info(
           "[REPROCESS_RAZORPAY_WEBHOOK] Order already PAID, marking event as processed",
-          { event_id, orderId: paymentOrder.order_id },
+          { event_id, orderId: paymentOrder.order_id, outcome: "idempotent_skip" },
         );
-
-        // Don't trigger email here - processRetryNotifications at the end will handle it
-        // if the notification is still pending/failed
-        processedCount++;
+        // Trigger email so notification is created/sent if missing; no-op if already SENT
       } else {
         console.info("[REPROCESS_RAZORPAY_WEBHOOK] Inserting payment record", {
           event_id,
@@ -247,7 +307,7 @@ export async function GET(req: Request) {
         // Mark webhook event as processed
         await client.query(
           `UPDATE payment_webhook_events SET processed = true WHERE id = $1`,
-          [webhookEventId],
+          [eventRowId],
         );
 
         // Store order ID for post-commit notification
@@ -256,7 +316,7 @@ export async function GET(req: Request) {
         await client.query("COMMIT");
         console.info(
           "[REPROCESS_RAZORPAY_WEBHOOK] Transaction committed successfully",
-          { event_id, orderId: completedOrderId },
+          { event_id, orderId: completedOrderId, outcome: "success" },
         );
 
         processedCount++;
@@ -271,10 +331,39 @@ export async function GET(req: Request) {
         );
         // Ignore rollback error
       }
-      console.error(
-        "[REPROCESS_RAZORPAY_WEBHOOK] Error processing event, transaction rolled back",
-        { event_id, error: err },
-      );
+      // Increment processing attempts; dead-letter after max to avoid infinite retries
+      try {
+        const attemptResult = await client.query<{
+          processing_attempts: number;
+        }>(
+          `UPDATE payment_webhook_events
+           SET processing_attempts = COALESCE(processing_attempts, 0) + 1
+           WHERE id = $1
+           RETURNING processing_attempts`,
+          [eventRowId],
+        );
+        const attempts = attemptResult.rows[0]?.processing_attempts ?? 1;
+        if (attempts >= MAX_WEBHOOK_PROCESSING_ATTEMPTS) {
+          await client.query(
+            `UPDATE payment_webhook_events SET processed = true WHERE id = $1`,
+            [eventRowId],
+          );
+          console.warn(
+            "[REPROCESS_RAZORPAY_WEBHOOK] Max processing attempts reached - marked as processed (dead letter)",
+            { event_id, attempts, outcome: "dead_letter", error: err },
+          );
+        } else {
+          console.error(
+            "[REPROCESS_RAZORPAY_WEBHOOK] Error processing event, transaction rolled back",
+            { event_id, attempts, outcome: "error", error: err },
+          );
+        }
+      } catch (attemptErr) {
+        console.error(
+          "[REPROCESS_RAZORPAY_WEBHOOK] Error processing event; failed to increment attempts",
+          { event_id, error: err, attemptError: attemptErr },
+        );
+      }
     } finally {
       client.release();
     }

@@ -24,6 +24,9 @@ import {
   getNextLiveClassSchedule,
 } from "./contentBuilder";
 
+/** Max send attempts for order confirmation email (retries via cron) */
+const MAX_NOTIFICATION_ATTEMPTS = 10;
+
 // Lazy-initialized Resend client singleton
 let resendClient: Resend | null = null;
 
@@ -254,7 +257,7 @@ export async function sendOrderConfirmationEmail(
       AND type = 'ORDER_CONFIRMATION'
       AND channel = 'EMAIL'
       AND status IN ('PENDING', 'FAILED')
-      AND attempt_count < 5
+      AND attempt_count < ${MAX_NOTIFICATION_ATTEMPTS}
     RETURNING id
     `,
     [orderId],
@@ -311,7 +314,7 @@ export async function sendOrderConfirmationEmail(
         orderId,
       });
       return { success: true, messageId: undefined };
-    } else if (existing.attempt_count >= 5) {
+    } else if (existing.attempt_count >= MAX_NOTIFICATION_ATTEMPTS) {
       console.log("[ORDER_CONFIRMATION_EMAIL] Max attempts reached", {
         orderId,
       });
@@ -472,7 +475,7 @@ export async function fetchPendingNotificationsForRetry(
     FROM order_notifications
     WHERE 
       status IN ('PENDING', 'FAILED')
-      AND attempt_count < 5
+      AND attempt_count < ${MAX_NOTIFICATION_ATTEMPTS}
       AND type = 'ORDER_CONFIRMATION'
       AND channel = 'EMAIL'
     ORDER BY 
@@ -513,7 +516,7 @@ export async function processRetryNotifications(): Promise<{
     FROM order_notifications
     WHERE 
       status IN ('PENDING', 'FAILED')
-      AND attempt_count < 5
+      AND attempt_count < ${MAX_NOTIFICATION_ATTEMPTS}
       AND type = 'ORDER_CONFIRMATION'
       AND channel = 'EMAIL'
     ORDER BY order_id ASC
