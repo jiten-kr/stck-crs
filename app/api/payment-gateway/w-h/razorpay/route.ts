@@ -300,20 +300,19 @@ export async function POST(request: NextRequest) {
       ["PAID", paymentOrder.order_id],
     );
 
-    await client.query("COMMIT");
-    console.log("[RAZORPAY_WEBHOOK] Transaction committed", { eventId });
-
     console.log("[RAZORPAY_WEBHOOK] Marking event processed", { eventId });
-    await pool.query(
+    await client.query(
       `UPDATE payment_webhook_events
        SET processed = true
        WHERE gateway = 'RAZORPAY' AND event_id = $1`,
       [eventId],
     );
-
     console.log("[RAZORPAY_WEBHOOK] Payment processed successfully", {
       eventId,
     });
+
+    await client.query("COMMIT");
+    console.log("[RAZORPAY_WEBHOOK] Transaction committed", { eventId });
   } catch (error) {
     console.error("[RAZORPAY_WEBHOOK] Transaction failed", { eventId, error });
     await client.query("ROLLBACK");
