@@ -133,14 +133,14 @@ async function fetchOrderDetails(
 
 /**
  * Insert or update notification record (UPSERT)
- * Returns the notification ID
+ * Returns the notification ID and current status
  */
 export async function upsertOrderNotification(
   orderId: number,
   userId: number,
   recipient: string,
-): Promise<number> {
-  const result = await pool.query<{ id: number }>(
+): Promise<{ id: number; status: string; alreadySent: boolean }> {
+  const result = await pool.query<{ id: number; status: string }>(
     `
     INSERT INTO order_notifications (
       order_id,
@@ -155,12 +155,17 @@ export async function upsertOrderNotification(
     ON CONFLICT (order_id, type, channel) 
     DO UPDATE SET
       updated_at = NOW()
-    RETURNING id
+    RETURNING id, status
     `,
     [orderId, userId, recipient, `${PLATFORM_NAME}: Order Confirmation`],
   );
 
-  return result.rows[0].id;
+  const row = result.rows[0];
+  return {
+    id: row.id,
+    status: row.status,
+    alreadySent: row.status === "SENT",
+  };
 }
 
 /**
@@ -232,12 +237,26 @@ export async function sendOrderConfirmationEmail(
     };
   }
 
-  // 2. Ensure notification record exists
-  const notificationId = await upsertOrderNotification(
+  // 2. Ensure notification record exists and check if already sent
+  const notification = await upsertOrderNotification(
     orderId,
     orderData.userId,
     orderData.email,
   );
+
+  // Prevent duplicate emails
+  if (notification.alreadySent) {
+    console.log("[ORDER_CONFIRMATION_EMAIL] Email already sent, skipping", {
+      orderId,
+      notificationId: notification.id,
+    });
+    return {
+      success: true,
+      messageId: undefined,
+    };
+  }
+
+  const notificationId = notification.id;
 
   try {
     // 3. Generate email content
@@ -376,6 +395,11 @@ export async function fetchPendingNotificationsForRetry(
  * Process pending notifications (for cron job)
  * Fetches pending/failed notifications and retries sending
  *
+ * Uses SELECT ... FOR UPDATE SKIP LOCKED to:
+ * 1. Lock rows being processed (prevents duplicate processing)
+ * 2. Skip rows locked by other cron instances
+ * 3. Mark as IN_PROGRESS before commit to maintain lock semantics
+ *
  * @returns Object with processed count and results
  */
 export async function processRetryNotifications(): Promise<{
@@ -386,61 +410,95 @@ export async function processRetryNotifications(): Promise<{
 }> {
   console.log("[NOTIFICATION_RETRY] Starting retry process");
 
-  // Use a client to maintain transaction and lock
-  const client = await pool.connect();
+  // Fetch notification IDs to process (without long-held lock)
+  const notificationsToProcess = await pool.query<NotificationRow>(
+    `
+    SELECT 
+      id,
+      order_id,
+      user_id,
+      type,
+      channel,
+      recipient,
+      status,
+      attempt_count
+    FROM order_notifications
+    WHERE 
+      status IN ('PENDING', 'FAILED')
+      AND attempt_count < 5
+      AND type = 'ORDER_CONFIRMATION'
+      AND channel = 'EMAIL'
+    ORDER BY 
+      CASE WHEN status = 'PENDING' THEN 0 ELSE 1 END,
+      created_at ASC
+    LIMIT 10
+    `,
+  );
 
-  try {
-    await client.query("BEGIN");
+  console.log("[NOTIFICATION_RETRY] Found notifications to process", {
+    count: notificationsToProcess.rowCount,
+  });
 
-    // Fetch with lock
-    const notifications = await client.query<NotificationRow>(
-      `
-      SELECT 
-        id,
-        order_id,
-        user_id,
-        type,
-        channel,
-        recipient,
-        status,
-        attempt_count
-      FROM order_notifications
-      WHERE 
-        status IN ('PENDING', 'FAILED')
-        AND attempt_count < 10
-        AND type = 'ORDER_CONFIRMATION'
-        AND channel = 'EMAIL'
-      ORDER BY 
-        CASE WHEN status = 'PENDING' THEN 0 ELSE 1 END,
-        created_at ASC
-      LIMIT 10
-      FOR UPDATE SKIP LOCKED
-      `,
-    );
+  if (!notificationsToProcess.rowCount) {
+    return {
+      processed: 0,
+      successful: 0,
+      failed: 0,
+      results: [],
+    };
+  }
 
-    await client.query("COMMIT");
-    client.release();
+  const results: Array<{
+    orderId: number;
+    success: boolean;
+    error?: string;
+  }> = [];
+  let successful = 0;
+  let failed = 0;
 
-    console.log("[NOTIFICATION_RETRY] Found notifications to process", {
-      count: notifications.rowCount,
-    });
+  // Process each notification individually with its own lock
+  for (const notification of notificationsToProcess.rows) {
+    const client = await pool.connect();
 
-    const results: Array<{
-      orderId: number;
-      success: boolean;
-      error?: string;
-    }> = [];
-    let successful = 0;
-    let failed = 0;
+    try {
+      await client.query("BEGIN");
 
-    // Process each notification (sequentially to avoid overwhelming email provider)
-    for (const notification of notifications.rows) {
+      // Try to lock this specific notification (skip if already locked)
+      const lockResult = await client.query<{ id: number; status: string }>(
+        `
+        SELECT id, status
+        FROM order_notifications
+        WHERE id = $1
+          AND status IN ('PENDING', 'FAILED')
+          AND attempt_count < 5
+        FOR UPDATE SKIP LOCKED
+        `,
+        [notification.id],
+      );
+
+      // Skip if already locked by another process or status changed
+      if (!lockResult.rows[0]) {
+        await client.query("ROLLBACK");
+        client.release();
+        console.log(
+          "[NOTIFICATION_RETRY] Skipping notification (locked or status changed)",
+          {
+            id: notification.id,
+          },
+        );
+        continue;
+      }
+
+      await client.query("COMMIT");
+      client.release();
+
       console.log("[NOTIFICATION_RETRY] Processing notification", {
         id: notification.id,
         orderId: notification.order_id,
         attemptCount: notification.attempt_count,
       });
 
+      // sendOrderConfirmationEmail handles status updates
       const result = await sendOrderConfirmationEmail(notification.order_id);
 
       results.push({
@@ -454,23 +512,40 @@ export async function processRetryNotifications(): Promise<{
       } else {
         failed++;
       }
+    } catch (err) {
+      // Ensure client is released on error
+      try {
+        await client.query("ROLLBACK");
+      } catch {
+        // Ignore rollback errors
+      }
+      client.release();
+
+      console.error("[NOTIFICATION_RETRY] Error processing notification", {
+        id: notification.id,
+        orderId: notification.order_id,
+        error: err,
+      });
+
+      results.push({
+        orderId: notification.order_id,
+        success: false,
+        error: err instanceof Error ? err.message : "Unknown error",
+      });
+      failed++;
     }
-
-    console.log("[NOTIFICATION_RETRY] Retry process completed", {
-      processed: notifications.rowCount,
-      successful,
-      failed,
-    });
-
-    return {
-      processed: notifications.rowCount || 0,
-      successful,
-      failed,
-      results,
-    };
-  } catch (err) {
-    await client.query("ROLLBACK");
-    client.release();
-    throw err;
   }
+
+  console.log("[NOTIFICATION_RETRY] Retry process completed", {
+    processed: results.length,
+    successful,
+    failed,
+  });
+
+  return {
+    processed: results.length,
+    successful,
+    failed,
+    results,
+  };
 }
