@@ -234,9 +234,9 @@ export async function GET(req: Request) {
         continue;
       }
 
-      // Check if order is already PAID (idempotency)
+      // Check if order is already PAID (idempotency); lock row to avoid race with concurrent updaters
       const orderStatus = await client.query<{ status: string }>(
-        `SELECT status FROM orders WHERE id = $1`,
+        `SELECT status FROM orders WHERE id = $1 FOR UPDATE`,
         [paymentOrder.order_id],
       );
 
