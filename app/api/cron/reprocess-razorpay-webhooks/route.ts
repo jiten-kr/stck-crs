@@ -1,14 +1,29 @@
 import pool from "@/lib/db";
-import {
-  upsertOrderNotification,
-  triggerOrderConfirmationEmailAsync,
-} from "@/lib/notifications";
+import { triggerOrderConfirmationEmailAsync } from "@/lib/notifications";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 60; // 60 seconds max for cron
 
+type PaymentEntity = {
+  id?: string;
+  order_id?: string;
+  amount?: number;
+  currency?: string;
+  method?: string;
+  status?: string;
+};
+
+type WebhookPayload = {
+  payload?: {
+    payment?: {
+      entity?: PaymentEntity;
+    };
+  };
+};
+
 export async function GET(req: Request) {
   console.info("[REPROCESS_RAZORPAY_WEBHOOK] Cron job started");
+
   if (
     req.headers.get("Authorization") !== `Bearer ${process.env.CRON_SECRET}`
   ) {
@@ -16,39 +31,78 @@ export async function GET(req: Request) {
     return new Response("Unauthorized", { status: 401 });
   }
 
-  const result = await pool.query(
+  // Get candidate events WITHOUT lock (just to know what to process)
+  const candidates = await pool.query<{
+    id: number;
+    event_id: string;
+    event_type: string;
+  }>(
     `
-    SELECT id, event_id, event_type, payload
+    SELECT id, event_id, event_type
     FROM payment_webhook_events
     WHERE processed = false
       AND event_type IN ('payment.captured', 'payment.failed')
     ORDER BY received_at
-    FOR UPDATE SKIP LOCKED
     LIMIT 10
     `,
   );
 
   console.info(
-    `[REPROCESS_RAZORPAY_WEBHOOK] Found ${result.rowCount} unprocessed events`,
+    `[REPROCESS_RAZORPAY_WEBHOOK] Found ${candidates.rowCount} candidate events`,
   );
 
-  for (const row of result.rows) {
-    const { id, event_id, event_type, payload } = row;
-    console.info(
-      `[REPROCESS_RAZORPAY_WEBHOOK] Processing event '${event_id}' of type '${event_type}'`,
-      { event_id, event_type },
-    );
-    console.debug("[REPROCESS_RAZORPAY_WEBHOOK] Event payload", {
-      event_id,
-      payload,
-      row,
-    });
+  let processedCount = 0;
 
+  // Process each event individually with proper locking
+  for (const candidate of candidates.rows) {
+    const { id: webhookEventId, event_id, event_type } = candidate;
+
+    console.info(
+      `[REPROCESS_RAZORPAY_WEBHOOK] Attempting to process event '${event_id}'`,
+    );
+
+    // Track details for post-commit notification
+    let completedOrderId: number | null = null;
+
+    const client = await pool.connect();
     try {
-      // const data = JSON.parse(payload);
+      await client.query("BEGIN");
+
+      // Try to lock this specific event (skip if already locked or processed)
+      const lockResult = await client.query<{
+        id: number;
+        payload: WebhookPayload;
+      }>(
+        `
+        SELECT id, payload
+        FROM payment_webhook_events
+        WHERE id = $1
+          AND processed = false
+        FOR UPDATE SKIP LOCKED
+        `,
+        [webhookEventId],
+      );
+
+      if (!lockResult.rows[0]) {
+        await client.query("ROLLBACK");
+        client.release();
+        console.info(
+          `[REPROCESS_RAZORPAY_WEBHOOK] Event '${event_id}' already locked or processed, skipping`,
+        );
+        continue;
+      }
+
+      const { payload } = lockResult.rows[0];
       const payment = payload?.payload?.payment?.entity;
 
       if (!payment) {
+        // Mark as processed since it's invalid
+        await client.query(
+          `UPDATE payment_webhook_events SET processed = true WHERE id = $1`,
+          [webhookEventId],
+        );
+        await client.query("COMMIT");
+        client.release();
         console.warn(
           "[REPROCESS_RAZORPAY_WEBHOOK] No payment entity found in payload",
           { event_id },
@@ -56,10 +110,17 @@ export async function GET(req: Request) {
         continue;
       }
 
-      const gatewayOrderId = payment?.order_id;
-      const gatewayPaymentId = payment?.id;
+      const gatewayOrderId = payment.order_id;
+      const gatewayPaymentId = payment.id;
 
       if (!gatewayOrderId || !gatewayPaymentId) {
+        // Mark as processed since it's invalid
+        await client.query(
+          `UPDATE payment_webhook_events SET processed = true WHERE id = $1`,
+          [webhookEventId],
+        );
+        await client.query("COMMIT");
+        client.release();
         console.warn(
           "[REPROCESS_RAZORPAY_WEBHOOK] Missing gatewayOrderId or gatewayPaymentId",
           { event_id, gatewayOrderId, gatewayPaymentId },
@@ -67,183 +128,186 @@ export async function GET(req: Request) {
         continue;
       }
 
-      // Track details for post-commit notification
-      let completedOrderId: number | null = null;
-      let completedUserId: number | null = null;
-      let completedUserEmail: string | null = null;
-
-      const client = await pool.connect();
-      try {
-        await client.query("BEGIN");
-
-        const poRes = await client.query<{
-          id: number;
-          order_id: number;
-          user_id: number;
-        }>(
-          `
-          SELECT id, order_id, user_id
-          FROM payment_orders
-          WHERE gateway = 'RAZORPAY'
-            AND gateway_order_id = $1
-          LIMIT 1
-          `,
-          [gatewayOrderId],
-        );
-
-        if (!poRes.rows[0]) {
-          await client.query("ROLLBACK");
-          console.warn(
-            "[REPROCESS_RAZORPAY_WEBHOOK] No payment order found for gatewayOrderId",
-            { event_id, gatewayOrderId },
-          );
-          continue;
-        }
-
-        const paymentOrder = poRes.rows[0];
-
-        console.info("[REPROCESS_RAZORPAY_WEBHOOK] Inserting payment record", {
-          event_id,
-          gatewayPaymentId,
-        });
+      // Skip payment.failed events - just mark as processed
+      if (event_type === "payment.failed") {
         await client.query(
-          `
-          INSERT INTO payments (
-            order_id,
-            payment_order_id,
-            gateway,
-            gateway_payment_id,
-            amount,
-            currency,
-            method,
-            status,
-            captured
-          )
-          VALUES ($1,$2,'RAZORPAY',$3,$4,$5,$6,$7,true)
-          ON CONFLICT (gateway, gateway_payment_id) DO NOTHING
-          `,
-          [
-            paymentOrder.order_id,
-            paymentOrder.id,
-            gatewayPaymentId,
-            payment.amount,
-            payment.currency,
-            payment.method,
-            payment.status,
-          ],
+          `UPDATE payment_webhook_events SET processed = true WHERE id = $1`,
+          [webhookEventId],
         );
-
-        console.info(
-          "[REPROCESS_RAZORPAY_WEBHOOK] Updating order status to PAID",
-          {
-            event_id,
-            gatewayOrderId,
-            gatewayPaymentId,
-          },
-        );
-        console.info(
-          "[REPROCESS_RAZORPAY_WEBHOOK] Updating payment_orders status to PAID",
-          { event_id, gatewayOrderId, gatewayPaymentId },
-        );
-        await client.query(
-          `UPDATE payment_orders SET status = 'PAID' WHERE id = $1`,
-          [paymentOrder.id],
-        );
-
-        console.info(
-          "[REPROCESS_RAZORPAY_WEBHOOK] Updating orders status to PAID",
-          { event_id, gatewayOrderId, gatewayPaymentId },
-        );
-        await client.query(`UPDATE orders SET status = 'PAID' WHERE id = $1`, [
-          paymentOrder.order_id,
-        ]);
-
-        // Fetch user email before commit
-        const userResult = await client.query<{ email: string }>(
-          `SELECT u.email FROM users u
-           JOIN orders o ON o.user_id = u.id
-           WHERE o.id = $1`,
-          [paymentOrder.order_id],
-        );
-
-        console.info("[REPROCESS_RAZORPAY_WEBHOOK] Committing transaction", {
-          event_id,
-          gatewayOrderId,
-          gatewayPaymentId,
-        });
-
-        // Store details for post-commit notification
-        completedOrderId = paymentOrder.order_id;
-        completedUserId = paymentOrder.user_id;
-        completedUserEmail = userResult.rows[0]?.email || null;
-
-        console.info(
-          "[REPROCESS_RAZORPAY_WEBHOOK] Marking event as processed",
-          { event_id, gatewayOrderId, gatewayPaymentId },
-        );
-        await client.query(
-          `
-          UPDATE payment_webhook_events
-          SET processed = true
-          WHERE id = $1
-          `,
-          [id],
-        );
-        console.info("[REPROCESS_RAZORPAY_WEBHOOK] Event marked as processed", {
-          event_id,
-          gatewayOrderId,
-          gatewayPaymentId,
-        });
         await client.query("COMMIT");
+        client.release();
         console.info(
-          "[REPROCESS_RAZORPAY_WEBHOOK] Transaction committed successfully",
-          { event_id, gatewayOrderId, gatewayPaymentId },
+          "[REPROCESS_RAZORPAY_WEBHOOK] Marked payment.failed event as processed",
+          { event_id },
         );
-      } catch (err) {
+        processedCount++;
+        continue;
+      }
+
+      // Process payment.captured
+      const poRes = await client.query<{
+        id: number;
+        order_id: number;
+        user_id: number;
+      }>(
+        `
+        SELECT id, order_id, user_id
+        FROM payment_orders
+        WHERE gateway = 'RAZORPAY'
+          AND gateway_order_id = $1
+        LIMIT 1
+        `,
+        [gatewayOrderId],
+      );
+
+      if (!poRes.rows[0]) {
         await client.query("ROLLBACK");
+        client.release();
+        console.warn(
+          "[REPROCESS_RAZORPAY_WEBHOOK] No payment order found for gatewayOrderId",
+          { event_id, gatewayOrderId },
+        );
+        continue;
+      }
+
+      const paymentOrder = poRes.rows[0];
+
+      // Check if order is already PAID (idempotency)
+      const orderStatus = await client.query<{ status: string }>(
+        `SELECT status FROM orders WHERE id = $1`,
+        [paymentOrder.order_id],
+      );
+
+      if (orderStatus.rows[0]?.status === "PAID") {
+        // Already paid - just mark webhook as processed
+        await client.query(
+          `UPDATE payment_webhook_events SET processed = true WHERE id = $1`,
+          [webhookEventId],
+        );
+        await client.query("COMMIT");
+        client.release();
+        console.info(
+          "[REPROCESS_RAZORPAY_WEBHOOK] Order already PAID, marking event as processed",
+          { event_id, orderId: paymentOrder.order_id },
+        );
+
+        // Still trigger email in case it wasn't sent
+        completedOrderId = paymentOrder.order_id;
+        processedCount++;
+
+        // Trigger email after commit (outside transaction)
+        if (completedOrderId) {
+          triggerOrderConfirmationEmailAsync(completedOrderId);
+        }
+        continue;
+      }
+
+      console.info("[REPROCESS_RAZORPAY_WEBHOOK] Inserting payment record", {
+        event_id,
+        gatewayPaymentId,
+      });
+
+      await client.query(
+        `
+        INSERT INTO payments (
+          order_id,
+          payment_order_id,
+          gateway,
+          gateway_payment_id,
+          amount,
+          currency,
+          method,
+          status,
+          captured
+        )
+        VALUES ($1, $2, 'RAZORPAY', $3, $4, $5, $6, $7, true)
+        ON CONFLICT (gateway, gateway_payment_id) DO NOTHING
+        `,
+        [
+          paymentOrder.order_id,
+          paymentOrder.id,
+          gatewayPaymentId,
+          payment.amount,
+          payment.currency,
+          payment.method,
+          payment.status,
+        ],
+      );
+
+      console.info(
+        "[REPROCESS_RAZORPAY_WEBHOOK] Updating payment_orders status to PAID",
+        { event_id, gatewayOrderId },
+      );
+
+      await client.query(
+        `UPDATE payment_orders SET status = 'PAID', updated_at = NOW() WHERE id = $1`,
+        [paymentOrder.id],
+      );
+
+      console.info(
+        "[REPROCESS_RAZORPAY_WEBHOOK] Updating orders status to PAID",
+        { event_id, orderId: paymentOrder.order_id },
+      );
+
+      await client.query(
+        `UPDATE orders SET status = 'PAID', updated_at = NOW() WHERE id = $1`,
+        [paymentOrder.order_id],
+      );
+
+      // Mark webhook event as processed
+      await client.query(
+        `UPDATE payment_webhook_events SET processed = true WHERE id = $1`,
+        [webhookEventId],
+      );
+
+      // Store order ID for post-commit notification
+      completedOrderId = paymentOrder.order_id;
+
+      await client.query("COMMIT");
+      console.info(
+        "[REPROCESS_RAZORPAY_WEBHOOK] Transaction committed successfully",
+        { event_id, orderId: completedOrderId },
+      );
+
+      processedCount++;
+    } catch (err) {
+      try {
+        await client.query("ROLLBACK");
+      } catch {
         console.error(
-          "[REPROCESS_RAZORPAY_WEBHOOK] Error processing event, transaction rolled back",
+          "[REPROCESS_RAZORPAY_WEBHOOK] Failed to rollback transaction",
           { event_id, error: err },
         );
-      } finally {
-        client.release();
+        // Ignore rollback error
       }
-
-      // Post-commit: Insert notification and trigger async email
-      if (completedOrderId && completedUserId && completedUserEmail) {
-        try {
-          console.info(
-            "[REPROCESS_RAZORPAY_WEBHOOK] Inserting notification record",
-            { event_id, orderId: completedOrderId },
-          );
-
-          await upsertOrderNotification(
-            completedOrderId,
-            completedUserId,
-            completedUserEmail,
-          );
-
-          console.info("[REPROCESS_RAZORPAY_WEBHOOK] Triggering async email", {
-            event_id,
-            orderId: completedOrderId,
-          });
-
-          triggerOrderConfirmationEmailAsync(completedOrderId);
-        } catch (notificationError) {
-          console.error(
-            "[REPROCESS_RAZORPAY_WEBHOOK] Notification insert failed",
-            { event_id, orderId: completedOrderId, error: notificationError },
-          );
-        }
-      }
-    } catch (err) {
-      // bad payload, skip
       console.error(
-        "[REPROCESS_RAZORPAY_WEBHOOK] Error processing webhook event",
+        "[REPROCESS_RAZORPAY_WEBHOOK] Error processing event, transaction rolled back",
         { event_id, error: err },
       );
+    } finally {
+      client.release();
+    }
+
+    // Post-commit: Trigger async email (sendOrderConfirmationEmail handles idempotency)
+    if (completedOrderId) {
+      try {
+        console.info("[REPROCESS_RAZORPAY_WEBHOOK] Triggering async email", {
+          event_id,
+          orderId: completedOrderId,
+        });
+        triggerOrderConfirmationEmailAsync(completedOrderId);
+      } catch (notificationError) {
+        console.error(
+          "[REPROCESS_RAZORPAY_WEBHOOK] Failed to trigger email notification",
+          { event_id, orderId: completedOrderId, error: notificationError },
+        );
+      }
     }
   }
+
+  console.info("[REPROCESS_RAZORPAY_WEBHOOK] Cron job completed", {
+    processedCount,
+  });
 
   return new Response("OK");
 }
