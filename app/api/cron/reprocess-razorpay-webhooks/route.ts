@@ -1,5 +1,8 @@
 import pool from "@/lib/db";
-import { triggerOrderConfirmationEmailAsync } from "@/lib/notifications";
+import {
+  triggerOrderConfirmationEmailAsync,
+  processRetryNotifications,
+} from "@/lib/notifications";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 60; // 60 seconds max for cron
@@ -305,9 +308,37 @@ export async function GET(req: Request) {
     }
   }
 
-  console.info("[REPROCESS_RAZORPAY_WEBHOOK] Cron job completed", {
+  console.info("[REPROCESS_RAZORPAY_WEBHOOK] Webhook reprocessing completed", {
     processedCount,
   });
 
-  return new Response("OK");
+  // Also retry any pending/failed email notifications
+  console.info("[REPROCESS_RAZORPAY_WEBHOOK] Starting notification retries");
+  let notificationResult = { processed: 0, successful: 0, failed: 0 };
+  try {
+    notificationResult = await processRetryNotifications();
+    console.info(
+      "[REPROCESS_RAZORPAY_WEBHOOK] Notification retries completed",
+      {
+        processed: notificationResult.processed,
+        successful: notificationResult.successful,
+        failed: notificationResult.failed,
+      },
+    );
+  } catch (err) {
+    console.error("[REPROCESS_RAZORPAY_WEBHOOK] Notification retries failed", {
+      error: err,
+    });
+  }
+
+  return new Response(
+    JSON.stringify({
+      ok: true,
+      webhooksProcessed: processedCount,
+      notificationsRetried: notificationResult.processed,
+      notificationsSuccessful: notificationResult.successful,
+      notificationsFailed: notificationResult.failed,
+    }),
+    { headers: { "Content-Type": "application/json" } },
+  );
 }
