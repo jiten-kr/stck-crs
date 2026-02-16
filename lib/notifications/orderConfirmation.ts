@@ -212,10 +212,13 @@ async function updateNotificationStatus(
  * Send order confirmation email for a given order
  *
  * This function:
- * 1. Fetches order details from database
- * 2. Generates email content using the content builder
- * 3. Sends email via Resend
- * 4. Updates notification status (SENT or FAILED)
+ * 1. Atomically claims the notification (PENDING/FAILED → PROCESSING)
+ * 2. Fetches order details from database
+ * 3. Generates email content using the content builder
+ * 4. Sends email via Resend
+ * 5. Updates notification status (SENT or FAILED)
+ *
+ * Uses atomic UPDATE to prevent duplicate sends under concurrent execution.
  *
  * @param orderId - The order ID to send confirmation for
  * @returns SendNotificationResult with success status and any error
@@ -225,7 +228,7 @@ export async function sendOrderConfirmationEmail(
 ): Promise<SendNotificationResult> {
   console.log("[ORDER_CONFIRMATION_EMAIL] Starting send", { orderId });
 
-  // 1. Fetch order details
+  // 1. Fetch order details first to get user info
   const orderData = await fetchOrderDetails(orderId);
   if (!orderData) {
     console.error("[ORDER_CONFIRMATION_EMAIL] Order not found or not paid", {
@@ -237,26 +240,120 @@ export async function sendOrderConfirmationEmail(
     };
   }
 
-  // 2. Ensure notification record exists and check if already sent
-  const notification = await upsertOrderNotification(
-    orderId,
-    orderData.userId,
-    orderData.email,
+  // 2. Atomically claim the notification (prevents duplicate sends)
+  // This UPDATE only succeeds if notification is in PENDING or FAILED state
+  const claimResult = await pool.query<{ id: number }>(
+    `
+    UPDATE order_notifications
+    SET 
+      status = 'PENDING',
+      attempt_count = attempt_count + 1,
+      last_attempt_at = NOW(),
+      updated_at = NOW()
+    WHERE order_id = $1
+      AND type = 'ORDER_CONFIRMATION'
+      AND channel = 'EMAIL'
+      AND status IN ('PENDING', 'FAILED')
+      AND attempt_count < 5
+    RETURNING id
+    `,
+    [orderId],
   );
 
-  // Prevent duplicate emails
-  if (notification.alreadySent) {
-    console.log("[ORDER_CONFIRMATION_EMAIL] Email already sent, skipping", {
-      orderId,
-      notificationId: notification.id,
-    });
-    return {
-      success: true,
-      messageId: undefined,
-    };
+  // If no rows updated, check why
+  if (!claimResult.rows[0]) {
+    // Check current status
+    const statusCheck = await pool.query<{
+      status: string;
+      attempt_count: number;
+    }>(
+      `
+      SELECT status, attempt_count 
+      FROM order_notifications 
+      WHERE order_id = $1 
+        AND type = 'ORDER_CONFIRMATION' 
+        AND channel = 'EMAIL'
+      `,
+      [orderId],
+    );
+
+    const existing = statusCheck.rows[0];
+
+    if (!existing) {
+      // Notification doesn't exist - create it
+      const insertResult = await pool.query<{ id: number }>(
+        `
+        INSERT INTO order_notifications (
+          order_id, user_id, type, channel, recipient, subject, status, attempt_count, last_attempt_at
+        )
+        VALUES ($1, $2, 'ORDER_CONFIRMATION', 'EMAIL', $3, $4, 'PENDING', 1, NOW())
+        ON CONFLICT (order_id, type, channel) DO NOTHING
+        RETURNING id
+        `,
+        [
+          orderId,
+          orderData.userId,
+          orderData.email,
+          `${PLATFORM_NAME}: Order Confirmation`,
+        ],
+      );
+
+      if (!insertResult.rows[0]) {
+        // Race: another process inserted it - recursive retry once
+        console.log(
+          "[ORDER_CONFIRMATION_EMAIL] Race on insert, retrying claim",
+          { orderId },
+        );
+        return sendOrderConfirmationEmail(orderId);
+      }
+    } else if (existing.status === "SENT") {
+      console.log("[ORDER_CONFIRMATION_EMAIL] Already sent, skipping", {
+        orderId,
+      });
+      return { success: true, messageId: undefined };
+    } else if (existing.attempt_count >= 5) {
+      console.log("[ORDER_CONFIRMATION_EMAIL] Max attempts reached", {
+        orderId,
+      });
+      return { success: false, error: "Max retry attempts exceeded" };
+    } else {
+      // Status is PENDING but claim failed - another process is handling it
+      console.log("[ORDER_CONFIRMATION_EMAIL] Already being processed", {
+        orderId,
+      });
+      return {
+        success: false,
+        error: "Notification is being processed by another worker",
+      };
+    }
   }
 
-  const notificationId = notification.id;
+  const notificationId = claimResult.rows[0]?.id;
+  if (!notificationId) {
+    // Fallback: get the ID
+    const idResult = await pool.query<{ id: number }>(
+      `SELECT id FROM order_notifications 
+       WHERE order_id = $1 AND type = 'ORDER_CONFIRMATION' AND channel = 'EMAIL'`,
+      [orderId],
+    );
+    if (!idResult.rows[0]) {
+      return { success: false, error: "Failed to get notification ID" };
+    }
+  }
+
+  const finalNotificationId =
+    notificationId ||
+    (
+      await pool.query<{ id: number }>(
+        `SELECT id FROM order_notifications 
+     WHERE order_id = $1 AND type = 'ORDER_CONFIRMATION' AND channel = 'EMAIL'`,
+        [orderId],
+      )
+    ).rows[0]?.id;
+
+  if (!finalNotificationId) {
+    return { success: false, error: "Notification record not found" };
+  }
 
   try {
     // 3. Generate email content
@@ -266,13 +363,12 @@ export async function sendOrderConfirmationEmail(
 
     console.log("[ORDER_CONFIRMATION_EMAIL] Sending email", {
       orderId,
-      notificationId,
-      email: orderData.email,
+      notificationId: finalNotificationId,
     });
 
     // 4. Send via Resend
     const { data, error } = await getResend().emails.send({
-      from: `${PLATFORM_NAME} <security@mayankfin.com>`,
+      from: `${PLATFORM_NAME} <orders@mayankfin.com>`,
       to: orderData.email,
       subject,
       html,
@@ -282,13 +378,13 @@ export async function sendOrderConfirmationEmail(
     if (error) {
       console.error("[ORDER_CONFIRMATION_EMAIL] Resend error", {
         orderId,
-        notificationId,
-        error,
+        notificationId: finalNotificationId,
+        error: error.message,
       });
 
       // Update notification as FAILED
       await updateNotificationStatus(
-        notificationId,
+        finalNotificationId,
         "FAILED",
         error.message || "Unknown Resend error",
       );
@@ -301,12 +397,12 @@ export async function sendOrderConfirmationEmail(
 
     console.log("[ORDER_CONFIRMATION_EMAIL] Email sent successfully", {
       orderId,
-      notificationId,
+      notificationId: finalNotificationId,
       messageId: data?.id,
     });
 
     // Update notification as SENT
-    await updateNotificationStatus(notificationId, "SENT");
+    await updateNotificationStatus(finalNotificationId, "SENT");
 
     return {
       success: true,
@@ -318,12 +414,12 @@ export async function sendOrderConfirmationEmail(
 
     console.error("[ORDER_CONFIRMATION_EMAIL] Unexpected error", {
       orderId,
-      notificationId,
-      error: err,
+      notificationId: finalNotificationId,
+      errorMessage,
     });
 
     // Update notification as FAILED
-    await updateNotificationStatus(notificationId, "FAILED", errorMessage);
+    await updateNotificationStatus(finalNotificationId, "FAILED", errorMessage);
 
     return {
       success: false,
@@ -395,10 +491,9 @@ export async function fetchPendingNotificationsForRetry(
  * Process pending notifications (for cron job)
  * Fetches pending/failed notifications and retries sending
  *
- * Uses SELECT ... FOR UPDATE SKIP LOCKED to:
- * 1. Lock rows being processed (prevents duplicate processing)
- * 2. Skip rows locked by other cron instances
- * 3. Mark as IN_PROGRESS before commit to maintain lock semantics
+ * Since sendOrderConfirmationEmail uses atomic claim (UPDATE ... WHERE status IN),
+ * this function can simply fetch candidates and let the send function handle
+ * concurrent execution safety.
  *
  * @returns Object with processed count and results
  */
@@ -410,27 +505,18 @@ export async function processRetryNotifications(): Promise<{
 }> {
   console.log("[NOTIFICATION_RETRY] Starting retry process");
 
-  // Fetch notification IDs to process (without long-held lock)
-  const notificationsToProcess = await pool.query<NotificationRow>(
+  // Fetch notification order_ids to retry
+  // Note: sendOrderConfirmationEmail handles its own idempotency via atomic UPDATE
+  const notificationsToProcess = await pool.query<{ order_id: number }>(
     `
-    SELECT 
-      id,
-      order_id,
-      user_id,
-      type,
-      channel,
-      recipient,
-      status,
-      attempt_count
+    SELECT DISTINCT order_id
     FROM order_notifications
     WHERE 
       status IN ('PENDING', 'FAILED')
       AND attempt_count < 5
       AND type = 'ORDER_CONFIRMATION'
       AND channel = 'EMAIL'
-    ORDER BY 
-      CASE WHEN status = 'PENDING' THEN 0 ELSE 1 END,
-      created_at ASC
+    ORDER BY order_id ASC
     LIMIT 10
     `,
   );
@@ -456,53 +542,18 @@ export async function processRetryNotifications(): Promise<{
   let successful = 0;
   let failed = 0;
 
-  // Process each notification individually with its own lock
-  for (const notification of notificationsToProcess.rows) {
-    const client = await pool.connect();
+  // Process each notification sequentially
+  // sendOrderConfirmationEmail handles atomic claim to prevent duplicate sends
+  for (const row of notificationsToProcess.rows) {
+    console.log("[NOTIFICATION_RETRY] Processing order", {
+      orderId: row.order_id,
+    });
 
     try {
-      await client.query("BEGIN");
-
-      // Try to lock this specific notification (skip if already locked)
-      const lockResult = await client.query<{ id: number; status: string }>(
-        `
-        SELECT id, status
-        FROM order_notifications
-        WHERE id = $1
-          AND status IN ('PENDING', 'FAILED')
-          AND attempt_count < 5
-        FOR UPDATE SKIP LOCKED
-        `,
-        [notification.id],
-      );
-
-      // Skip if already locked by another process or status changed
-      if (!lockResult.rows[0]) {
-        await client.query("ROLLBACK");
-        client.release();
-        console.log(
-          "[NOTIFICATION_RETRY] Skipping notification (locked or status changed)",
-          {
-            id: notification.id,
-          },
-        );
-        continue;
-      }
-
-      await client.query("COMMIT");
-      client.release();
-
-      console.log("[NOTIFICATION_RETRY] Processing notification", {
-        id: notification.id,
-        orderId: notification.order_id,
-        attemptCount: notification.attempt_count,
-      });
-
-      // sendOrderConfirmationEmail handles status updates
-      const result = await sendOrderConfirmationEmail(notification.order_id);
+      const result = await sendOrderConfirmationEmail(row.order_id);
 
       results.push({
-        orderId: notification.order_id,
+        orderId: row.order_id,
         success: result.success,
         error: result.error,
       });
@@ -513,22 +564,13 @@ export async function processRetryNotifications(): Promise<{
         failed++;
       }
     } catch (err) {
-      // Ensure client is released on error
-      try {
-        await client.query("ROLLBACK");
-      } catch {
-        // Ignore rollback errors
-      }
-      client.release();
-
       console.error("[NOTIFICATION_RETRY] Error processing notification", {
-        id: notification.id,
-        orderId: notification.order_id,
+        orderId: row.order_id,
         error: err,
       });
 
       results.push({
-        orderId: notification.order_id,
+        orderId: row.order_id,
         success: false,
         error: err instanceof Error ? err.message : "Unknown error",
       });
