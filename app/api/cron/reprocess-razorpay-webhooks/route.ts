@@ -375,7 +375,7 @@ export async function GET(req: Request) {
         );
       }
     } finally {
-      client.release();
+      client?.release();
     }
 
     // Post-commit: Trigger async email (sendOrderConfirmationEmail handles idempotency)
