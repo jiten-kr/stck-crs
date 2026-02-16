@@ -88,7 +88,6 @@ export async function GET(req: Request) {
 
       if (!lockResult.rows[0]) {
         await client.query("ROLLBACK");
-        client.release();
         console.info(
           `[REPROCESS_RAZORPAY_WEBHOOK] Event '${event_id}' already locked or processed, skipping`,
         );
@@ -105,7 +104,6 @@ export async function GET(req: Request) {
           [webhookEventId],
         );
         await client.query("COMMIT");
-        client.release();
         console.warn(
           "[REPROCESS_RAZORPAY_WEBHOOK] No payment entity found in payload",
           { event_id },
@@ -123,7 +121,6 @@ export async function GET(req: Request) {
           [webhookEventId],
         );
         await client.query("COMMIT");
-        client.release();
         console.warn(
           "[REPROCESS_RAZORPAY_WEBHOOK] Missing gatewayOrderId or gatewayPaymentId",
           { event_id, gatewayOrderId, gatewayPaymentId },
@@ -138,7 +135,6 @@ export async function GET(req: Request) {
           [webhookEventId],
         );
         await client.query("COMMIT");
-        client.release();
         console.info(
           "[REPROCESS_RAZORPAY_WEBHOOK] Marked payment.failed event as processed",
           { event_id },
@@ -165,7 +161,6 @@ export async function GET(req: Request) {
 
       if (!poRes.rows[0]) {
         await client.query("ROLLBACK");
-        client.release();
         console.warn(
           "[REPROCESS_RAZORPAY_WEBHOOK] No payment order found for gatewayOrderId",
           { event_id, gatewayOrderId },
@@ -188,91 +183,84 @@ export async function GET(req: Request) {
           [webhookEventId],
         );
         await client.query("COMMIT");
-        client.release();
         console.info(
           "[REPROCESS_RAZORPAY_WEBHOOK] Order already PAID, marking event as processed",
           { event_id, orderId: paymentOrder.order_id },
         );
 
-        // Still trigger email in case it wasn't sent
-        completedOrderId = paymentOrder.order_id;
+        // Don't trigger email here - processRetryNotifications at the end will handle it
+        // if the notification is still pending/failed
         processedCount++;
-
-        // Trigger email after commit (outside transaction)
-        if (completedOrderId) {
-          triggerOrderConfirmationEmailAsync(completedOrderId);
-        }
-        continue;
-      }
-
-      console.info("[REPROCESS_RAZORPAY_WEBHOOK] Inserting payment record", {
-        event_id,
-        gatewayPaymentId,
-      });
-
-      await client.query(
-        `
-        INSERT INTO payments (
-          order_id,
-          payment_order_id,
-          gateway,
-          gateway_payment_id,
-          amount,
-          currency,
-          method,
-          status,
-          captured
-        )
-        VALUES ($1, $2, 'RAZORPAY', $3, $4, $5, $6, $7, true)
-        ON CONFLICT (gateway, gateway_payment_id) DO NOTHING
-        `,
-        [
-          paymentOrder.order_id,
-          paymentOrder.id,
+      } else {
+        console.info("[REPROCESS_RAZORPAY_WEBHOOK] Inserting payment record", {
+          event_id,
           gatewayPaymentId,
-          payment.amount,
-          payment.currency,
-          payment.method,
-          payment.status,
-        ],
-      );
+        });
 
-      console.info(
-        "[REPROCESS_RAZORPAY_WEBHOOK] Updating payment_orders status to PAID",
-        { event_id, gatewayOrderId },
-      );
+        await client.query(
+          `
+          INSERT INTO payments (
+            order_id,
+            payment_order_id,
+            gateway,
+            gateway_payment_id,
+            amount,
+            currency,
+            method,
+            status,
+            captured
+          )
+          VALUES ($1, $2, 'RAZORPAY', $3, $4, $5, $6, $7, true)
+          ON CONFLICT (gateway, gateway_payment_id) DO NOTHING
+          `,
+          [
+            paymentOrder.order_id,
+            paymentOrder.id,
+            gatewayPaymentId,
+            payment.amount,
+            payment.currency,
+            payment.method,
+            payment.status,
+          ],
+        );
 
-      await client.query(
-        `UPDATE payment_orders SET status = 'PAID', updated_at = NOW() WHERE id = $1`,
-        [paymentOrder.id],
-      );
+        console.info(
+          "[REPROCESS_RAZORPAY_WEBHOOK] Updating payment_orders status to PAID",
+          { event_id, gatewayOrderId },
+        );
 
-      console.info(
-        "[REPROCESS_RAZORPAY_WEBHOOK] Updating orders status to PAID",
-        { event_id, orderId: paymentOrder.order_id },
-      );
+        await client.query(
+          `UPDATE payment_orders SET status = 'PAID', updated_at = NOW() WHERE id = $1`,
+          [paymentOrder.id],
+        );
 
-      await client.query(
-        `UPDATE orders SET status = 'PAID', updated_at = NOW() WHERE id = $1`,
-        [paymentOrder.order_id],
-      );
+        console.info(
+          "[REPROCESS_RAZORPAY_WEBHOOK] Updating orders status to PAID",
+          { event_id, orderId: paymentOrder.order_id },
+        );
 
-      // Mark webhook event as processed
-      await client.query(
-        `UPDATE payment_webhook_events SET processed = true WHERE id = $1`,
-        [webhookEventId],
-      );
+        await client.query(
+          `UPDATE orders SET status = 'PAID', updated_at = NOW() WHERE id = $1`,
+          [paymentOrder.order_id],
+        );
 
-      // Store order ID for post-commit notification
-      completedOrderId = paymentOrder.order_id;
+        // Mark webhook event as processed
+        await client.query(
+          `UPDATE payment_webhook_events SET processed = true WHERE id = $1`,
+          [webhookEventId],
+        );
 
-      await client.query("COMMIT");
-      console.info(
-        "[REPROCESS_RAZORPAY_WEBHOOK] Transaction committed successfully",
-        { event_id, orderId: completedOrderId },
-      );
+        // Store order ID for post-commit notification
+        completedOrderId = paymentOrder.order_id;
 
-      processedCount++;
+        await client.query("COMMIT");
+        console.info(
+          "[REPROCESS_RAZORPAY_WEBHOOK] Transaction committed successfully",
+          { event_id, orderId: completedOrderId },
+        );
+
+        processedCount++;
+      }
     } catch (err) {
       try {
         await client.query("ROLLBACK");
