@@ -16,6 +16,7 @@ import {
     getPaymentSuccessData,
     type PaymentSuccessStoredData,
 } from "@/lib/paymentSuccessStore";
+import { formatClassDate } from "@/lib/notifications";
 
 export type PaymentSuccessData = PaymentSuccessStoredData;
 
@@ -59,20 +60,6 @@ const formatDate = (value: string) => {
         dateStyle: "medium",
         timeStyle: "short",
     });
-};
-
-const formatClassDate = (value: string) => {
-    const parsed = new Date(value);
-    if (Number.isNaN(parsed.getTime())) {
-        return value;
-    }
-    return new Intl.DateTimeFormat("en-IN", {
-        weekday: "long",
-        day: "numeric",
-        month: "short",
-        year: "numeric",
-        timeZone: "Asia/Kolkata",
-    }).format(parsed);
 };
 
 const buildReceiptPdf = (data: PaymentSuccessData) => {

@@ -21,6 +21,7 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import ContactAuthModal from "@/components/auth/ContactAuthModal";
 import { setPaymentSuccessData } from "@/lib/paymentSuccessStore";
+import { getNextLiveClassSchedule } from "@/lib/notifications";
 import {
     TrendingUp,
     BarChart3,
@@ -230,28 +231,6 @@ export default function LiveTradingClass({
         }
 
         await startCheckout(user);
-    };
-
-    const getNextLiveClassSchedule = () => {
-        const istOffsetMinutes = 330;
-        const now = new Date();
-        const istNow = new Date(now.getTime() + istOffsetMinutes * 60000);
-        const dayOfWeek = istNow.getDay();
-        let daysUntilSunday = (7 - dayOfWeek) % 7;
-
-        const targetIst = new Date(istNow);
-        targetIst.setDate(istNow.getDate() + daysUntilSunday);
-        targetIst.setHours(20, 0, 0, 0);
-
-        if (daysUntilSunday === 0 && istNow.getTime() >= targetIst.getTime()) {
-            targetIst.setDate(targetIst.getDate() + 7);
-        }
-
-        const targetUtc = new Date(targetIst.getTime() - istOffsetMinutes * 60000);
-        return {
-            nextLiveClassDate: targetUtc.toISOString(),
-            nextLiveClassTime: "8 PM IST",
-        };
     };
 
     /**

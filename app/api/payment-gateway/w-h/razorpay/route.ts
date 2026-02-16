@@ -1,6 +1,10 @@
 import crypto from "crypto";
 import { NextRequest, NextResponse } from "next/server";
 import pool from "@/lib/db";
+import {
+  upsertOrderNotification,
+  triggerOrderConfirmationEmailAsync,
+} from "@/lib/notifications";
 
 type RazorpayWebhookPayload = {
   id?: string;
@@ -227,6 +231,11 @@ export async function POST(request: NextRequest) {
     gatewayPaymentId,
   });
 
+  // Track order details for post-commit notification
+  let completedOrderId: number | null = null;
+  let completedUserId: number | null = null;
+  let completedUserEmail: string | null = null;
+
   const client = await pool.connect();
   try {
     console.log("[RAZORPAY_WEBHOOK] Starting transaction", { eventId });
@@ -236,10 +245,11 @@ export async function POST(request: NextRequest) {
     const paymentOrderResult = await client.query<{
       id: number;
       order_id: number;
+      user_id: number;
     }>(
-      `SELECT id, order_id
-			 FROM payment_orders
-			 WHERE gateway = $1 AND gateway_order_id = $2
+      `SELECT po.id, po.order_id, po.user_id
+			 FROM payment_orders po
+			 WHERE po.gateway = $1 AND po.gateway_order_id = $2
 			 LIMIT 1`,
       ["RAZORPAY", gatewayOrderId],
     );
@@ -311,13 +321,60 @@ export async function POST(request: NextRequest) {
       eventId,
     });
 
+    // Fetch user email for notification before commit
+    const userResult = await client.query<{ email: string }>(
+      `SELECT u.email FROM users u
+       JOIN orders o ON o.user_id = u.id
+       WHERE o.id = $1`,
+      [paymentOrder.order_id],
+    );
+
     await client.query("COMMIT");
     console.log("[RAZORPAY_WEBHOOK] Transaction committed", { eventId });
+
+    // Store order details for post-commit notification
+    completedOrderId = paymentOrder.order_id;
+    completedUserId = paymentOrder.user_id;
+    completedUserEmail = userResult.rows[0]?.email || null;
   } catch (error) {
     console.error("[RAZORPAY_WEBHOOK] Transaction failed", { eventId, error });
     await client.query("ROLLBACK");
   } finally {
     client.release();
+  }
+
+  // Post-commit: Insert notification and trigger async email
+  // This is OUTSIDE the transaction to ensure DB commit happened
+  if (completedOrderId && completedUserId && completedUserEmail) {
+    try {
+      console.log("[RAZORPAY_WEBHOOK] Inserting notification record", {
+        eventId,
+        orderId: completedOrderId,
+      });
+
+      // UPSERT notification record (prevents duplicates)
+      await upsertOrderNotification(
+        completedOrderId,
+        completedUserId,
+        completedUserEmail,
+      );
+
+      console.log("[RAZORPAY_WEBHOOK] Triggering async email", {
+        eventId,
+        orderId: completedOrderId,
+      });
+
+      // Fire and forget - non-blocking
+      triggerOrderConfirmationEmailAsync(completedOrderId);
+    } catch (notificationError) {
+      // Don't fail the webhook response for notification errors
+      // Cron will retry failed notifications
+      console.error("[RAZORPAY_WEBHOOK] Notification insert failed", {
+        eventId,
+        orderId: completedOrderId,
+        error: notificationError,
+      });
+    }
   }
 
   return NextResponse.json({ ok: true }, { status: 200 });

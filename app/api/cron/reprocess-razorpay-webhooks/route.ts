@@ -1,4 +1,11 @@
 import pool from "@/lib/db";
+import {
+  upsertOrderNotification,
+  triggerOrderConfirmationEmailAsync,
+} from "@/lib/notifications";
+
+export const dynamic = "force-dynamic";
+export const maxDuration = 60; // 60 seconds max for cron
 
 export async function GET(req: Request) {
   console.info("[REPROCESS_RAZORPAY_WEBHOOK] Cron job started");
@@ -16,6 +23,7 @@ export async function GET(req: Request) {
     WHERE processed = false
       AND event_type IN ('payment.captured', 'payment.failed')
     ORDER BY received_at
+    FOR UPDATE SKIP LOCKED
     LIMIT 10
     `,
   );
@@ -59,13 +67,22 @@ export async function GET(req: Request) {
         continue;
       }
 
+      // Track details for post-commit notification
+      let completedOrderId: number | null = null;
+      let completedUserId: number | null = null;
+      let completedUserEmail: string | null = null;
+
       const client = await pool.connect();
       try {
         await client.query("BEGIN");
 
-        const poRes = await client.query(
+        const poRes = await client.query<{
+          id: number;
+          order_id: number;
+          user_id: number;
+        }>(
           `
-          SELECT id, order_id
+          SELECT id, order_id, user_id
           FROM payment_orders
           WHERE gateway = 'RAZORPAY'
             AND gateway_order_id = $1
@@ -141,22 +158,30 @@ export async function GET(req: Request) {
           paymentOrder.order_id,
         ]);
 
+        // Fetch user email before commit
+        const userResult = await client.query<{ email: string }>(
+          `SELECT u.email FROM users u
+           JOIN orders o ON o.user_id = u.id
+           WHERE o.id = $1`,
+          [paymentOrder.order_id],
+        );
+
         console.info("[REPROCESS_RAZORPAY_WEBHOOK] Committing transaction", {
           event_id,
           gatewayOrderId,
           gatewayPaymentId,
         });
-        await client.query("COMMIT");
-        console.info(
-          "[REPROCESS_RAZORPAY_WEBHOOK] Transaction committed successfully",
-          { event_id, gatewayOrderId, gatewayPaymentId },
-        );
+
+        // Store details for post-commit notification
+        completedOrderId = paymentOrder.order_id;
+        completedUserId = paymentOrder.user_id;
+        completedUserEmail = userResult.rows[0]?.email || null;
 
         console.info(
           "[REPROCESS_RAZORPAY_WEBHOOK] Marking event as processed",
           { event_id, gatewayOrderId, gatewayPaymentId },
         );
-        await pool.query(
+        await client.query(
           `
           UPDATE payment_webhook_events
           SET processed = true
@@ -169,6 +194,11 @@ export async function GET(req: Request) {
           gatewayOrderId,
           gatewayPaymentId,
         });
+        await client.query("COMMIT");
+        console.info(
+          "[REPROCESS_RAZORPAY_WEBHOOK] Transaction committed successfully",
+          { event_id, gatewayOrderId, gatewayPaymentId },
+        );
       } catch (err) {
         await client.query("ROLLBACK");
         console.error(
@@ -177,6 +207,34 @@ export async function GET(req: Request) {
         );
       } finally {
         client.release();
+      }
+
+      // Post-commit: Insert notification and trigger async email
+      if (completedOrderId && completedUserId && completedUserEmail) {
+        try {
+          console.info(
+            "[REPROCESS_RAZORPAY_WEBHOOK] Inserting notification record",
+            { event_id, orderId: completedOrderId },
+          );
+
+          await upsertOrderNotification(
+            completedOrderId,
+            completedUserId,
+            completedUserEmail,
+          );
+
+          console.info("[REPROCESS_RAZORPAY_WEBHOOK] Triggering async email", {
+            event_id,
+            orderId: completedOrderId,
+          });
+
+          triggerOrderConfirmationEmailAsync(completedOrderId);
+        } catch (notificationError) {
+          console.error(
+            "[REPROCESS_RAZORPAY_WEBHOOK] Notification insert failed",
+            { event_id, orderId: completedOrderId, error: notificationError },
+          );
+        }
       }
     } catch (err) {
       // bad payload, skip
