@@ -109,6 +109,10 @@ export async function GET(req: Request) {
 
       if (!payment) {
         // Mark as processed since it's invalid
+        console.warn(
+          "[REPROCESS_RAZORPAY_WEBHOOK] No payment entity found in payload, marking event as processed",
+          { event_id, outcome: "invalid_payload" },
+        );
         await client.query(
           `UPDATE payment_webhook_events SET processed = true WHERE id = $1`,
           [eventRowId],
@@ -155,6 +159,9 @@ export async function GET(req: Request) {
         continue;
       }
 
+      console.log("[REPROCESS_RAZORPAY_WEBHOOK] Fetching payment order", {
+        gatewayOrderId,
+      });
       // Process payment.captured
       const poRes = await client.query<{
         id: number;
@@ -174,9 +181,14 @@ export async function GET(req: Request) {
       );
 
       if (!poRes.rows[0]) {
+        console.error("[REPROCESS_RAZORPAY_WEBHOOK] Payment order not found", {
+          gatewayOrderId,
+        });
         await client.query("ROLLBACK");
         await client.query("BEGIN");
-        const attemptResult = await client.query<{ processing_attempts: number }>(
+        const attemptResult = await client.query<{
+          processing_attempts: number;
+        }>(
           `UPDATE payment_webhook_events
            SET processing_attempts = COALESCE(processing_attempts, 0) + 1
            WHERE id = $1
@@ -213,12 +225,6 @@ export async function GET(req: Request) {
         paymentAmount !== paymentOrder.amount ||
         paymentCurrency !== orderCurrency
       ) {
-        await client.query(
-          `UPDATE payment_webhook_events SET processed = true WHERE id = $1`,
-          [eventRowId],
-        );
-        await client.query("COMMIT");
-        processedCount++;
         console.warn(
           "[REPROCESS_RAZORPAY_WEBHOOK] Amount or currency mismatch, marking event processed",
           {
@@ -231,6 +237,25 @@ export async function GET(req: Request) {
             outcome: "amount_currency_mismatch",
           },
         );
+        await client.query(
+          `UPDATE payment_webhook_events SET processed = true WHERE id = $1`,
+          [eventRowId],
+        );
+        await client.query("COMMIT");
+        console.warn(
+          "[REPROCESS_RAZORPAY_WEBHOOK] Amount or currency mismatch, marked event processed",
+          {
+            event_id,
+            orderId: paymentOrder.order_id,
+            paymentAmount,
+            orderAmount: paymentOrder.amount,
+            paymentCurrency,
+            orderCurrency,
+            outcome: "amount_currency_mismatch",
+          },
+        );
+        processedCount++;
+
         continue;
       }
 
@@ -242,17 +267,30 @@ export async function GET(req: Request) {
 
       if (orderStatus.rows[0]?.status === "PAID") {
         // Already paid - just mark webhook as processed
+        console.info(
+          "[REPROCESS_RAZORPAY_WEBHOOK] Order already PAID, marking event as processed",
+          {
+            event_id,
+            orderId: paymentOrder.order_id,
+            outcome: "idempotent_skip",
+          },
+        );
         await client.query(
           `UPDATE payment_webhook_events SET processed = true WHERE id = $1`,
           [eventRowId],
         );
         await client.query("COMMIT");
+        console.info(
+          "[REPROCESS_RAZORPAY_WEBHOOK] Order already PAID, marked event as processed",
+          {
+            event_id,
+            orderId: paymentOrder.order_id,
+            outcome: "idempotent_skip",
+          },
+        );
         processedCount++;
         completedOrderId = paymentOrder.order_id;
-        console.info(
-          "[REPROCESS_RAZORPAY_WEBHOOK] Order already PAID, marking event as processed",
-          { event_id, orderId: paymentOrder.order_id, outcome: "idempotent_skip" },
-        );
+
         // Trigger email so notification is created/sent if missing; no-op if already SENT
       } else {
         console.info("[REPROCESS_RAZORPAY_WEBHOOK] Inserting payment record", {
