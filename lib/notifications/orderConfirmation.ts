@@ -232,19 +232,38 @@ export async function sendOrderConfirmationEmail(
   console.log("[ORDER_CONFIRMATION_EMAIL] Starting send", { orderId });
 
   // 1. Fetch order details first to get user info
+  console.log("[ORDER_CONFIRMATION_EMAIL] Step 1: Fetching order details", {
+    orderId,
+  });
   const orderData = await fetchOrderDetails(orderId);
   if (!orderData) {
-    console.error("[ORDER_CONFIRMATION_EMAIL] Order not found or not paid", {
-      orderId,
-    });
+    console.error(
+      "[ORDER_CONFIRMATION_EMAIL] Step 1 FAILED: Order not found or not paid",
+      {
+        orderId,
+      },
+    );
     return {
       success: false,
       error: "Order not found or not in PAID status",
     };
   }
+  console.log(
+    "[ORDER_CONFIRMATION_EMAIL] Step 1 SUCCESS: Order details fetched",
+    {
+      orderId,
+      userId: orderData.userId,
+      email: orderData.email,
+      itemName: orderData.itemName,
+    },
+  );
 
   // 2. Atomically claim the notification (prevents duplicate sends)
   // This UPDATE only succeeds if notification is in PENDING or FAILED state
+  console.log(
+    "[ORDER_CONFIRMATION_EMAIL] Step 2: Attempting to claim notification",
+    { orderId },
+  );
   const claimResult = await pool.query<{ id: number }>(
     `
     UPDATE order_notifications
@@ -265,6 +284,10 @@ export async function sendOrderConfirmationEmail(
 
   // If no rows updated, check why
   if (!claimResult.rows[0]) {
+    console.log(
+      "[ORDER_CONFIRMATION_EMAIL] Step 2: Claim failed, checking existing status",
+      { orderId },
+    );
     // Check current status
     const statusCheck = await pool.query<{
       status: string;
@@ -284,6 +307,10 @@ export async function sendOrderConfirmationEmail(
 
     if (!existing) {
       // Notification doesn't exist - create it
+      console.log(
+        "[ORDER_CONFIRMATION_EMAIL] Step 2: No existing notification, creating new one",
+        { orderId },
+      );
       const insertResult = await pool.query<{ id: number }>(
         `
         INSERT INTO order_notifications (
@@ -332,8 +359,20 @@ export async function sendOrderConfirmationEmail(
   }
 
   const notificationId = claimResult.rows[0]?.id;
+  console.log(
+    "[ORDER_CONFIRMATION_EMAIL] Step 2 SUCCESS: Notification claimed",
+    {
+      orderId,
+      notificationId,
+    },
+  );
+
   if (!notificationId) {
     // Fallback: get the ID
+    console.log(
+      "[ORDER_CONFIRMATION_EMAIL] Step 2: No ID from claim, fetching ID",
+      { orderId },
+    );
     const idResult = await pool.query<{ id: number }>(
       `SELECT id FROM order_notifications 
        WHERE order_id = $1 AND type = 'ORDER_CONFIRMATION' AND channel = 'EMAIL'`,
@@ -355,21 +394,38 @@ export async function sendOrderConfirmationEmail(
     ).rows[0]?.id;
 
   if (!finalNotificationId) {
+    console.error(
+      "[ORDER_CONFIRMATION_EMAIL] Step 2 FAILED: Notification record not found",
+      { orderId },
+    );
     return { success: false, error: "Notification record not found" };
   }
 
   try {
     // 3. Generate email content
-    const subject = buildOrderConfirmationEmailSubject(orderData);
-    const html = buildOrderConfirmationEmailHtml(orderData);
-    const text = buildOrderConfirmationEmailText(orderData);
-
-    console.log("[ORDER_CONFIRMATION_EMAIL] Sending email", {
+    console.log("[ORDER_CONFIRMATION_EMAIL] Step 3: Generating email content", {
       orderId,
       notificationId: finalNotificationId,
     });
+    const subject = buildOrderConfirmationEmailSubject(orderData);
+    const html = buildOrderConfirmationEmailHtml(orderData);
+    const text = buildOrderConfirmationEmailText(orderData);
+    console.log(
+      "[ORDER_CONFIRMATION_EMAIL] Step 3 SUCCESS: Email content generated",
+      {
+        orderId,
+        notificationId: finalNotificationId,
+        subject,
+      },
+    );
 
     // 4. Send via Resend
+    console.log("[ORDER_CONFIRMATION_EMAIL] Step 4: Sending email via Resend", {
+      orderId,
+      notificationId: finalNotificationId,
+      to: orderData.email,
+    });
+
     const { data, error } = await getResend().emails.send({
       from: `${PLATFORM_NAME} <orders@mayankfin.com>`,
       to: orderData.email,
@@ -379,13 +435,20 @@ export async function sendOrderConfirmationEmail(
     });
 
     if (error) {
-      console.error("[ORDER_CONFIRMATION_EMAIL] Resend error", {
+      console.error("[ORDER_CONFIRMATION_EMAIL] Step 4 FAILED: Resend error", {
         orderId,
         notificationId: finalNotificationId,
         error: error.message,
       });
 
-      // Update notification as FAILED
+      // 5. Update notification as FAILED
+      console.log(
+        "[ORDER_CONFIRMATION_EMAIL] Step 5: Updating notification status to FAILED",
+        {
+          orderId,
+          notificationId: finalNotificationId,
+        },
+      );
       await updateNotificationStatus(
         finalNotificationId,
         "FAILED",
@@ -398,14 +461,31 @@ export async function sendOrderConfirmationEmail(
       };
     }
 
-    console.log("[ORDER_CONFIRMATION_EMAIL] Email sent successfully", {
-      orderId,
-      notificationId: finalNotificationId,
-      messageId: data?.id,
-    });
+    console.log(
+      "[ORDER_CONFIRMATION_EMAIL] Step 4 SUCCESS: Email sent successfully",
+      {
+        orderId,
+        notificationId: finalNotificationId,
+        messageId: data?.id,
+      },
+    );
 
-    // Update notification as SENT
+    // 5. Update notification as SENT
+    console.log(
+      "[ORDER_CONFIRMATION_EMAIL] Step 5: Updating notification status to SENT",
+      {
+        orderId,
+        notificationId: finalNotificationId,
+      },
+    );
     await updateNotificationStatus(finalNotificationId, "SENT");
+    console.log(
+      "[ORDER_CONFIRMATION_EMAIL] Step 5 SUCCESS: Notification status updated to SENT",
+      {
+        orderId,
+        notificationId: finalNotificationId,
+      },
+    );
 
     return {
       success: true,
@@ -415,13 +495,24 @@ export async function sendOrderConfirmationEmail(
     const errorMessage =
       err instanceof Error ? err.message : "Unknown error occurred";
 
-    console.error("[ORDER_CONFIRMATION_EMAIL] Unexpected error", {
-      orderId,
-      notificationId: finalNotificationId,
-      errorMessage,
-    });
+    console.error(
+      "[ORDER_CONFIRMATION_EMAIL] EXCEPTION: Unexpected error caught",
+      {
+        orderId,
+        notificationId: finalNotificationId,
+        errorMessage,
+        stack: err instanceof Error ? err.stack : undefined,
+      },
+    );
 
     // Update notification as FAILED
+    console.log(
+      "[ORDER_CONFIRMATION_EMAIL] Step 5: Updating notification status to FAILED after exception",
+      {
+        orderId,
+        notificationId: finalNotificationId,
+      },
+    );
     await updateNotificationStatus(finalNotificationId, "FAILED", errorMessage);
 
     return {
