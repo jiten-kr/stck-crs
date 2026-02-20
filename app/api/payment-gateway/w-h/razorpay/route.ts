@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 import pool from "@/lib/db";
 import {
   upsertOrderNotification,
-  triggerOrderConfirmationEmailAsync,
+  sendOrderConfirmationEmail,
 } from "@/lib/notifications";
 
 type RazorpayWebhookPayload = {
@@ -359,17 +359,26 @@ export async function POST(request: NextRequest) {
         completedUserEmail,
       );
 
-      console.log("[RAZORPAY_WEBHOOK] Triggering async email", {
+      console.log("[RAZORPAY_WEBHOOK] Sending order confirmation email", {
         eventId,
         orderId: completedOrderId,
       });
 
-      // Fire and forget - non-blocking
-      triggerOrderConfirmationEmailAsync(completedOrderId);
+      // Await email send - required in serverless environment
+      // Fire-and-forget doesn't work reliably as Vercel may terminate before completion
+      const emailResult = await sendOrderConfirmationEmail(completedOrderId);
+
+      console.log("[RAZORPAY_WEBHOOK] Email send result", {
+        eventId,
+        orderId: completedOrderId,
+        success: emailResult.success,
+        error: emailResult.error,
+        messageId: emailResult.messageId,
+      });
     } catch (notificationError) {
       // Don't fail the webhook response for notification errors
       // Cron will retry failed notifications
-      console.error("[RAZORPAY_WEBHOOK] Notification insert failed", {
+      console.error("[RAZORPAY_WEBHOOK] Notification/email failed", {
         eventId,
         orderId: completedOrderId,
         error: notificationError,
