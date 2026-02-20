@@ -16,7 +16,7 @@ import {
     getPaymentSuccessData,
     type PaymentSuccessStoredData,
 } from "@/lib/paymentSuccessStore";
-import { formatClassDate } from "@/lib/notifications";
+import { formatClassDate } from "@/lib/notifications/contentBuilder";
 
 export type PaymentSuccessData = PaymentSuccessStoredData;
 

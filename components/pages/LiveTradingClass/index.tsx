@@ -21,7 +21,7 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import ContactAuthModal from "@/components/auth/ContactAuthModal";
 import { setPaymentSuccessData } from "@/lib/paymentSuccessStore";
-import { getNextLiveClassSchedule } from "@/lib/notifications";
+import { getNextLiveClassSchedule } from "@/lib/notifications/contentBuilder";
 import {
     TrendingUp,
     BarChart3,
