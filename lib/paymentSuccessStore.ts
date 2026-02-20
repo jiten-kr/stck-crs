@@ -7,6 +7,7 @@ export type PaymentSuccessStoredData = {
   orderId: string;
   amount: number;
   currency: string;
+  itemName: string;
   nextLiveClassDate: string;
   nextLiveClassTime: string;
 };

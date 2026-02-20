@@ -7,7 +7,6 @@ import { Button } from "@/components/ui/button";
 import { jsPDF } from "jspdf";
 import {
     PLATFORM_NAME,
-    LIVE_TRADING_CLASS_NAME,
     PLATFORM_SUPPORT_EMAIL,
     PLATFORM_SUPPORT_PHONE,
 } from "@/lib/constants";
@@ -102,7 +101,7 @@ const buildReceiptPdf = (data: PaymentSuccessData) => {
     doc.setFontSize(11);
     doc.setTextColor(71, 85, 105);
     cursorY += 20;
-    doc.text(`Class: ${LIVE_TRADING_CLASS_NAME}`, leftColX, cursorY);
+    doc.text(`Class: ${data.itemName}`, leftColX, cursorY);
     cursorY += lineHeight;
     doc.text(`Attendee: ${data.userName}`, leftColX, cursorY);
     cursorY += lineHeight;
@@ -383,7 +382,7 @@ export default function PaymentSuccessPage({
                         <div>
                             <p className="text-sm font-medium text-slate-600">Booked for</p>
                             <p className="text-lg font-semibold text-slate-900">
-                                {LIVE_TRADING_CLASS_NAME}
+                                {storedData?.itemName}
                             </p>
                             <p className="text-sm text-slate-600">
                                 Attendee: {storedData?.userName}

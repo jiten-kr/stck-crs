@@ -7,11 +7,7 @@
 
 import { Resend } from "resend";
 import pool from "@/lib/db";
-import {
-  PLATFORM_NAME,
-  LIVE_TRADING_CLASS_NAME,
-  LIVE_TRADING_CLASS_ITEM_ID,
-} from "@/lib/constants";
+import { PLATFORM_NAME } from "@/lib/constants";
 import type {
   OrderConfirmationData,
   SendNotificationResult,
@@ -53,6 +49,7 @@ type OrderQueryRow = {
   total_amount: number;
   currency: string;
   item_id: number;
+  item_name: string;
   order_status: string;
   paid_at: Date;
   gateway_payment_id: string;
@@ -87,12 +84,14 @@ async function fetchOrderDetails(
       o.total_amount,
       o.currency,
       o.item_id,
+      smc.title AS item_name,
       o.status AS order_status,
       o.updated_at AS paid_at,
       p.gateway_payment_id,
       po.gateway_order_id
     FROM orders o
     JOIN users u ON u.id = o.user_id
+    JOIN stock_market_courses smc ON smc.course_id = o.item_id
     LEFT JOIN payment_orders po ON po.order_id = o.id AND po.status = 'PAID'
     LEFT JOIN payments p ON p.order_id = o.id AND p.captured = true
     WHERE o.id = $1 AND o.status = 'PAID'
@@ -106,11 +105,8 @@ async function fetchOrderDetails(
     return null;
   }
 
-  // Determine item name based on item_id
-  const itemName =
-    row.item_id === LIVE_TRADING_CLASS_ITEM_ID
-      ? LIVE_TRADING_CLASS_NAME
-      : `Course #${row.item_id}`;
+  // Use the actual course title from the database
+  const itemName = row.item_name || `Course #${row.item_id}`;
 
   // Calculate next live class schedule
   const schedule = getNextLiveClassSchedule(row.paid_at);

@@ -189,6 +189,7 @@ export default function LiveTradingClass({
                             orderId: response.razorpay_order_id,
                             amount: LIVE_TRADING_CLASS_PRICE_INR,
                             currency: "INR",
+                            itemName: LIVE_TRADING_CLASS_NAME,
                             nextLiveClassDate,
                             nextLiveClassTime,
                         });
