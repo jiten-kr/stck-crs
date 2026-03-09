@@ -12,7 +12,7 @@ import { Providers } from "@/components/providers"
 import { PLATFORM_FULL_NAME, PLATFORM_NAME } from "@/lib/constants"
 import type { Metadata } from "next";
 
-const META_PIXEL_ID = process.env.NEXT_PUBLIC_META_PIXEL_ID;
+const META_PIXEL_ID = "1569707624288294";
 
 
 const inter = Inter({ subsets: ["latin"] })
