@@ -1,7 +1,7 @@
 "use client";
 
 import type { ReactNode } from "react";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { CheckCircle2, AlertTriangle, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { jsPDF } from "jspdf";
@@ -16,6 +16,7 @@ import {
     type PaymentSuccessStoredData,
 } from "@/lib/paymentSuccessStore";
 import { formatClassDate } from "@/lib/notifications/contentBuilder";
+import { trackPurchase } from "@/lib/metaPixel";
 
 export type PaymentSuccessData = PaymentSuccessStoredData;
 
@@ -204,6 +205,25 @@ export default function PaymentSuccessPage({
     const [errorMessage, setErrorMessage] = useState<string | null>(
         error ?? null,
     );
+    // Track if Purchase event has been fired to prevent duplicates
+    const hasFiredPurchaseEvent = useRef(false);
+
+    // Track Purchase event when payment data is available
+    useEffect(() => {
+        if (!storedData || hasFiredPurchaseEvent.current) return;
+
+        // Fire the Meta Pixel Purchase event
+        trackPurchase({
+            value: storedData.amount,
+            currency: storedData.currency,
+            content_name: storedData.itemName,
+            content_ids: [storedData.orderId],
+            content_type: 'product',
+            num_items: 1,
+        });
+
+        hasFiredPurchaseEvent.current = true;
+    }, [storedData]);
 
     useEffect(() => {
         if (data) return;
