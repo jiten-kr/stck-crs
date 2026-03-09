@@ -22,6 +22,7 @@ import { useRouter } from "next/navigation";
 import ContactAuthModal from "@/components/auth/ContactAuthModal";
 import { setPaymentSuccessData } from "@/lib/paymentSuccessStore";
 import { getNextLiveClassSchedule } from "@/lib/notifications/contentBuilder";
+import { trackInitiateCheckout } from "@/lib/metaPixel";
 import {
     TrendingUp,
     BarChart3,
@@ -225,6 +226,16 @@ export default function LiveTradingClass({
     };
 
     const handleClick = async () => {
+        // Track InitiateCheckout event for Meta Pixel
+        trackInitiateCheckout({
+            value: LIVE_TRADING_CLASS_PRICE_INR,
+            currency: "INR",
+            content_name: LIVE_TRADING_CLASS_NAME,
+            content_ids: [LIVE_TRADING_CLASS_ITEM_ID.toString()],
+            content_type: "product",
+            num_items: 1,
+        });
+
         if (!isAuthenticated || !user?.id) {
             console.warn("[LIVE_TRADING_CLASS] User not authenticated");
             setIsAuthModalOpen(true);
