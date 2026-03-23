@@ -61,6 +61,10 @@ export const metadata: Metadata = {
     type: "website",
   },
 
+  facebook: {
+    appId: "1481346167003128",
+  },
+
   twitter: {
     card: "summary_large_image",
     title: PLATFORM_NAME + " - Learn Stock Market & Crypto Trading",
