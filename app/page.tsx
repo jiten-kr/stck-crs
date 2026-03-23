@@ -57,14 +57,6 @@ export const metadata: Metadata = {
       "Learn stock market and crypto trading with live classes and self-paced courses. Designed for beginners with a practical, structured approach.",
     url: "https://mayankfin.com",
     siteName: "MayankFin",
-    images: [
-      {
-        url: "/og-image.png",
-        width: 1200,
-        height: 630,
-        alt: "MayankFin - Stock Market & Crypto Trading Education",
-      },
-    ],
     locale: "en_IN",
     type: "website",
   },
@@ -74,7 +66,6 @@ export const metadata: Metadata = {
     title: PLATFORM_NAME + " - Learn Stock Market & Crypto Trading",
     description:
       "Beginner-friendly stock market & crypto trading education with live classes and structured courses.",
-    images: ["/og-image.png"],
   },
 
   robots: {
