@@ -2,8 +2,6 @@
  * Application-wide constants
  */
 
-import { sendCustomWhatsApp } from "./notifications";
-
 export const PLATFORM_NAME = "MayankFin";
 export const PLATFORM_DESCRIPTION = "Online Course Platform";
 export const PLATFORM_FULL_NAME = `${PLATFORM_NAME} - ${PLATFORM_DESCRIPTION}`;
@@ -14,8 +12,3 @@ export const LEARNERS_COUNT = "2,000+";
 export const LIVE_TRADING_CLASS_ITEM_ID = 2;
 export const LIVE_TRADING_CLASS_PRICE_INR = 59;
 export const LIVE_TRADING_CLASS_NAME = "Live Trading Class";
-
-sendCustomWhatsApp(
-  "917042752172",
-  `Hello from ${PLATFORM_NAME}! This is a test message to verify WhatsApp integration.`,
-);

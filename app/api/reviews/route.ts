@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import pool from "@/lib/db";
+import { PLATFORM_NAME } from "@/lib/constants";
 
 /**
  * Database row type for reviews table
