@@ -34,3 +34,18 @@ export {
   fetchPendingNotificationsForRetry,
   processRetryNotifications,
 } from "./orderConfirmation";
+
+// WhatsApp service functions
+export {
+  sendWhatsAppMessage,
+  sendOrderConfirmationWhatsApp,
+  sendPaymentSuccessWhatsApp,
+  sendCustomWhatsApp,
+  WHATSAPP_TEMPLATES,
+} from "./whatsapp";
+
+export type {
+  WhatsAppTemplateData,
+  SendWhatsAppResult,
+  WhatsAppMessageOptions,
+} from "./whatsapp";
