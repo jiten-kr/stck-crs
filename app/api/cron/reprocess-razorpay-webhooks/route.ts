@@ -1,6 +1,7 @@
 import pool from "@/lib/db";
 import {
   triggerOrderConfirmationEmailAsync,
+  sendOrderConfirmationWhatsAppMessage,
   processRetryNotifications,
 } from "@/lib/notifications";
 
@@ -416,17 +417,26 @@ export async function GET(req: Request) {
       client?.release();
     }
 
-    // Post-commit: Trigger async email (sendOrderConfirmationEmail handles idempotency)
+    // Post-commit: Trigger async email + WhatsApp (both handle idempotency)
     if (completedOrderId) {
       try {
-        console.info("[REPROCESS_RAZORPAY_WEBHOOK] Triggering async email", {
+        console.info("[REPROCESS_RAZORPAY_WEBHOOK] Triggering async notifications", {
           event_id,
           orderId: completedOrderId,
         });
         triggerOrderConfirmationEmailAsync(completedOrderId);
+        // WhatsApp handles its own upsert and idempotency internally
+        sendOrderConfirmationWhatsAppMessage(completedOrderId).catch(
+          (err) => {
+            console.error(
+              "[REPROCESS_RAZORPAY_WEBHOOK] WhatsApp notification failed",
+              { event_id, orderId: completedOrderId, error: err },
+            );
+          },
+        );
       } catch (notificationError) {
         console.error(
-          "[REPROCESS_RAZORPAY_WEBHOOK] Failed to trigger email notification",
+          "[REPROCESS_RAZORPAY_WEBHOOK] Failed to trigger notifications",
           { event_id, orderId: completedOrderId, error: notificationError },
         );
       }

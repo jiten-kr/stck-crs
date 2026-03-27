@@ -26,9 +26,10 @@ export {
 
 export type { OrderConfirmationContent } from "./contentBuilder";
 
-// Email service functions
+// Email & WhatsApp notification service functions
 export {
   sendOrderConfirmationEmail,
+  sendOrderConfirmationWhatsAppMessage,
   triggerOrderConfirmationEmailAsync,
   upsertOrderNotification,
   fetchPendingNotificationsForRetry,

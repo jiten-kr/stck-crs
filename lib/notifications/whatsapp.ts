@@ -267,6 +267,34 @@ Thank you for choosing MayankFin! We'll send you further updates soon.
 
 For any queries, reply to this message or email us at support@mayankfin.com`,
 
+  // Live class order confirmation template
+  live_class_confirmation: `🎉 *Live Trading Class Booking Confirmed!*
+
+Hi {{customerName}},
+
+Welcome to MayankFin! Your live trading class booking is confirmed.
+
+📦 *Booking Details:*
+• Booking ID: {{orderId}}
+• Course: {{itemName}}
+• Amount Paid: {{amount}}
+
+📅 *Next Live Class:*
+• Date: {{classDate}}
+• Time: {{classTime}}
+
+🔗 *Join Link:*
+{{classUrl}}
+
+💡 *What's Next?*
+• Save this message for the join link
+• Join 5 minutes before class starts
+• Keep a notebook ready for notes
+
+For any queries, reply to this message or email us at support@mayankfin.com
+
+See you in class! 🚀`,
+
   // Payment success template
   payment_success: `✅ *Payment Successful*
 
@@ -313,7 +341,7 @@ See you there!`,
 
 /**
  * Send order confirmation via WhatsApp
- * Convenience wrapper for order confirmation use case
+ * Convenience wrapper for general order confirmation
  */
 export async function sendOrderConfirmationWhatsApp(
   to: string,
@@ -332,6 +360,40 @@ export async function sendOrderConfirmationWhatsApp(
       orderId: String(data.orderId),
       itemName: data.itemName,
       amount: data.amount,
+    },
+  });
+}
+
+/**
+ * Send live class booking confirmation via WhatsApp
+ * Uses approved Twilio Content Template
+ */
+export async function sendLiveClassConfirmationWhatsApp(
+  to: string,
+  data: {
+    customerName: string;
+    orderId: string | number;
+    itemName: string;
+    amount: string;
+    classDate: string;
+    classTime: string;
+    classUrl: string;
+  },
+): Promise<SendWhatsAppResult> {
+  // Use approved Twilio Content Template SID
+  const LIVE_CLASS_TEMPLATE_SID = "HX7e4e79f3ae554e86a60651f609ea5a84";
+  
+  return sendWhatsAppMessage({
+    to,
+    templateName: LIVE_CLASS_TEMPLATE_SID,
+    templateData: {
+      customerName: data.customerName,
+      orderId: String(data.orderId),
+      itemName: data.itemName,
+      amount: data.amount,
+      classDate: data.classDate,
+      classTime: data.classTime,
+      classUrl: data.classUrl,
     },
   });
 }

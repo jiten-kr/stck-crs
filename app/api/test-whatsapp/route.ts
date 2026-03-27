@@ -1,12 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
-import { sendCustomWhatsApp } from "@/lib/notifications/whatsapp";
-import { PLATFORM_NAME } from "@/lib/constants";
+import { sendLiveClassConfirmationWhatsApp } from "@/lib/notifications/whatsapp";
 
 /**
  * POST /api/test-whatsapp
  *
- * Test endpoint to send a WhatsApp message via Twilio.
- * Body: { to: string, message?: string }
+ * Test endpoint to send a live class confirmation WhatsApp message via Twilio.
+ * Body: { to: string, customerName?: string, orderId?: string, itemName?: string, amount?: string, classDate?: string, classTime?: string, classUrl?: string }
  *
  * Example:
  * curl -X POST http://localhost:3000/api/test-whatsapp \
@@ -19,9 +18,17 @@ export async function POST(request: NextRequest) {
 
     const body = await request.json();
     const to = body?.to;
-    const message =
-      body?.message ||
-      `Hello from ${PLATFORM_NAME}! This is a test message to verify WhatsApp integration.`;
+
+    // Live class confirmation data with defaults for testing
+    const orderData = {
+      customerName: body?.customerName || "Test User",
+      orderId: body?.orderId || "TEST-12345",
+      itemName: body?.itemName || "Live Trading Class",
+      amount: body?.amount || "₹999",
+      classDate: body?.classDate || "Every Saturday & Sunday",
+      classTime: body?.classTime || "7:00 PM - 8:30 PM IST",
+      classUrl: body?.classUrl || "https://meet.google.com/abc-defg-hij",
+    };
 
     if (!to) {
       return NextResponse.json(
@@ -30,12 +37,12 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    console.log("[TEST_WHATSAPP] Sending message", {
+    console.log("[TEST_WHATSAPP] Sending live class confirmation", {
       to,
-      messageLength: message.length,
+      orderData,
     });
 
-    const result = await sendCustomWhatsApp(to, message);
+    const result = await sendLiveClassConfirmationWhatsApp(to, orderData);
 
     console.log("[TEST_WHATSAPP] Result:", result);
 
@@ -43,7 +50,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({
         success: true,
         messageId: result.messageId,
-        message: "WhatsApp message sent successfully!",
+        message: "Live class confirmation WhatsApp sent successfully!",
       });
     } else {
       return NextResponse.json(

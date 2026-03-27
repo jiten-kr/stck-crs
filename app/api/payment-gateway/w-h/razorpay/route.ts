@@ -4,6 +4,7 @@ import pool from "@/lib/db";
 import {
   upsertOrderNotification,
   sendOrderConfirmationEmail,
+  sendOrderConfirmationWhatsAppMessage,
 } from "@/lib/notifications";
 
 type RazorpayWebhookPayload = {
@@ -343,7 +344,7 @@ export async function POST(request: NextRequest) {
     client.release();
   }
 
-  // Post-commit: Insert notification and trigger async email
+  // Post-commit: Insert notification and trigger async email + WhatsApp
   // This is OUTSIDE the transaction to ensure DB commit happened
   if (completedOrderId && completedUserId && completedUserEmail) {
     try {
@@ -352,21 +353,25 @@ export async function POST(request: NextRequest) {
         orderId: completedOrderId,
       });
 
-      // UPSERT notification record (prevents duplicates)
+      // UPSERT email notification record (prevents duplicates)
       await upsertOrderNotification(
         completedOrderId,
         completedUserId,
         completedUserEmail,
       );
 
-      console.log("[RAZORPAY_WEBHOOK] Sending order confirmation email", {
+      console.log("[RAZORPAY_WEBHOOK] Sending email and WhatsApp confirmations", {
         eventId,
         orderId: completedOrderId,
       });
 
-      // Await email send - required in serverless environment
-      // Fire-and-forget doesn't work reliably as Vercel may terminate before completion
-      const emailResult = await sendOrderConfirmationEmail(completedOrderId);
+      // Send email and WhatsApp in parallel — both are awaited since
+      // fire-and-forget doesn't work reliably in serverless (Vercel may terminate)
+      // WhatsApp notification record is upserted inside sendOrderConfirmationWhatsAppMessage
+      const [emailResult, whatsappResult] = await Promise.all([
+        sendOrderConfirmationEmail(completedOrderId),
+        sendOrderConfirmationWhatsAppMessage(completedOrderId),
+      ]);
 
       console.log("[RAZORPAY_WEBHOOK] Email send result", {
         eventId,
@@ -375,10 +380,18 @@ export async function POST(request: NextRequest) {
         error: emailResult.error,
         messageId: emailResult.messageId,
       });
+
+      console.log("[RAZORPAY_WEBHOOK] WhatsApp send result", {
+        eventId,
+        orderId: completedOrderId,
+        success: whatsappResult.success,
+        error: whatsappResult.error,
+        messageId: whatsappResult.messageId,
+      });
     } catch (notificationError) {
       // Don't fail the webhook response for notification errors
       // Cron will retry failed notifications
-      console.error("[RAZORPAY_WEBHOOK] Notification/email failed", {
+      console.error("[RAZORPAY_WEBHOOK] Notification failed", {
         eventId,
         orderId: completedOrderId,
         error: notificationError,

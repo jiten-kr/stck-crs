@@ -1,7 +1,8 @@
 /**
- * Order Confirmation Email Service
+ * Order Confirmation Notification Service
  *
- * Handles sending order confirmation emails and managing notification status.
+ * Handles sending order confirmation emails and WhatsApp messages,
+ * and managing notification status.
  * Designed to be called from webhooks (async) and cron jobs (retry).
  */
 
@@ -17,8 +18,11 @@ import {
   buildOrderConfirmationEmailHtml,
   buildOrderConfirmationEmailText,
   buildOrderConfirmationEmailSubject,
+  formatAmount,
+  formatClassDate,
   getNextLiveClassSchedule,
 } from "./contentBuilder";
+import { sendLiveClassConfirmationWhatsApp } from "./whatsapp";
 
 /** Max send attempts for order confirmation email (retries via cron) */
 const MAX_NOTIFICATION_ATTEMPTS = 10;
@@ -578,12 +582,185 @@ export async function fetchPendingNotificationsForRetry(
 }
 
 /**
+ * Placeholder live class URL — replace with the real URL once available
+ */
+const PLACEHOLDER_LIVE_CLASS_URL = "https://example.com/live-class";
+
+/**
+ * Send order confirmation WhatsApp message for a given order
+ *
+ * This function:
+ * 1. Fetches order details from database (reuses fetchOrderDetails)
+ * 2. Validates user has a phone number
+ * 3. Upserts a WHATSAPP notification record
+ * 4. Atomically claims the notification (PENDING/FAILED → PROCESSING)
+ * 5. Sends WhatsApp via sendLiveClassConfirmationWhatsApp
+ * 6. Updates notification status (SENT or FAILED)
+ *
+ * @param orderId - The order ID to send confirmation for
+ * @returns SendNotificationResult with success status and any error
+ */
+export async function sendOrderConfirmationWhatsAppMessage(
+  orderId: number,
+): Promise<SendNotificationResult> {
+  console.log("[ORDER_CONFIRMATION_WHATSAPP] Starting send", { orderId });
+
+  // 1. Fetch order details
+  const orderData = await fetchOrderDetails(orderId);
+  if (!orderData) {
+    console.error(
+      "[ORDER_CONFIRMATION_WHATSAPP] Order not found or not paid",
+      { orderId },
+    );
+    return { success: false, error: "Order not found or not in PAID status" };
+  }
+
+  // 2. Validate phone number
+  if (!orderData.phone) {
+    console.log("[ORDER_CONFIRMATION_WHATSAPP] No phone number, skipping", {
+      orderId,
+    });
+    return { success: false, error: "No phone number available" };
+  }
+
+  // 3. Upsert WHATSAPP notification record
+  console.log("[ORDER_CONFIRMATION_WHATSAPP] Upserting notification record", {
+    orderId,
+  });
+  await pool.query(
+    `INSERT INTO order_notifications (
+      order_id, user_id, type, channel, recipient, status
+    )
+    VALUES ($1, $2, 'ORDER_CONFIRMATION', 'WHATSAPP', $3, 'PENDING')
+    ON CONFLICT (order_id, type, channel)
+    DO UPDATE SET updated_at = NOW()`,
+    [orderId, orderData.userId, orderData.phone],
+  );
+
+  // 4. Atomically claim the notification (prevents duplicate sends)
+  const claimResult = await pool.query<{ id: number }>(
+    `UPDATE order_notifications
+     SET
+       status = 'PENDING',
+       attempt_count = attempt_count + 1,
+       last_attempt_at = NOW(),
+       updated_at = NOW()
+     WHERE order_id = $1
+       AND type = 'ORDER_CONFIRMATION'
+       AND channel = 'WHATSAPP'
+       AND status IN ('PENDING', 'FAILED')
+       AND attempt_count < ${MAX_NOTIFICATION_ATTEMPTS}
+     RETURNING id`,
+    [orderId],
+  );
+
+  if (!claimResult.rows[0]) {
+    // Check current status
+    const statusCheck = await pool.query<{
+      status: string;
+      attempt_count: number;
+    }>(
+      `SELECT status, attempt_count
+       FROM order_notifications
+       WHERE order_id = $1
+         AND type = 'ORDER_CONFIRMATION'
+         AND channel = 'WHATSAPP'`,
+      [orderId],
+    );
+
+    const existing = statusCheck.rows[0];
+    if (existing?.status === "SENT") {
+      console.log("[ORDER_CONFIRMATION_WHATSAPP] Already sent, skipping", {
+        orderId,
+      });
+      return { success: true };
+    }
+    if (existing && existing.attempt_count >= MAX_NOTIFICATION_ATTEMPTS) {
+      console.log("[ORDER_CONFIRMATION_WHATSAPP] Max attempts reached", {
+        orderId,
+      });
+      return { success: false, error: "Max retry attempts exceeded" };
+    }
+    console.log("[ORDER_CONFIRMATION_WHATSAPP] Already being processed", {
+      orderId,
+    });
+    return {
+      success: false,
+      error: "Notification is being processed by another worker",
+    };
+  }
+
+  const notificationId = claimResult.rows[0].id;
+  console.log("[ORDER_CONFIRMATION_WHATSAPP] Notification claimed", {
+    orderId,
+    notificationId,
+  });
+
+  try {
+    // 5. Format data and send WhatsApp
+    const formattedAmount = formatAmount(orderData.amount, orderData.currency);
+    const formattedDate = formatClassDate(orderData.nextLiveClassDate);
+
+    const result = await sendLiveClassConfirmationWhatsApp(orderData.phone, {
+      customerName: orderData.userName,
+      orderId: String(orderData.orderId),
+      itemName: orderData.itemName,
+      amount: formattedAmount,
+      classDate: formattedDate,
+      classTime: orderData.nextLiveClassTime,
+      classUrl: PLACEHOLDER_LIVE_CLASS_URL,
+    });
+
+    // 6. Update notification status
+    if (result.success) {
+      console.log("[ORDER_CONFIRMATION_WHATSAPP] Sent successfully", {
+        orderId,
+        notificationId,
+        messageId: result.messageId,
+      });
+      await updateNotificationStatus(notificationId, "SENT");
+    } else {
+      console.error("[ORDER_CONFIRMATION_WHATSAPP] Send failed", {
+        orderId,
+        notificationId,
+        error: result.error,
+      });
+      await updateNotificationStatus(
+        notificationId,
+        "FAILED",
+        result.error || "WhatsApp send failed",
+      );
+    }
+
+    return {
+      success: result.success,
+      messageId: result.messageId,
+      error: result.error,
+    };
+  } catch (err) {
+    const errorMessage =
+      err instanceof Error ? err.message : "Unknown error occurred";
+
+    console.error("[ORDER_CONFIRMATION_WHATSAPP] Unexpected error", {
+      orderId,
+      notificationId,
+      errorMessage,
+    });
+
+    await updateNotificationStatus(notificationId, "FAILED", errorMessage);
+
+    return { success: false, error: errorMessage };
+  }
+}
+
+/**
  * Process pending notifications (for cron job)
  * Fetches pending/failed notifications and retries sending
+ * Handles both EMAIL and WHATSAPP channels.
  *
- * Since sendOrderConfirmationEmail uses atomic claim (UPDATE ... WHERE status IN),
- * this function can simply fetch candidates and let the send function handle
- * concurrent execution safety.
+ * Since sendOrderConfirmationEmail and sendOrderConfirmationWhatsAppMessage
+ * use atomic claim (UPDATE ... WHERE status IN), this function can simply
+ * fetch candidates and let the send functions handle concurrent execution safety.
  *
  * @returns Object with processed count and results
  */
@@ -591,23 +768,30 @@ export async function processRetryNotifications(): Promise<{
   processed: number;
   successful: number;
   failed: number;
-  results: Array<{ orderId: number; success: boolean; error?: string }>;
+  results: Array<{
+    orderId: number;
+    channel: string;
+    success: boolean;
+    error?: string;
+  }>;
 }> {
   console.log("[NOTIFICATION_RETRY] Starting retry process");
 
-  // Fetch notification order_ids to retry
-  // Note: sendOrderConfirmationEmail handles its own idempotency via atomic UPDATE
-  const notificationsToProcess = await pool.query<{ order_id: number }>(
+  // Fetch pending/failed notifications for both EMAIL and WHATSAPP
+  const notificationsToProcess = await pool.query<{
+    order_id: number;
+    channel: string;
+  }>(
     `
-    SELECT DISTINCT order_id
+    SELECT DISTINCT order_id, channel
     FROM order_notifications
-    WHERE 
+    WHERE
       status IN ('PENDING', 'FAILED')
       AND attempt_count < ${MAX_NOTIFICATION_ATTEMPTS}
       AND type = 'ORDER_CONFIRMATION'
-      AND channel = 'EMAIL'
+      AND channel IN ('EMAIL', 'WHATSAPP')
     ORDER BY order_id ASC
-    LIMIT 10
+    LIMIT 20
     `,
   );
 
@@ -626,24 +810,28 @@ export async function processRetryNotifications(): Promise<{
 
   const results: Array<{
     orderId: number;
+    channel: string;
     success: boolean;
     error?: string;
   }> = [];
   let successful = 0;
   let failed = 0;
 
-  // Process each notification sequentially
-  // sendOrderConfirmationEmail handles atomic claim to prevent duplicate sends
   for (const row of notificationsToProcess.rows) {
-    console.log("[NOTIFICATION_RETRY] Processing order", {
+    console.log("[NOTIFICATION_RETRY] Processing notification", {
       orderId: row.order_id,
+      channel: row.channel,
     });
 
     try {
-      const result = await sendOrderConfirmationEmail(row.order_id);
+      const result =
+        row.channel === "WHATSAPP"
+          ? await sendOrderConfirmationWhatsAppMessage(row.order_id)
+          : await sendOrderConfirmationEmail(row.order_id);
 
       results.push({
         orderId: row.order_id,
+        channel: row.channel,
         success: result.success,
         error: result.error,
       });
@@ -656,11 +844,13 @@ export async function processRetryNotifications(): Promise<{
     } catch (err) {
       console.error("[NOTIFICATION_RETRY] Error processing notification", {
         orderId: row.order_id,
+        channel: row.channel,
         error: err,
       });
 
       results.push({
         orderId: row.order_id,
+        channel: row.channel,
         success: false,
         error: err instanceof Error ? err.message : "Unknown error",
       });
