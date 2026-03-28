@@ -353,7 +353,7 @@ export async function sendOrderConfirmationEmail(
       });
       return {
         success: false,
-        error: "Notification is being processed by another worker",
+        error: "Notification is being processed",
       };
     }
   }
@@ -605,28 +605,50 @@ export async function sendOrderConfirmationWhatsAppMessage(
 ): Promise<SendNotificationResult> {
   console.log("[ORDER_CONFIRMATION_WHATSAPP] Starting send", { orderId });
 
-  // 1. Fetch order details
+  // Step 1: Fetch order details
+  console.log("[ORDER_CONFIRMATION_WHATSAPP] Step 1: Fetching order details", {
+    orderId,
+  });
   const orderData = await fetchOrderDetails(orderId);
   if (!orderData) {
     console.error(
-      "[ORDER_CONFIRMATION_WHATSAPP] Order not found or not paid",
+      "[ORDER_CONFIRMATION_WHATSAPP] Step 1 FAILED: Order not found or not paid",
       { orderId },
     );
     return { success: false, error: "Order not found or not in PAID status" };
   }
-
-  // 2. Validate phone number
-  if (!orderData.phone) {
-    console.log("[ORDER_CONFIRMATION_WHATSAPP] No phone number, skipping", {
+  console.log(
+    "[ORDER_CONFIRMATION_WHATSAPP] Step 1 SUCCESS: Order details fetched",
+    {
       orderId,
-    });
+      userId: orderData.userId,
+      phone: orderData.phone,
+      itemName: orderData.itemName,
+    },
+  );
+
+  // Step 2: Validate phone number
+  console.log("[ORDER_CONFIRMATION_WHATSAPP] Step 2: Validating phone number", {
+    orderId,
+    hasPhone: !!orderData.phone,
+  });
+  if (!orderData.phone) {
+    console.error(
+      "[ORDER_CONFIRMATION_WHATSAPP] Step 2 FAILED: No phone number available",
+      { orderId },
+    );
     return { success: false, error: "No phone number available" };
   }
+  console.log(
+    "[ORDER_CONFIRMATION_WHATSAPP] Step 2 SUCCESS: Phone number validated",
+    { orderId },
+  );
 
-  // 3. Upsert WHATSAPP notification record
-  console.log("[ORDER_CONFIRMATION_WHATSAPP] Upserting notification record", {
-    orderId,
-  });
+  // Step 3: Upsert WHATSAPP notification record
+  console.log(
+    "[ORDER_CONFIRMATION_WHATSAPP] Step 3: Upserting notification record",
+    { orderId },
+  );
   await pool.query(
     `INSERT INTO order_notifications (
       order_id, user_id, type, channel, recipient, status
@@ -636,8 +658,16 @@ export async function sendOrderConfirmationWhatsAppMessage(
     DO UPDATE SET updated_at = NOW()`,
     [orderId, orderData.userId, orderData.phone],
   );
+  console.log(
+    "[ORDER_CONFIRMATION_WHATSAPP] Step 3 SUCCESS: Notification record upserted",
+    { orderId },
+  );
 
-  // 4. Atomically claim the notification (prevents duplicate sends)
+  // Step 4: Atomically claim the notification (prevents duplicate sends)
+  console.log(
+    "[ORDER_CONFIRMATION_WHATSAPP] Step 4: Attempting to claim notification",
+    { orderId },
+  );
   const claimResult = await pool.query<{ id: number }>(
     `UPDATE order_notifications
      SET
@@ -655,7 +685,10 @@ export async function sendOrderConfirmationWhatsAppMessage(
   );
 
   if (!claimResult.rows[0]) {
-    // Check current status
+    console.log(
+      "[ORDER_CONFIRMATION_WHATSAPP] Step 4: Claim failed, checking existing status",
+      { orderId },
+    );
     const statusCheck = await pool.query<{
       status: string;
       attempt_count: number;
@@ -670,34 +703,41 @@ export async function sendOrderConfirmationWhatsAppMessage(
 
     const existing = statusCheck.rows[0];
     if (existing?.status === "SENT") {
-      console.log("[ORDER_CONFIRMATION_WHATSAPP] Already sent, skipping", {
-        orderId,
-      });
+      console.log(
+        "[ORDER_CONFIRMATION_WHATSAPP] Step 4: Already sent, skipping",
+        { orderId },
+      );
       return { success: true };
     }
     if (existing && existing.attempt_count >= MAX_NOTIFICATION_ATTEMPTS) {
-      console.log("[ORDER_CONFIRMATION_WHATSAPP] Max attempts reached", {
-        orderId,
-      });
+      console.log(
+        "[ORDER_CONFIRMATION_WHATSAPP] Step 4: Max attempts reached",
+        { orderId, attemptCount: existing.attempt_count },
+      );
       return { success: false, error: "Max retry attempts exceeded" };
     }
-    console.log("[ORDER_CONFIRMATION_WHATSAPP] Already being processed", {
-      orderId,
-    });
+    console.log(
+      "[ORDER_CONFIRMATION_WHATSAPP] Step 4: Already being processed",
+      { orderId },
+    );
     return {
       success: false,
-      error: "Notification is being processed by another worker",
+      error: "Notification is being processed",
     };
   }
 
   const notificationId = claimResult.rows[0].id;
-  console.log("[ORDER_CONFIRMATION_WHATSAPP] Notification claimed", {
-    orderId,
-    notificationId,
-  });
+  console.log(
+    "[ORDER_CONFIRMATION_WHATSAPP] Step 4 SUCCESS: Notification claimed",
+    { orderId, notificationId },
+  );
 
   try {
-    // 5. Format data and send WhatsApp
+    // Step 5: Format data and send WhatsApp
+    console.log(
+      "[ORDER_CONFIRMATION_WHATSAPP] Step 5: Sending WhatsApp message",
+      { orderId, notificationId, to: orderData.phone },
+    );
     const formattedAmount = formatAmount(orderData.amount, orderData.currency);
     const formattedDate = formatClassDate(orderData.nextLiveClassDate);
 
@@ -711,24 +751,34 @@ export async function sendOrderConfirmationWhatsAppMessage(
       classUrl: PLACEHOLDER_LIVE_CLASS_URL,
     });
 
-    // 6. Update notification status
+    // Step 6: Update notification status
+    console.log(
+      "[ORDER_CONFIRMATION_WHATSAPP] Step 6: Updating notification status",
+      { orderId, notificationId, success: result.success },
+    );
     if (result.success) {
-      console.log("[ORDER_CONFIRMATION_WHATSAPP] Sent successfully", {
-        orderId,
-        notificationId,
-        messageId: result.messageId,
-      });
+      console.log(
+        "[ORDER_CONFIRMATION_WHATSAPP] Step 5 SUCCESS: WhatsApp sent",
+        { orderId, notificationId, messageId: result.messageId },
+      );
       await updateNotificationStatus(notificationId, "SENT");
+      console.log(
+        "[ORDER_CONFIRMATION_WHATSAPP] Step 6 SUCCESS: Notification status updated to SENT",
+        { orderId, notificationId },
+      );
     } else {
-      console.error("[ORDER_CONFIRMATION_WHATSAPP] Send failed", {
-        orderId,
-        notificationId,
-        error: result.error,
-      });
+      console.error(
+        "[ORDER_CONFIRMATION_WHATSAPP] Step 5 FAILED: WhatsApp send error",
+        { orderId, notificationId, error: result.error },
+      );
       await updateNotificationStatus(
         notificationId,
         "FAILED",
         result.error || "WhatsApp send failed",
+      );
+      console.log(
+        "[ORDER_CONFIRMATION_WHATSAPP] Step 6 SUCCESS: Notification status updated to FAILED",
+        { orderId, notificationId },
       );
     }
 
@@ -741,13 +791,16 @@ export async function sendOrderConfirmationWhatsAppMessage(
     const errorMessage =
       err instanceof Error ? err.message : "Unknown error occurred";
 
-    console.error("[ORDER_CONFIRMATION_WHATSAPP] Unexpected error", {
-      orderId,
-      notificationId,
-      errorMessage,
-    });
+    console.error(
+      "[ORDER_CONFIRMATION_WHATSAPP] EXCEPTION: Unexpected error caught",
+      { orderId, notificationId, errorMessage, stack: err instanceof Error ? err.stack : undefined },
+    );
 
     await updateNotificationStatus(notificationId, "FAILED", errorMessage);
+    console.log(
+      "[ORDER_CONFIRMATION_WHATSAPP] Step 6: Notification status updated to FAILED after exception",
+      { orderId, notificationId },
+    );
 
     return { success: false, error: errorMessage };
   }
