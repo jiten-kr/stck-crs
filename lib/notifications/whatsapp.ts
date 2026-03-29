@@ -173,7 +173,11 @@ export async function sendWhatsAppMessage(
       // Content SID format: HXxxxxx
       messageOptions.contentSid = templateName;
       if (templateData) {
-        messageOptions.contentVariables = JSON.stringify(templateData);
+        messageOptions.contentVariables = JSON.stringify(
+          Object.fromEntries(
+            Object.entries(templateData).map(([k, v]) => [k, String(v)]),
+          ),
+        );
       }
     }
     // If using body with template replacement
@@ -365,6 +369,45 @@ export async function sendOrderConfirmationWhatsApp(
 }
 
 /**
+ * Twilio Content / Meta WhatsApp templates often declare variables as {{1}}, {{2}}, …
+ * rather than named keys. Sending both numbered and named entries matches either style.
+ */
+function buildLiveClassTwilioContentVariables(data: {
+  customerName: string;
+  orderId: string | number;
+  itemName: string;
+  amount: string;
+  classDate: string;
+  classTime: string;
+  classUrl: string;
+}): Record<string, string> {
+  const customerName = String(data.customerName);
+  const orderId = String(data.orderId);
+  const itemName = String(data.itemName);
+  const amount = String(data.amount);
+  const classDate = String(data.classDate);
+  const classTime = String(data.classTime);
+  const classUrl = String(data.classUrl);
+
+  return {
+    customerName,
+    orderId,
+    itemName,
+    amount,
+    classDate,
+    classTime,
+    classUrl,
+    "1": customerName,
+    "2": orderId,
+    "3": itemName,
+    "4": amount,
+    "5": classDate,
+    "6": classTime,
+    "7": classUrl,
+  };
+}
+
+/**
  * Send live class booking confirmation via WhatsApp
  * Uses approved Twilio Content Template
  */
@@ -382,19 +425,11 @@ export async function sendLiveClassConfirmationWhatsApp(
 ): Promise<SendWhatsAppResult> {
   // Use approved Twilio Content Template SID
   const LIVE_CLASS_TEMPLATE_SID = "HX7e4e79f3ae554e86a60651f609ea5a84";
-  
+
   return sendWhatsAppMessage({
     to,
     templateName: LIVE_CLASS_TEMPLATE_SID,
-    templateData: {
-      customerName: data.customerName,
-      orderId: String(data.orderId),
-      itemName: data.itemName,
-      amount: data.amount,
-      classDate: data.classDate,
-      classTime: data.classTime,
-      classUrl: data.classUrl,
-    },
+    templateData: buildLiveClassTwilioContentVariables(data),
   });
 }
 

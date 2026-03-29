@@ -95,12 +95,21 @@ async function fetchOrderDetails(
       o.updated_at AS paid_at,
       p.gateway_payment_id,
       po.gateway_order_id,
-      lcl.live_class_url,
-      lcl.whatsapp_group_url
+      (
+        SELECT l.live_class_url
+        FROM live_class_links l
+        WHERE l.course_id = o.item_id
+        LIMIT 1
+      ) AS live_class_url,
+      (
+        SELECT l.whatsapp_group_url
+        FROM live_class_links l
+        WHERE l.course_id = o.item_id
+        LIMIT 1
+      ) AS whatsapp_group_url
     FROM orders o
     JOIN users u ON u.id = o.user_id
     JOIN stock_market_courses smc ON smc.course_id = o.item_id
-    LEFT JOIN live_class_links lcl ON lcl.course_id = o.item_id
     LEFT JOIN payment_orders po ON po.order_id = o.id AND po.status = 'PAID'
     LEFT JOIN payments p ON p.order_id = o.id AND p.captured = true
     WHERE o.id = $1 AND o.status = 'PAID'
