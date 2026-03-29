@@ -5,15 +5,27 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
+import { validateLiveClassLinks } from "@/lib/validation/liveClassLinks";
 
 type LiveCourseRow = {
   course_id: number;
   title: string;
+  price: string;
   link_id: number | null;
   live_class_url: string | null;
   whatsapp_group_url: string | null;
   updated_at: string | null;
 };
+
+function formatCoursePrice(price: string): string {
+  const n = Number.parseFloat(price);
+  if (!Number.isFinite(n)) return price;
+  return new Intl.NumberFormat("en-IN", {
+    style: "currency",
+    currency: "INR",
+    maximumFractionDigits: 2,
+  }).format(n);
+}
 
 type Draft = Record<
   number,
@@ -27,6 +39,9 @@ export default function ManageLiveClassLinksClient() {
   const [loading, setLoading] = useState(true);
   const [savingId, setSavingId] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [validationByCourse, setValidationByCourse] = useState<
+    Record<number, string | null>
+  >({});
 
   const load = useCallback(async () => {
     setError(null);
@@ -67,12 +82,30 @@ export default function ManageLiveClassLinksClient() {
     const row = draft[courseId];
     if (!row) return;
 
+    const validated = validateLiveClassLinks(
+      row.liveClassUrl,
+      row.whatsappGroupUrl,
+    );
+    if (!validated.ok) {
+      setValidationByCourse((prev) => ({
+        ...prev,
+        [courseId]: validated.error,
+      }));
+      toast({
+        title: "Check the links",
+        description: validated.error,
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setValidationByCourse((prev) => ({ ...prev, [courseId]: null }));
     setSavingId(courseId);
     try {
       const payload = {
         courseId,
-        liveClassUrl: row.liveClassUrl.trim() || null,
-        whatsappGroupUrl: row.whatsappGroupUrl.trim() || null,
+        liveClassUrl: validated.value.liveClassUrl,
+        whatsappGroupUrl: validated.value.whatsappGroupUrl,
       };
 
       const res = await fetch("/api/admin/live-class-links", {
@@ -139,6 +172,7 @@ export default function ManageLiveClassLinksClient() {
           whatsappGroupUrl: "",
         };
         const hasLink = c.link_id != null;
+        const validationMessage = validationByCourse[c.course_id];
 
         return (
           <div
@@ -149,6 +183,8 @@ export default function ManageLiveClassLinksClient() {
               <h2 className="text-lg font-medium">{c.title}</h2>
               <p className="text-sm text-muted-foreground">
                 Course ID: {c.course_id}
+                {" · "}
+                Price: {formatCoursePrice(c.price)}
                 {c.updated_at ? (
                   <>
                     {" "}
@@ -166,41 +202,63 @@ export default function ManageLiveClassLinksClient() {
             <div className="grid gap-4 md:grid-cols-1">
               <div className="space-y-2">
                 <Label htmlFor={`live-${c.course_id}`}>Live class URL</Label>
+                <p className="text-xs text-muted-foreground">
+                  Required. Must be a valid https (or http) meeting link.
+                </p>
                 <Input
                   id={`live-${c.course_id}`}
                   type="url"
                   placeholder="https://…"
                   value={d.liveClassUrl}
-                  onChange={(e) =>
+                  aria-invalid={Boolean(validationMessage)}
+                  onChange={(e) => {
+                    setValidationByCourse((prev) => ({
+                      ...prev,
+                      [c.course_id]: null,
+                    }));
                     setDraft((prev) => ({
                       ...prev,
                       [c.course_id]: {
                         ...d,
                         liveClassUrl: e.target.value,
                       },
-                    }))
-                  }
+                    }));
+                  }}
                 />
               </div>
               <div className="space-y-2">
                 <Label htmlFor={`wa-${c.course_id}`}>WhatsApp group link</Label>
+                <p className="text-xs text-muted-foreground">
+                  Required. Use a chat.whatsapp.com or wa.me group/invite URL.
+                </p>
                 <Input
                   id={`wa-${c.course_id}`}
                   type="url"
                   placeholder="https://chat.whatsapp.com/…"
                   value={d.whatsappGroupUrl}
-                  onChange={(e) =>
+                  aria-invalid={Boolean(validationMessage)}
+                  onChange={(e) => {
+                    setValidationByCourse((prev) => ({
+                      ...prev,
+                      [c.course_id]: null,
+                    }));
                     setDraft((prev) => ({
                       ...prev,
                       [c.course_id]: {
                         ...d,
                         whatsappGroupUrl: e.target.value,
                       },
-                    }))
-                  }
+                    }));
+                  }}
                 />
               </div>
             </div>
+
+            {validationMessage ? (
+              <p className="text-sm text-red-600" role="alert">
+                {validationMessage}
+              </p>
+            ) : null}
 
             <Button
               type="button"

@@ -1,21 +1,17 @@
 import { NextResponse } from "next/server";
 import pool from "@/lib/db";
 import { getAdminSessionUser } from "@/lib/auth/admin";
+import { validateLiveClassLinks } from "@/lib/validation/liveClassLinks";
 
 type LiveCourseLinkRow = {
   course_id: number;
   title: string;
+  price: string;
   link_id: number | null;
   live_class_url: string | null;
   whatsapp_group_url: string | null;
   updated_at: string | null;
 };
-
-function normalizeUrl(value: unknown): string | null {
-  if (value === null || value === undefined) return null;
-  const s = String(value).trim();
-  return s.length === 0 ? null : s;
-}
 
 async function adminGuard() {
   const session = await getAdminSessionUser();
@@ -49,6 +45,7 @@ export async function GET() {
       SELECT
         smc.course_id,
         smc.title,
+        smc.price::text AS price,
         lcl.id AS link_id,
         lcl.live_class_url,
         lcl.whatsapp_group_url,
@@ -96,8 +93,15 @@ export async function POST(request: Request) {
       );
     }
 
-    const liveClassUrl = normalizeUrl(body.liveClassUrl);
-    const whatsappGroupUrl = normalizeUrl(body.whatsappGroupUrl);
+    const validated = validateLiveClassLinks(
+      body.liveClassUrl == null ? "" : String(body.liveClassUrl),
+      body.whatsappGroupUrl == null ? "" : String(body.whatsappGroupUrl),
+    );
+    if (!validated.ok) {
+      return NextResponse.json({ error: validated.error }, { status: 400 });
+    }
+
+    const { liveClassUrl, whatsappGroupUrl } = validated.value;
 
     const insert = await pool.query(
       `
@@ -154,8 +158,15 @@ export async function PUT(request: Request) {
       );
     }
 
-    const liveClassUrl = normalizeUrl(body.liveClassUrl);
-    const whatsappGroupUrl = normalizeUrl(body.whatsappGroupUrl);
+    const validated = validateLiveClassLinks(
+      body.liveClassUrl == null ? "" : String(body.liveClassUrl),
+      body.whatsappGroupUrl == null ? "" : String(body.whatsappGroupUrl),
+    );
+    if (!validated.ok) {
+      return NextResponse.json({ error: validated.error }, { status: 400 });
+    }
+
+    const { liveClassUrl, whatsappGroupUrl } = validated.value;
 
     const updated = await pool.query(
       `
