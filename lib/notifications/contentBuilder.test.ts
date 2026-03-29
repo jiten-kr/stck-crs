@@ -100,7 +100,7 @@ describe("buildOrderConfirmationContent", () => {
     const labels = c.classDetails.items.map((i) => i.label);
     expect(labels).toContain("Live class link");
     expect(labels).toContain("WhatsApp group");
-    expect(c.footer.joiningLinkNote.toLowerCase()).toContain("email");
+    expect(c.footer.joiningLinkNote.toLowerCase()).toContain("save");
   });
 
   it("omits link rows when URLs missing", () => {
