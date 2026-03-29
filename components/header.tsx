@@ -41,6 +41,9 @@ export default function Header() {
   }, [isUserMenuOpen]);
 
   const handleLogout = () => {
+    fetch("/api/auth/logout", { method: "POST" }).catch(() => {
+      // Best effort cookie cleanup; still clear client state below.
+    });
     dispatch(logout());
     localStorage.removeItem("token");
     setIsUserMenuOpen(false);
@@ -114,6 +117,15 @@ export default function Header() {
                   >
                     My Account
                   </Link>}
+                  {isAuthenticated && user?.access_role === "admin" && (
+                    <Link
+                      href="/admin/live-class-bookings"
+                      className="block px-4 py-2 text-sm hover:bg-muted"
+                      onClick={() => setIsUserMenuOpen(false)}
+                    >
+                      Live Class Bookings
+                    </Link>
+                  )}
 
                   {/* <Link
                     href="/account/orders"

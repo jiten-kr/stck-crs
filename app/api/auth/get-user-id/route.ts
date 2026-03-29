@@ -31,7 +31,7 @@ export async function POST(req: Request) {
     }
 
     const result = await pool.query(
-      "SELECT id, name, email, phone, role, created_at, updated_at FROM users WHERE email = $1 AND phone = $2",
+      "SELECT id, name, email, phone, role, access_role, created_at, updated_at FROM users WHERE email = $1 AND phone = $2",
       [email, phone],
     );
 
@@ -56,6 +56,7 @@ export async function POST(req: Request) {
       email: user.email,
       phone: user.phone,
       role: user.role,
+      access_role: user.access_role ?? null,
       hasPaidFor: {
         courseIds: purchasedCourseIds,
       },
@@ -65,11 +66,19 @@ export async function POST(req: Request) {
 
     const token = generateJWT<User>(responseUser);
 
-    return NextResponse.json({
+    const response = NextResponse.json({
       message: "User found",
       token,
       user: responseUser,
     });
+    response.cookies.set("token", token, {
+      httpOnly: true,
+      sameSite: "lax",
+      secure: process.env.NODE_ENV === "production",
+      path: "/",
+      maxAge: 60 * 60,
+    });
+    return response;
   } catch (error) {
     console.error("[GET_USER_ID] Error:", error, {
       received: {

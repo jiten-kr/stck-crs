@@ -53,6 +53,12 @@ export type User = {
   phone?: string;
   password?: string;
   role: "student" | "instructor" | "admin";
+  access_role?:
+    | "admin"
+    | "operations_manager"
+    | "order_auditor"
+    | "support_agent"
+    | null;
   hasPaidFor: {
     courseIds: number[];
   };
@@ -66,6 +72,12 @@ export type UserProfile = {
   email: string;
   phone?: string;
   role: "student" | "instructor" | "admin";
+  access_role?:
+    | "admin"
+    | "operations_manager"
+    | "order_auditor"
+    | "support_agent"
+    | null;
   created_at: Date;
   updated_at: Date;
 };

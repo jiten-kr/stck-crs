@@ -82,6 +82,7 @@ export async function POST(req: Request) {
         name: user.name,
         email: user.email,
         phone: user.phone,
+        access_role: user.access_role ?? null,
         hasPaidFor: {
           courseIds: purchasedCourseIds,
         },
@@ -96,7 +97,15 @@ export async function POST(req: Request) {
       email: user.email,
       role: user.role,
     });
-    return NextResponse.json(resp);
+    const response = NextResponse.json(resp);
+    response.cookies.set("token", token, {
+      httpOnly: true,
+      sameSite: "lax",
+      secure: process.env.NODE_ENV === "production",
+      path: "/",
+      maxAge: 60 * 60,
+    });
+    return response;
   } catch (error) {
     console.error("[LOGIN] Error:", error);
     return NextResponse.json(

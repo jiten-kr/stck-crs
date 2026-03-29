@@ -98,7 +98,7 @@ export async function POST(req: Request) {
     console.log("[REGISTER] Inserting new user", { name, email, phone });
     const result = await pool.query(
       `INSERT INTO users (name, email, phone, password) 
-       VALUES ($1, $2, $3, $4) RETURNING id, name, email, phone, created_at`,
+       VALUES ($1, $2, $3, $4) RETURNING id, name, email, phone, role, access_role, created_at, updated_at`,
       [name, email, phone, hashedPassword],
     );
     console.log("[REGISTER] User inserted successfully", {
@@ -107,16 +107,29 @@ export async function POST(req: Request) {
 
     // ✅ Generate JWT
     console.log("[REGISTER] Generating JWT", { userId: result.rows[0].id });
-    const token = generateJWT<any>({ id: result.rows[0].id, email });
+    const token = generateJWT<any>({
+      id: result.rows[0].id,
+      email: result.rows[0].email,
+      role: result.rows[0].role,
+      access_role: result.rows[0].access_role ?? null,
+    });
 
     console.log("[REGISTER] Registration successful", {
       userId: result.rows[0].id,
       email,
     });
-    return NextResponse.json(
+    const response = NextResponse.json(
       { message: "User registered successfully", user: result.rows[0], token },
       { status: 201 },
     );
+    response.cookies.set("token", token, {
+      httpOnly: true,
+      sameSite: "lax",
+      secure: process.env.NODE_ENV === "production",
+      path: "/",
+      maxAge: 60 * 60,
+    });
+    return response;
   } catch (error) {
     console.error("[REGISTER] Error:", error, {
       received: {
