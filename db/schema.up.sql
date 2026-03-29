@@ -1,3 +1,11 @@
+-- Access role enum for admin/operations permissions
+CREATE TYPE access_role AS ENUM (
+  'admin',
+  'operations_manager',
+  'order_auditor',
+  'support_agent'
+);
+
 -- Users table (with role support)
 CREATE TABLE IF NOT EXISTS users (
   id SERIAL PRIMARY KEY,
@@ -6,9 +14,11 @@ CREATE TABLE IF NOT EXISTS users (
   phone VARCHAR(20) UNIQUE,
   password TEXT NOT NULL,
   role VARCHAR(50) DEFAULT 'student' CHECK (role IN ('student', 'instructor', 'admin')),
+  access_role access_role,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
+CREATE INDEX idx_users_access_role ON users(access_role);
 
 -- Table for courses (reference instructor as user_id)
 CREATE TABLE IF NOT EXISTS stock_market_courses (

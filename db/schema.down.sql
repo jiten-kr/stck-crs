@@ -37,3 +37,5 @@ DROP TABLE IF EXISTS orders;
 DROP TABLE IF EXISTS reviews;
 
 
+DROP TYPE IF EXISTS access_role;
+
