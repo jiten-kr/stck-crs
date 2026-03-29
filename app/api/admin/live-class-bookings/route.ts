@@ -56,7 +56,7 @@ export async function GET(request: Request) {
 
   try {
     const { searchParams } = new URL(request.url);
-    const rangeParam = (searchParams.get("range") || "30d").toLowerCase();
+    const rangeParam = (searchParams.get("range") || "24h").toLowerCase();
     const interval = RANGE_TO_INTERVAL[rangeParam] || RANGE_TO_INTERVAL["30d"];
 
     const limitParam = Number(searchParams.get("limit") || "30");
@@ -155,7 +155,7 @@ export async function GET(request: Request) {
       bookings: result.rows,
       count: result.rowCount ?? result.rows.length,
       total,
-      range: rangeParam in RANGE_TO_INTERVAL ? rangeParam : "30d",
+      range: rangeParam in RANGE_TO_INTERVAL ? rangeParam : "24h",
       limit,
       offset,
     });
