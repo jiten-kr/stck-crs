@@ -372,7 +372,7 @@ export async function sendOrderConfirmationWhatsApp(
  * Twilio Content / Meta WhatsApp templates often declare variables as {{1}}, {{2}}, …
  * rather than named keys. Sending both numbered and named entries matches either style.
  */
-function buildLiveClassTwilioContentVariables(data: {
+export function buildLiveClassTwilioContentVariables(data: {
   customerName: string;
   orderId: string | number;
   itemName: string;
