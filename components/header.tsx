@@ -83,7 +83,7 @@ export default function Header() {
             </Button>
 
             {isUserMenuOpen && (
-              <div className="absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-background border">
+              <div className="absolute right-0 mt-2 w-56 rounded-md shadow-lg bg-background border">
                 <div className="py-1">
                   {!isAuthenticated && (
                     <Link
@@ -124,6 +124,15 @@ export default function Header() {
                       onClick={() => setIsUserMenuOpen(false)}
                     >
                       Live Class Bookings
+                    </Link>
+                  )}
+                  {isAuthenticated && user?.access_role === "admin" && (
+                    <Link
+                      href="/admin/manage-live-class-links"
+                      className="block px-4 py-2 text-sm hover:bg-muted"
+                      onClick={() => setIsUserMenuOpen(false)}
+                    >
+                      Manage live class links
                     </Link>
                   )}
 
