@@ -58,6 +58,8 @@ type OrderQueryRow = {
   paid_at: Date;
   gateway_payment_id: string;
   gateway_order_id: string;
+  live_class_url: string | null;
+  whatsapp_group_url: string | null;
 };
 
 type NotificationRow = {
@@ -92,10 +94,13 @@ async function fetchOrderDetails(
       o.status AS order_status,
       o.updated_at AS paid_at,
       p.gateway_payment_id,
-      po.gateway_order_id
+      po.gateway_order_id,
+      lcl.live_class_url,
+      lcl.whatsapp_group_url
     FROM orders o
     JOIN users u ON u.id = o.user_id
     JOIN stock_market_courses smc ON smc.course_id = o.item_id
+    LEFT JOIN live_class_links lcl ON lcl.course_id = o.item_id
     LEFT JOIN payment_orders po ON po.order_id = o.id AND po.status = 'PAID'
     LEFT JOIN payments p ON p.order_id = o.id AND p.captured = true
     WHERE o.id = $1 AND o.status = 'PAID'
@@ -130,6 +135,8 @@ async function fetchOrderDetails(
     itemId: row.item_id,
     nextLiveClassDate: schedule.nextLiveClassDate,
     nextLiveClassTime: schedule.nextLiveClassTime,
+    liveClassUrl: row.live_class_url ?? null,
+    whatsappGroupUrl: row.whatsapp_group_url ?? null,
     paidAt: row.paid_at,
   };
 }
@@ -582,11 +589,6 @@ export async function fetchPendingNotificationsForRetry(
 }
 
 /**
- * Placeholder live class URL — replace with the real URL once available
- */
-const PLACEHOLDER_LIVE_CLASS_URL = "https://example.com/live-class";
-
-/**
  * Send order confirmation WhatsApp message for a given order
  *
  * This function:
@@ -741,6 +743,23 @@ export async function sendOrderConfirmationWhatsAppMessage(
     const formattedAmount = formatAmount(orderData.amount, orderData.currency);
     const formattedDate = formatClassDate(orderData.nextLiveClassDate);
 
+    const classUrl = orderData.liveClassUrl?.trim() ?? "";
+    if (!classUrl) {
+      console.error(
+        "[ORDER_CONFIRMATION_WHATSAPP] Live class URL missing for course",
+        { orderId, itemId: orderData.itemId },
+      );
+      await updateNotificationStatus(
+        notificationId,
+        "FAILED",
+        "Live class URL is not configured for this course",
+      );
+      return {
+        success: false,
+        error: "Live class URL is not configured for this course",
+      };
+    }
+
     const result = await sendLiveClassConfirmationWhatsApp(orderData.phone, {
       customerName: orderData.userName,
       orderId: String(orderData.orderId),
@@ -748,7 +767,7 @@ export async function sendOrderConfirmationWhatsAppMessage(
       amount: formattedAmount,
       classDate: formattedDate,
       classTime: orderData.nextLiveClassTime,
-      classUrl: PLACEHOLDER_LIVE_CLASS_URL,
+      classUrl,
     });
 
     // Step 6: Update notification status

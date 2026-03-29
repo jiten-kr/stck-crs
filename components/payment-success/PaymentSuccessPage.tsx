@@ -15,7 +15,10 @@ import {
     getPaymentSuccessData,
     type PaymentSuccessStoredData,
 } from "@/lib/paymentSuccessStore";
-import { formatClassDate } from "@/lib/notifications/contentBuilder";
+import {
+    formatClassDate,
+    sanitizeUrlForHref,
+} from "@/lib/notifications/contentBuilder";
 import { trackPurchase } from "@/lib/metaPixel";
 
 export type PaymentSuccessData = PaymentSuccessStoredData;
@@ -148,15 +151,50 @@ const buildReceiptPdf = (data: PaymentSuccessData) => {
     cursorY += lineHeight;
     doc.text(`Order ID: ${data.orderId}`, margin, cursorY);
 
-    cursorY += 32;
+    cursorY += 28;
+    const livePdf = data.liveClassUrl?.trim()
+        ? sanitizeUrlForHref(data.liveClassUrl)
+        : null;
+    const waPdf = data.whatsappGroupUrl?.trim()
+        ? sanitizeUrlForHref(data.whatsappGroupUrl)
+        : null;
+    if (livePdf || waPdf) {
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(12);
+        doc.setTextColor(15, 23, 42);
+        doc.text("Join links", margin, cursorY);
+        cursorY += 18;
+        doc.setFont("helvetica", "normal");
+        doc.setFontSize(10);
+        doc.setTextColor(71, 85, 105);
+        if (livePdf) {
+            const lines = doc.splitTextToSize(
+                `Live class: ${livePdf}`,
+                pageWidth - margin * 2,
+            );
+            doc.text(lines, margin, cursorY);
+            cursorY += lineHeight * lines.length;
+        }
+        if (waPdf) {
+            const lines = doc.splitTextToSize(
+                `WhatsApp group: ${waPdf}`,
+                pageWidth - margin * 2,
+            );
+            doc.text(lines, margin, cursorY);
+            cursorY += lineHeight * lines.length;
+        }
+        cursorY += 12;
+    }
+
     doc.setFontSize(10);
     doc.setTextColor(100, 116, 139);
-    doc.text(
-        "This receipt confirms your enrollment. A joining link will be shared 2 hours before the class.",
-        margin,
-        cursorY,
-        { maxWidth: pageWidth - margin * 2 },
-    );
+    const footerNote =
+        livePdf || waPdf
+            ? "This receipt confirms your enrollment. Use the links above to join the live class and the WhatsApp group."
+            : "This receipt confirms your enrollment. A joining link will be shared 2 hours before the class.";
+    doc.text(footerNote, margin, cursorY, {
+        maxWidth: pageWidth - margin * 2,
+    });
 
     return doc;
 };
@@ -277,6 +315,44 @@ export default function PaymentSuccessPage({
         };
     }, [data]);
 
+    // Refresh join links from DB (e.g. admin added URLs after payment, or first fetch failed)
+    useEffect(() => {
+        const courseId = storedData?.courseId;
+        if (courseId == null || !Number.isFinite(courseId)) return;
+
+        let cancelled = false;
+        (async () => {
+            try {
+                const res = await fetch(
+                    `/api/public/live-class-links?courseId=${courseId}`,
+                    { cache: "no-store" },
+                );
+                if (!res.ok || cancelled) return;
+                const j = (await res.json()) as {
+                    liveClassUrl?: string | null;
+                    whatsappGroupUrl?: string | null;
+                };
+                if (cancelled) return;
+                setStoredData((prev) =>
+                    prev
+                        ? {
+                              ...prev,
+                              liveClassUrl: j.liveClassUrl ?? prev.liveClassUrl,
+                              whatsappGroupUrl:
+                                  j.whatsappGroupUrl ?? prev.whatsappGroupUrl,
+                          }
+                        : null,
+                );
+            } catch {
+                /* non-fatal */
+            }
+        })();
+
+        return () => {
+            cancelled = true;
+        };
+    }, [storedData?.courseId]);
+
     const hasData = Boolean(storedData);
 
     const handleDownloadReceipt = () => {
@@ -321,6 +397,14 @@ export default function PaymentSuccessPage({
             </main>
         );
     }
+
+    const liveJoinHref = storedData?.liveClassUrl
+        ? sanitizeUrlForHref(storedData.liveClassUrl)
+        : null;
+    const whatsappJoinHref = storedData?.whatsappGroupUrl
+        ? sanitizeUrlForHref(storedData.whatsappGroupUrl)
+        : null;
+    const hasJoinLinks = Boolean(liveJoinHref || whatsappJoinHref);
 
     if (!hasData) {
         return (
@@ -376,12 +460,54 @@ export default function PaymentSuccessPage({
                     <p>
                         <span className="font-medium text-slate-900">Phone:</span> {storedData?.phone}
                     </p>
-                    <p className="text-sm text-slate-600">
-                        Confirmation will be sent to the above email and phone.
-                    </p>
-                    <p className="text-sm text-slate-600">
-                        The joining link will be shared 2 hours before the class on the same email and phone.
-                    </p>
+                    {hasJoinLinks ? (
+                        <div className="mt-4 space-y-3 rounded-xl border border-slate-200 bg-slate-50/80 p-4">
+                            <p className="text-sm font-medium text-slate-900">
+                                Your access links
+                            </p>
+                            <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap">
+                                {liveJoinHref ? (
+                                    <Button
+                                        asChild
+                                        className="w-full bg-blue-600 text-white hover:bg-blue-700 sm:w-auto"
+                                    >
+                                        <a
+                                            href={liveJoinHref}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                        >
+                                            Join live class
+                                        </a>
+                                    </Button>
+                                ) : null}
+                                {whatsappJoinHref ? (
+                                    <Button asChild variant="outline" className="w-full sm:w-auto">
+                                        <a
+                                            href={whatsappJoinHref}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                        >
+                                            Open WhatsApp group
+                                        </a>
+                                    </Button>
+                                ) : null}
+                            </div>
+                            <p className="text-xs text-slate-600">
+                                These links are also in your confirmation email. Save this page or
+                                the email for easy access before class starts.
+                            </p>
+                        </div>
+                    ) : (
+                        <>
+                            <p className="text-sm text-slate-600">
+                                Confirmation will be sent to the above email and phone.
+                            </p>
+                            <p className="text-sm text-slate-600">
+                                The joining link will be shared 2 hours before the class on the same
+                                email and phone.
+                            </p>
+                        </>
+                    )}
                 </SectionCard>
 
                 <SectionCard title="Booking Details">

@@ -35,6 +35,11 @@ export type OrderConfirmationData = {
   nextLiveClassDate: string; // ISO date string
   nextLiveClassTime: string;
 
+  /** Meeting join URL from live_class_links (null if not configured) */
+  liveClassUrl: string | null;
+  /** Community link from live_class_links — email only; not sent on WhatsApp */
+  whatsappGroupUrl: string | null;
+
   // Timestamps
   paidAt: Date;
 };

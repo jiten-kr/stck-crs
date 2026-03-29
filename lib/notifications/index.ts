@@ -22,6 +22,8 @@ export {
   buildOrderConfirmationEmailHtml,
   buildOrderConfirmationEmailText,
   buildOrderConfirmationEmailSubject,
+  escapeHtml,
+  sanitizeUrlForHref,
 } from "./contentBuilder";
 
 export type { OrderConfirmationContent } from "./contentBuilder";

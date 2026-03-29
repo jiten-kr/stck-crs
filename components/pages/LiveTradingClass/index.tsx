@@ -179,6 +179,28 @@ export default function LiveTradingClass({
                         const { nextLiveClassDate, nextLiveClassTime } =
                             getNextLiveClassSchedule();
 
+                        let liveClassUrl: string | null = null;
+                        let whatsappGroupUrl: string | null = null;
+                        try {
+                            const linksRes = await fetch(
+                                `/api/public/live-class-links?courseId=${LIVE_TRADING_CLASS_ITEM_ID}`,
+                                { cache: "no-store" },
+                            );
+                            if (linksRes.ok) {
+                                const linkJson = (await linksRes.json()) as {
+                                    liveClassUrl?: string | null;
+                                    whatsappGroupUrl?: string | null;
+                                };
+                                liveClassUrl = linkJson.liveClassUrl ?? null;
+                                whatsappGroupUrl = linkJson.whatsappGroupUrl ?? null;
+                            }
+                        } catch (linkErr) {
+                            console.warn(
+                                "[LIVE_TRADING_CLASS] Could not load public live links",
+                                linkErr,
+                            );
+                        }
+
                         await setPaymentSuccessData({
                             userName: activeUser?.name || "",
                             email: activeUser?.email || "",
@@ -193,6 +215,9 @@ export default function LiveTradingClass({
                             itemName: LIVE_TRADING_CLASS_NAME,
                             nextLiveClassDate,
                             nextLiveClassTime,
+                            courseId: LIVE_TRADING_CLASS_ITEM_ID,
+                            liveClassUrl,
+                            whatsappGroupUrl,
                         });
 
                         router.push("/payment-success");

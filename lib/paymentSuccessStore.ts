@@ -10,6 +10,10 @@ export type PaymentSuccessStoredData = {
   itemName: string;
   nextLiveClassDate: string;
   nextLiveClassTime: string;
+  /** Live course id — used to refresh links on the success page if needed */
+  courseId?: number;
+  liveClassUrl?: string | null;
+  whatsappGroupUrl?: string | null;
 };
 
 const STORAGE_KEY = "payment_success";

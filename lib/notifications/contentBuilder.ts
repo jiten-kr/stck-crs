@@ -10,8 +10,83 @@ import {
   PLATFORM_NAME,
   PLATFORM_SUPPORT_EMAIL,
   PLATFORM_SUPPORT_PHONE,
-  LIVE_TRADING_CLASS_NAME,
 } from "@/lib/constants";
+
+/** Escape text for safe insertion into HTML (body text and attribute values). */
+export function escapeHtml(text: string): string {
+  return text
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
+
+/** Allow only http(s) URLs for links in email templates. */
+export function sanitizeUrlForHref(url: string): string | null {
+  try {
+    const u = new URL(url.trim());
+    if (u.protocol !== "http:" && u.protocol !== "https:") {
+      return null;
+    }
+    return u.href;
+  } catch {
+    return null;
+  }
+}
+
+function joiningFooterCopy(data: OrderConfirmationData): {
+  joiningLinkNote: string;
+  confirmationNote: string;
+} {
+  const hasLive = Boolean(data.liveClassUrl?.trim());
+  const hasWa = Boolean(data.whatsappGroupUrl?.trim());
+  if (hasLive || hasWa) {
+    return {
+      joiningLinkNote:
+        "Your live class and WhatsApp group links are in this email. Save it so you can join quickly when class starts.",
+      confirmationNote:
+        "We sent these details to your email and phone on file.",
+    };
+  }
+  return {
+    joiningLinkNote:
+      "The joining link will be shared 2 hours before the class on this email and phone.",
+    confirmationNote:
+      "Confirmation will be sent to the above email and phone.",
+  };
+}
+
+function buildClassDetailsExtraLinkRowsHtml(data: OrderConfirmationData): string {
+  const rows: string[] = [];
+  const liveRaw = data.liveClassUrl?.trim();
+  if (liveRaw) {
+    const href = sanitizeUrlForHref(liveRaw);
+    if (href) {
+      rows.push(`
+                      <tr>
+                        <td style="padding: 8px 0; color: #166534;">
+                          <strong>Live class link:</strong><br />
+                          <a href="${escapeHtml(href)}" style="color: #2563eb; word-break: break-all; text-decoration: underline;">${escapeHtml(liveRaw)}</a>
+                        </td>
+                      </tr>`);
+    }
+  }
+  const waRaw = data.whatsappGroupUrl?.trim();
+  if (waRaw) {
+    const href = sanitizeUrlForHref(waRaw);
+    if (href) {
+      rows.push(`
+                      <tr>
+                        <td style="padding: 8px 0; color: #166534;">
+                          <strong>WhatsApp group:</strong><br />
+                          <a href="${escapeHtml(href)}" style="color: #2563eb; word-break: break-all; text-decoration: underline;">${escapeHtml(waRaw)}</a>
+                        </td>
+                      </tr>`);
+    }
+  }
+  return rows.join("");
+}
 
 /**
  * Format amount in INR with proper locale formatting
@@ -143,6 +218,12 @@ export function buildOrderConfirmationContent(
           label: "Phone",
           value: data.phone,
         },
+        ...(data.liveClassUrl?.trim()
+          ? [{ label: "Live class link", value: data.liveClassUrl.trim() }]
+          : []),
+        ...(data.whatsappGroupUrl?.trim()
+          ? [{ label: "WhatsApp group", value: data.whatsappGroupUrl.trim() }]
+          : []),
       ],
     },
 
@@ -188,12 +269,7 @@ export function buildOrderConfirmationContent(
       message: "Need help? We are here for you.",
     },
 
-    footer: {
-      joiningLinkNote:
-        "The joining link will be shared 2 hours before the class on this email and phone.",
-      confirmationNote:
-        "Confirmation will be sent to the above email and phone.",
-    },
+    footer: joiningFooterCopy(data),
   };
 }
 
@@ -242,7 +318,7 @@ export function buildOrderConfirmationEmailHtml(
                     <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
                       <tr>
                         <td style="padding: 8px 0; color: #166534;">
-                          <strong>Class:</strong> ${data.itemName}
+                          <strong>Class:</strong> ${escapeHtml(data.itemName)}
                         </td>
                       </tr>
                       <tr>
@@ -250,9 +326,10 @@ export function buildOrderConfirmationEmailHtml(
                           <strong>Live Class Timing:</strong> ${classDateFormatted} at ${data.nextLiveClassTime}
                         </td>
                       </tr>
+                      ${buildClassDetailsExtraLinkRowsHtml(data)}
                       <tr>
                         <td style="padding: 8px 0; color: #166534;">
-                          <strong>Attendee:</strong> ${data.userName}
+                          <strong>Attendee:</strong> ${escapeHtml(data.userName)}
                         </td>
                       </tr>
                     </table>
@@ -360,6 +437,13 @@ export function buildOrderConfirmationEmailText(
 ): string {
   const classDateFormatted = formatClassDate(data.nextLiveClassDate);
   const formattedAmount = formatAmount(data.amount, data.currency);
+  const footer = joiningFooterCopy(data);
+  const liveLine = data.liveClassUrl?.trim()
+    ? `Live class link: ${data.liveClassUrl.trim()}\n`
+    : "";
+  const waLine = data.whatsappGroupUrl?.trim()
+    ? `WhatsApp group link: ${data.whatsappGroupUrl.trim()}\n`
+    : "";
 
   return `
 ${PLATFORM_NAME} - Order Confirmation
@@ -376,7 +460,7 @@ Live Class Timing: ${classDateFormatted} at ${data.nextLiveClassTime}
 Attendee: ${data.userName}
 Email: ${data.email}
 Phone: ${data.phone}
-
+${liveLine}${waLine}
 BOOKING DETAILS
 ---------------
 Booking ID: ${data.bookingId}
@@ -386,7 +470,7 @@ Amount Paid: ${formattedAmount}
 
 IMPORTANT
 ---------
-The joining link will be shared 2 hours before the class on this email and phone.
+${footer.joiningLinkNote}
 
 NEED HELP?
 ----------
