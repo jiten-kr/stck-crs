@@ -13,15 +13,20 @@ export default async function ManageLiveClassLinksPage() {
   }
 
   return (
-    <div className="container space-y-4 px-4 py-8 md:px-6 md:py-12">
-      <div>
-        <h1 className="text-2xl font-semibold">Manage live class links</h1>
-        <p className="text-sm text-muted-foreground">
-          Set the live class meeting URL and WhatsApp group link for each live
-          course. Only administrators can view or change these values.
-        </p>
+    <div className="min-h-screen w-full bg-gradient-to-b from-slate-50 to-white">
+      <div className="container mx-auto space-y-6 px-4 py-8 sm:px-6 md:py-12 lg:px-8">
+        <div className="max-w-3xl space-y-2">
+          <h1 className="text-2xl font-bold tracking-tight text-gray-900 md:text-3xl">
+            Manage{" "}
+            <span className="text-blue-600">live class links</span>
+          </h1>
+          <p className="text-sm leading-relaxed text-gray-600 md:text-base">
+            Set the live class meeting URL and WhatsApp group link for each
+            live course. Only administrators can view or change these values.
+          </p>
+        </div>
+        <ManageLiveClassLinksClient />
       </div>
-      <ManageLiveClassLinksClient />
     </div>
   );
 }
