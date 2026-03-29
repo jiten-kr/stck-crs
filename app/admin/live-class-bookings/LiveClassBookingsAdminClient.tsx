@@ -103,7 +103,7 @@ function notificationBoxClass(status: string | null): string {
 
 export default function LiveClassBookingsAdminClient() {
   const [bookings, setBookings] = useState<LiveClassBooking[]>([]);
-  const [selectedRange, setSelectedRange] = useState("30d");
+  const [selectedRange, setSelectedRange] = useState("24h");
   const [totalRecords, setTotalRecords] = useState(0);
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
@@ -267,31 +267,31 @@ export default function LiveClassBookingsAdminClient() {
             ) : (
               bookings.map((booking) => (
                 <tr key={booking.order_id} className="border-t align-top">
-                  <td className="px-3 py-3">
+                  <td className="space-y-1 px-3 py-3">
                     <p className="font-medium">#{booking.order_id}</p>
                     <div className="mt-1">
                       <StatusPill status={booking.order_status} />
                     </div>
                   </td>
-                  <td className="px-3 py-3">
+                  <td className="space-y-1 px-3 py-3">
                     <p className="font-medium">{booking.customer_name}</p>
                     <p className="text-muted-foreground">{booking.customer_email}</p>
                     <p className="text-muted-foreground">
                       {booking.customer_phone || "-"}
                     </p>
                   </td>
-                  <td className="px-3 py-3">
+                  <td className="space-y-1 px-3 py-3">
                     <p className="font-medium">{booking.course_title}</p>
                     <p className="text-muted-foreground">Course ID: {booking.course_id}</p>
                   </td>
-                  <td className="px-3 py-3">
+                  <td className="space-y-1 px-3 py-3">
                     <p>Total: {formatMoney(booking.total_amount, booking.currency)}</p>
                     <p>Discount: {formatMoney(booking.discount_amount, booking.currency)}</p>
                     <p className="font-medium">
                       Payable: {formatMoney(booking.payable_amount, booking.currency)}
                     </p>
                   </td>
-                  <td className="px-3 py-3">
+                  <td className="space-y-1 px-3 py-3">
                     <p>Gateway: {booking.gateway || "-"}</p>
                     <p>Order ID: {booking.gateway_order_id || "-"}</p>
                     <p>Payment ID: {booking.gateway_payment_id || "-"}</p>
@@ -301,7 +301,7 @@ export default function LiveClassBookingsAdminClient() {
                       <StatusPill status={booking.payment_status} />
                     </div>
                   </td>
-                  <td className="px-3 py-3">
+                  <td className="space-y-1 px-3 py-3">
                     <div
                       className={notificationBoxClass(
                         booking.email_notification_status,
@@ -324,7 +324,7 @@ export default function LiveClassBookingsAdminClient() {
                       ) : null}
                     </div>
                   </td>
-                  <td className="px-3 py-3">
+                  <td className="space-y-1 px-3 py-3">
                     <div
                       className={notificationBoxClass(
                         booking.whatsapp_notification_status,
@@ -347,7 +347,7 @@ export default function LiveClassBookingsAdminClient() {
                       ) : null}
                     </div>
                   </td>
-                  <td className="px-3 py-3">
+                  <td className="space-y-1 px-3 py-3">
                     <p>Created: {formatDate(booking.created_at)}</p>
                     <p>Updated: {formatDate(booking.updated_at)}</p>
                   </td>
