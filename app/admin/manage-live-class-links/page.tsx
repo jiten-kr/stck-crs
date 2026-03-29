@@ -1,6 +1,14 @@
 import { redirect } from "next/navigation";
 import { getAdminSessionUser } from "@/lib/auth/admin";
 import ManageLiveClassLinksClient from "./ManageLiveClassLinksClient";
+import type { Metadata } from "next";
+import { PLATFORM_NAME } from "@/lib/constants";
+
+export const metadata: Metadata = {
+  title: PLATFORM_NAME + " - Manage Live Class Links (Admin)",
+  description:
+    "Admin panel to set and manage live class meeting URLs and WhatsApp group links for each live course.",
+};
 
 export default async function ManageLiveClassLinksPage() {
   const adminSession = await getAdminSessionUser();
