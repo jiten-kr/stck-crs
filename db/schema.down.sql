@@ -16,6 +16,9 @@ DROP TABLE IF EXISTS course_modules;
 -- Drop course_learnings (depends on stock_market_courses)
 DROP TABLE IF EXISTS course_learnings;
 
+-- Drop live_class_links (depends on stock_market_courses)
+DROP TABLE IF EXISTS live_class_links;
+
 -- Drop stock_market_courses (depends on nothing, but referenced by others)
 DROP TABLE IF EXISTS stock_market_courses;
 
