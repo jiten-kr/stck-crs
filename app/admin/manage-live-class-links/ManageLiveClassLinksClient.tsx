@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { validateLiveClassLinks } from "@/lib/validation/liveClassLinks";
+import { cn } from "@/lib/utils";
 
 type LiveCourseRow = {
   course_id: number;
@@ -31,6 +32,12 @@ type Draft = Record<
   number,
   { liveClassUrl: string; whatsappGroupUrl: string }
 >;
+
+const inputSurfaceClass =
+  "h-10 w-full rounded-md border border-slate-200 bg-white text-gray-900 shadow-sm transition-colors placeholder:text-gray-400 focus-visible:border-slate-300 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-slate-400/35 focus-visible:ring-offset-0";
+
+const inputInvalidClass =
+  "border-red-200 focus-visible:border-red-300 focus-visible:ring-red-400/30";
 
 export default function ManageLiveClassLinksClient() {
   const { toast } = useToast();
@@ -141,14 +148,20 @@ export default function ManageLiveClassLinksClient() {
   }
 
   if (loading) {
-    return <p className="text-sm text-muted-foreground">Loading…</p>;
+    return <p className="text-sm text-gray-600">Loading…</p>;
   }
 
   if (error) {
     return (
-      <div className="space-y-2">
+      <div className="space-y-3 rounded-lg border border-red-200/80 bg-white p-4 shadow-sm md:p-6">
         <p className="text-sm text-red-600">{error}</p>
-        <Button type="button" variant="outline" size="sm" onClick={() => load()}>
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          className="border-gray-200 text-gray-900 hover:bg-gray-50"
+          onClick={() => load()}
+        >
           Retry
         </Button>
       </div>
@@ -157,15 +170,15 @@ export default function ManageLiveClassLinksClient() {
 
   if (courses.length === 0) {
     return (
-      <p className="text-sm text-muted-foreground">
+      <div className="rounded-lg border border-slate-200 bg-white p-6 text-sm text-gray-600 shadow-sm md:p-8">
         No live courses found. Mark a course as live in the catalog to manage
         links here.
-      </p>
+      </div>
     );
   }
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-8 pb-8">
       {courses.map((c) => {
         const d = draft[c.course_id] ?? {
           liveClassUrl: "",
@@ -177,32 +190,40 @@ export default function ManageLiveClassLinksClient() {
         return (
           <div
             key={c.course_id}
-            className="space-y-4 rounded-lg border p-4 md:p-6"
+            className="space-y-4 rounded-xl border border-slate-200/90 bg-white p-5 shadow-sm md:space-y-5 md:p-6"
           >
             <div>
-              <h2 className="text-lg font-medium">{c.title}</h2>
-              <p className="text-sm text-muted-foreground">
-                Course ID: {c.course_id}
-                {" · "}
-                Price: {formatCoursePrice(c.price)}
-                {c.updated_at ? (
-                  <>
-                    {" "}
-                    · Last updated: {new Date(c.updated_at).toLocaleString("en-IN")}
-                  </>
-                ) : null}
+              <h2 className="text-xl font-bold text-gray-900">{c.title}</h2>
+              <p className="mt-1 space-y-1 text-sm leading-relaxed text-gray-600">
+                <span className="block sm:inline">
+                  Course ID: {c.course_id}
+                  {" · "}
+                  Price: {formatCoursePrice(c.price)}
+                  {c.updated_at ? (
+                    <>
+                      {" "}
+                      · Last updated:{" "}
+                      {new Date(c.updated_at).toLocaleString("en-IN")}
+                    </>
+                  ) : null}
+                </span>
                 {!hasLink ? (
-                  <span className="block text-amber-700">
+                  <span className="block text-amber-800">
                     No link record yet — save will create one.
                   </span>
                 ) : null}
               </p>
             </div>
 
-            <div className="grid gap-4 md:grid-cols-1">
+            <div className="grid gap-5 md:grid-cols-1">
               <div className="space-y-2">
-                <Label htmlFor={`live-${c.course_id}`}>Live class URL</Label>
-                <p className="text-xs text-muted-foreground">
+                <Label
+                  htmlFor={`live-${c.course_id}`}
+                  className="text-gray-900"
+                >
+                  Live class URL
+                </Label>
+                <p className="text-xs text-gray-500">
                   Required. Must be a valid https (or http) meeting link.
                 </p>
                 <Input
@@ -211,6 +232,7 @@ export default function ManageLiveClassLinksClient() {
                   placeholder="https://…"
                   value={d.liveClassUrl}
                   aria-invalid={Boolean(validationMessage)}
+                  className={cn(inputSurfaceClass, validationMessage && inputInvalidClass)}
                   onChange={(e) => {
                     setValidationByCourse((prev) => ({
                       ...prev,
@@ -227,8 +249,10 @@ export default function ManageLiveClassLinksClient() {
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor={`wa-${c.course_id}`}>WhatsApp group link</Label>
-                <p className="text-xs text-muted-foreground">
+                <Label htmlFor={`wa-${c.course_id}`} className="text-gray-900">
+                  WhatsApp group link
+                </Label>
+                <p className="text-xs text-gray-500">
                   Required. Use a chat.whatsapp.com or wa.me group/invite URL.
                 </p>
                 <Input
@@ -237,6 +261,7 @@ export default function ManageLiveClassLinksClient() {
                   placeholder="https://chat.whatsapp.com/…"
                   value={d.whatsappGroupUrl}
                   aria-invalid={Boolean(validationMessage)}
+                  className={cn(inputSurfaceClass, validationMessage && inputInvalidClass)}
                   onChange={(e) => {
                     setValidationByCourse((prev) => ({
                       ...prev,
@@ -263,6 +288,7 @@ export default function ManageLiveClassLinksClient() {
             <Button
               type="button"
               disabled={savingId === c.course_id}
+              className="bg-blue-600 font-medium text-white shadow-sm hover:bg-blue-700"
               onClick={() => save(c.course_id, hasLink)}
             >
               {savingId === c.course_id ? "Saving…" : hasLink ? "Save changes" : "Create links"}
