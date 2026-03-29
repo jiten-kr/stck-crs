@@ -1,6 +1,14 @@
 import { redirect } from "next/navigation";
 import LiveClassBookingsAdminClient from "./LiveClassBookingsAdminClient";
 import { getAdminSessionUser } from "@/lib/auth/admin";
+import type { Metadata } from "next";
+import { PLATFORM_NAME } from "@/lib/constants";
+
+export const metadata: Metadata = {
+  title: PLATFORM_NAME + " - Live Class Bookings (Admin)",
+  description:
+    "Admin panel to track customer details, payment state, and delivery status for live class bookings including email and WhatsApp notifications.",
+};
 
 export default async function LiveClassBookingsPage() {
   const adminSession = await getAdminSessionUser();
