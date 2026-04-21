@@ -3,7 +3,6 @@
 import { useCallback, useEffect, useState, useRef } from "react";
 import { useSelector } from "react-redux";
 import { Button } from "@/components/ui/button";
-import Script from 'next/script';
 import { Card, CardContent } from "@/components/ui/card";
 import { ReviewsSection } from "@/components/ui/reviews-section";
 import WriteReview from "@/components/reviews/write-review";
@@ -23,6 +22,7 @@ import ContactAuthModal from "@/components/auth/ContactAuthModal";
 import { setPaymentSuccessData } from "@/lib/paymentSuccessStore";
 import { getNextLiveClassSchedule } from "@/lib/notifications/contentBuilder";
 import { trackInitiateCheckout } from "@/lib/metaPixel";
+import { useToast } from "@/components/ui/use-toast";
 import {
     TrendingUp,
     BarChart3,
@@ -98,8 +98,10 @@ export default function LiveTradingClass({
     initialReviewStats,
 }: LiveTradingClassProps) {
     const router = useRouter();
+    const { toast } = useToast();
     const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
     const [showStickyCta, setShowStickyCta] = useState(false);
+    const [joinFreeSubmitting, setJoinFreeSubmitting] = useState(false);
     const heroCtaRef = useRef<HTMLButtonElement>(null);
     const user = useSelector(selectAuthUser);
     const isAuthenticated = useSelector(selectIsAuthenticated);
@@ -108,6 +110,65 @@ export default function LiveTradingClass({
     const reviewStats = initialReviewStats;
     const isLoadingReviews = false;
     const classPriceInPaise = LIVE_TRADING_CLASS_PRICE_INR * 100;
+
+    const fetchLiveClassPublicLinks = async () => {
+        let liveClassUrl: string | null = null;
+        let whatsappGroupUrl: string | null = null;
+        try {
+            const linksRes = await fetch(
+                `/api/public/live-class-links?courseId=${LIVE_TRADING_CLASS_ITEM_ID}`,
+                { cache: "no-store" },
+            );
+            if (linksRes.ok) {
+                const linkJson = (await linksRes.json()) as {
+                    liveClassUrl?: string | null;
+                    whatsappGroupUrl?: string | null;
+                };
+                liveClassUrl = linkJson.liveClassUrl ?? null;
+                whatsappGroupUrl = linkJson.whatsappGroupUrl ?? null;
+            }
+        } catch (linkErr) {
+            console.warn(
+                "[LIVE_TRADING_CLASS] Could not load public live links",
+                linkErr,
+            );
+        }
+        return { liveClassUrl, whatsappGroupUrl };
+    };
+
+    const redirectToPaymentSuccess = async (
+        activeUser: User,
+        details: {
+            bookingId: string;
+            paymentId: string;
+            orderId: string;
+            amount: number;
+        },
+    ) => {
+        const { nextLiveClassDate, nextLiveClassTime } =
+            getNextLiveClassSchedule();
+        const { liveClassUrl, whatsappGroupUrl } =
+            await fetchLiveClassPublicLinks();
+
+        await setPaymentSuccessData({
+            userName: activeUser?.name || "",
+            email: activeUser?.email || "",
+            phone: activeUser?.phone || "",
+            bookingId: details.bookingId,
+            paymentId: details.paymentId,
+            orderId: details.orderId,
+            amount: details.amount,
+            currency: "INR",
+            itemName: LIVE_TRADING_CLASS_NAME,
+            nextLiveClassDate,
+            nextLiveClassTime,
+            courseId: LIVE_TRADING_CLASS_ITEM_ID,
+            liveClassUrl,
+            whatsappGroupUrl,
+        });
+
+        router.push("/payment-success");
+    };
 
     const createOrderId = async (userId: number) => {
         try {
@@ -176,51 +237,14 @@ export default function LiveTradingClass({
 
                 (async () => {
                     try {
-                        const { nextLiveClassDate, nextLiveClassTime } =
-                            getNextLiveClassSchedule();
-
-                        let liveClassUrl: string | null = null;
-                        let whatsappGroupUrl: string | null = null;
-                        try {
-                            const linksRes = await fetch(
-                                `/api/public/live-class-links?courseId=${LIVE_TRADING_CLASS_ITEM_ID}`,
-                                { cache: "no-store" },
-                            );
-                            if (linksRes.ok) {
-                                const linkJson = (await linksRes.json()) as {
-                                    liveClassUrl?: string | null;
-                                    whatsappGroupUrl?: string | null;
-                                };
-                                liveClassUrl = linkJson.liveClassUrl ?? null;
-                                whatsappGroupUrl = linkJson.whatsappGroupUrl ?? null;
-                            }
-                        } catch (linkErr) {
-                            console.warn(
-                                "[LIVE_TRADING_CLASS] Could not load public live links",
-                                linkErr,
-                            );
-                        }
-
-                        await setPaymentSuccessData({
-                            userName: activeUser?.name || "",
-                            email: activeUser?.email || "",
-                            phone: activeUser?.phone || "",
+                        await redirectToPaymentSuccess(activeUser, {
                             bookingId: createdOrder.bookingId
                                 ? createdOrder.bookingId.toString()
                                 : response.razorpay_order_id,
                             paymentId: response.razorpay_payment_id,
                             orderId: response.razorpay_order_id,
                             amount: LIVE_TRADING_CLASS_PRICE_INR,
-                            currency: "INR",
-                            itemName: LIVE_TRADING_CLASS_NAME,
-                            nextLiveClassDate,
-                            nextLiveClassTime,
-                            courseId: LIVE_TRADING_CLASS_ITEM_ID,
-                            liveClassUrl,
-                            whatsappGroupUrl,
                         });
-
-                        router.push("/payment-success");
                     } catch (error) {
                         console.error("[LIVE_TRADING_CLASS] Local storage error", error);
                         router.push("/payment-failed");
@@ -270,6 +294,71 @@ export default function LiveTradingClass({
         await startCheckout(user);
     };
 
+    const joinFreeAfterAuth = async (activeUser: User) => {
+        const token =
+            typeof window !== "undefined" ? localStorage.getItem("token") : null;
+        if (!token) {
+            console.error("[LIVE_TRADING_CLASS] No auth token for join free");
+            toast({
+                title: "Session missing",
+                description: "Please sign in again and try once more.",
+                variant: "destructive",
+            });
+            return;
+        }
+
+        setJoinFreeSubmitting(true);
+        try {
+            const res = await fetch("/api/live-class/join-free", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${token}`,
+                },
+                body: JSON.stringify({ itemId: LIVE_TRADING_CLASS_ITEM_ID }),
+            });
+            const data = (await res.json()) as {
+                error?: string;
+                bookingId?: number;
+                gatewayOrderId?: string;
+                gatewayPaymentId?: string;
+            };
+
+            if (!res.ok) {
+                toast({
+                    title: "Could not complete join",
+                    description: data.error ?? "Something went wrong. Try again.",
+                    variant: "destructive",
+                });
+                return;
+            }
+
+            await redirectToPaymentSuccess(activeUser, {
+                bookingId: String(data.bookingId ?? ""),
+                paymentId: data.gatewayPaymentId ?? "FREE",
+                orderId: data.gatewayOrderId ?? String(data.bookingId ?? ""),
+                amount: 0,
+            });
+        } catch (e) {
+            console.error("[LIVE_TRADING_CLASS] Complimentary seat flow failed", e);
+            toast({
+                title: "Could not complete join",
+                description: "Check your connection and try again.",
+                variant: "destructive",
+            });
+        } finally {
+            setJoinFreeSubmitting(false);
+        }
+    };
+
+    const handleJoinFreeClick = async () => {
+        if (!isAuthenticated || !user?.id) {
+            setIsAuthModalOpen(true);
+            return;
+        }
+        await joinFreeAfterAuth(user);
+    };
+
     /**
      * Callback for loading more reviews from the API
      * Used by ReviewsSection when "Load More" is clicked
@@ -309,16 +398,18 @@ export default function LiveTradingClass({
                 onOpenChange={setIsAuthModalOpen}
                 onUserResolved={async (authenticatedUser) => {
                     setIsAuthModalOpen(false);
-                    await startCheckout(authenticatedUser);
+                    await joinFreeAfterAuth(authenticatedUser);
                 }}
-                title="Join to continue"
-                description="Enter your details to proceed with Live Trading Class enrollment."
+                title="Get free access"
+                description="Share your details and we’ll send your live class links by email and WhatsApp—same as paid enrollments, at no cost."
                 submitLabel="Continue"
             />
+            {/* Paid checkout (Razorpay) — restore when re-enabling paid CTA below
             <Script
                 id="razorpay-checkout-js"
                 src="https://checkout.razorpay.com/v1/checkout.js"
             />
+            */}
             {/* Hero Section */}
             <section className="relative w-full bg-gradient-to-br from-blue-50 via-white to-blue-50 py-8 md:py-16 lg:py-24">
                 <div className="container mx-auto px-4 sm:px-6 lg:px-8">
@@ -414,11 +505,23 @@ export default function LiveTradingClass({
                             <div className="flex flex-col space-y-2 pt-4">
                                 <Button
                                     ref={heroCtaRef}
+                                    onClick={handleJoinFreeClick}
+                                    disabled={joinFreeSubmitting}
+                                    className="w-full md:w-auto bg-blue-600 hover:bg-blue-700 text-white text-base md:text-lg px-8 py-6 md:py-7 rounded-lg font-semibold"
+                                >
+                                    {joinFreeSubmitting
+                                        ? "Getting access…"
+                                        : "Get Free Access"}
+                                </Button>
+
+                                {/* Paid enrollment — keep for future use; pair with Razorpay Script above
+                                <Button
                                     onClick={handleClick}
                                     className="w-full md:w-auto bg-blue-600 hover:bg-blue-700 text-white text-base md:text-lg px-8 py-6 md:py-7 rounded-lg font-semibold"
                                 >
                                     Join Live Class for ₹{LIVE_TRADING_CLASS_PRICE_INR}
                                 </Button>
+                                */}
 
                                 <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs md:text-sm text-gray-600">
                                     <div className="flex items-center gap-2">
@@ -805,11 +908,23 @@ export default function LiveTradingClass({
                         <div className="mx-auto w-full max-w-xl md:max-w-2xl">
                             <div className="bg-white/95 backdrop-blur border border-gray-200 shadow-lg rounded-xl p-2 md:p-3">
                                 <Button
+                                    onClick={handleJoinFreeClick}
+                                    disabled={joinFreeSubmitting}
+                                    className="w-full bg-blue-600 hover:bg-blue-700 text-white text-base md:text-lg px-6 py-5 md:py-6 rounded-lg font-semibold"
+                                >
+                                    {joinFreeSubmitting
+                                        ? "Getting access…"
+                                        : "Get Free Access"}
+                                </Button>
+
+                                {/* Paid sticky CTA — restore with Razorpay Script when needed
+                                <Button
                                     onClick={handleClick}
                                     className="w-full bg-blue-600 hover:bg-blue-700 text-white text-base md:text-lg px-6 py-5 md:py-6 rounded-lg font-semibold"
                                 >
                                     Join Live Class for ₹{LIVE_TRADING_CLASS_PRICE_INR}
                                 </Button>
+                                */}
                             </div>
                         </div>
                     </div>
