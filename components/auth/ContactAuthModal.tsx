@@ -2,12 +2,14 @@
 
 import type { FormEvent } from "react";
 import { useEffect, useState } from "react";
+import { useDispatch } from "react-redux";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import type { User } from "@/lib/types";
+import { login } from "@/app/auth/authSlice";
 
 const FALLBACK_PASSWORD = "********";
 
@@ -35,6 +37,7 @@ export default function ContactAuthModal({
     submitLabel = "Continue",
 }: ContactAuthModalProps) {
     const { toast } = useToast();
+    const dispatch = useDispatch();
     const [name, setName] = useState("");
     const [email, setEmail] = useState("");
     const [phone, setPhone] = useState("");
@@ -123,6 +126,10 @@ export default function ContactAuthModal({
             }
 
             const normalizedUser = normalizeUser(data.user);
+            if (data.token && typeof window !== "undefined") {
+                localStorage.setItem("token", data.token);
+            }
+            dispatch(login(normalizedUser));
             onUserResolved?.(normalizedUser);
 
             toast({

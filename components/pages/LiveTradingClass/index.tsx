@@ -401,7 +401,7 @@ export default function LiveTradingClass({
                     await joinFreeAfterAuth(authenticatedUser);
                 }}
                 title="Get free access"
-                description="Share your details and we’ll send your live class links by email and WhatsApp—same as paid enrollments, at no cost."
+                // description="Share your details and we’ll send your live class links by email and WhatsApp—same as paid enrollments, at no cost."
                 submitLabel="Continue"
             />
             {/* Paid checkout (Razorpay) — restore when re-enabling paid CTA below
