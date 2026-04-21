@@ -13,9 +13,8 @@ import {
 const FREE_GATEWAY = "FREE";
 
 /**
- * Free enrollment for the live trading class: creates PAID order with ₹0,
- * records a synthetic payment row, then sends the same email + WhatsApp flow
- * as the Razorpay webhook (without touching the payment gateway).
+ * Free enrollment for the live trading class: each call inserts a new PAID order
+ * (₹0), payment_order, and payment row, then sends email + WhatsApp like paid flow.
  */
 export async function POST(request: NextRequest) {
   let body: { itemId?: number } = {};
@@ -45,105 +44,75 @@ export async function POST(request: NextRequest) {
   let orderId: number;
   let gatewayOrderId: string;
   let gatewayPaymentId: string;
-  let alreadyEnrolled = false;
 
   try {
     await client.query("BEGIN");
 
-    const existing = await client.query<{ id: number }>(
-      `SELECT id FROM orders
-       WHERE user_id = $1 AND item_id = $2 AND status = 'PAID'
-       LIMIT 1
-       FOR UPDATE`,
+    const orderInsert = await client.query<{ id: number }>(
+      `INSERT INTO orders (
+        user_id,
+        total_amount,
+        discount_amount,
+        payable_amount,
+        item_id,
+        status
+      )
+      VALUES ($1, 0, 0, 0, $2, 'PAID')
+      RETURNING id`,
       [userId, itemId],
     );
-
-    if (existing.rows[0]) {
-      orderId = existing.rows[0].id;
-      alreadyEnrolled = true;
-      const ids = await client.query<{
-        gateway_order_id: string;
-        gateway_payment_id: string | null;
-      }>(
-        `SELECT po.gateway_order_id, p.gateway_payment_id
-         FROM payment_orders po
-         LEFT JOIN payments p ON p.payment_order_id = po.id AND p.captured = true
-         WHERE po.order_id = $1 AND po.status = 'PAID'
-         ORDER BY po.id DESC
-         LIMIT 1`,
-        [orderId],
+    orderId = orderInsert.rows[0]?.id;
+    if (!orderId) {
+      await client.query("ROLLBACK");
+      return NextResponse.json(
+        { error: "Failed to create enrollment" },
+        { status: 500 },
       );
-      gatewayOrderId = ids.rows[0]?.gateway_order_id ?? `order-${orderId}`;
-      gatewayPaymentId =
-        ids.rows[0]?.gateway_payment_id ?? `existing-${orderId}`;
-      await client.query("COMMIT");
-    } else {
-      const orderInsert = await client.query<{ id: number }>(
-        `INSERT INTO orders (
-          user_id,
-          total_amount,
-          discount_amount,
-          payable_amount,
-          item_id,
-          status
-        )
-        VALUES ($1, 0, 0, 0, $2, 'PAID')
-        RETURNING id`,
-        [userId, itemId],
-      );
-      orderId = orderInsert.rows[0]?.id;
-      if (!orderId) {
-        await client.query("ROLLBACK");
-        return NextResponse.json(
-          { error: "Failed to create enrollment" },
-          { status: 500 },
-        );
-      }
-
-      gatewayOrderId = `free-ord-${randomUUID().replace(/-/g, "").slice(0, 24)}`;
-      gatewayPaymentId = `free-pay-${randomUUID().replace(/-/g, "").slice(0, 24)}`;
-
-      const poInsert = await client.query<{ id: number }>(
-        `INSERT INTO payment_orders (
-          order_id,
-          user_id,
-          gateway,
-          gateway_order_id,
-          amount,
-          currency,
-          status
-        )
-        VALUES ($1, $2, $3, $4, 0, 'INR', 'PAID')
-        RETURNING id`,
-        [orderId, userId, FREE_GATEWAY, gatewayOrderId],
-      );
-      const paymentOrderId = poInsert.rows[0]?.id;
-      if (!paymentOrderId) {
-        await client.query("ROLLBACK");
-        return NextResponse.json(
-          { error: "Failed to create payment order" },
-          { status: 500 },
-        );
-      }
-
-      await client.query(
-        `INSERT INTO payments (
-          order_id,
-          payment_order_id,
-          gateway,
-          gateway_payment_id,
-          amount,
-          currency,
-          method,
-          status,
-          captured
-        )
-        VALUES ($1, $2, $3, $4, 0, 'INR', 'free', 'captured', true)`,
-        [orderId, paymentOrderId, FREE_GATEWAY, gatewayPaymentId],
-      );
-
-      await client.query("COMMIT");
     }
+
+    gatewayOrderId = `free-ord-${randomUUID().replace(/-/g, "").slice(0, 24)}`;
+    gatewayPaymentId = `free-pay-${randomUUID().replace(/-/g, "").slice(0, 24)}`;
+
+    const poInsert = await client.query<{ id: number }>(
+      `INSERT INTO payment_orders (
+        order_id,
+        user_id,
+        gateway,
+        gateway_order_id,
+        amount,
+        currency,
+        status
+      )
+      VALUES ($1, $2, $3, $4, 0, 'INR', 'PAID')
+      RETURNING id`,
+      [orderId, userId, FREE_GATEWAY, gatewayOrderId],
+    );
+    const paymentOrderId = poInsert.rows[0]?.id;
+    if (!paymentOrderId) {
+      await client.query("ROLLBACK");
+      return NextResponse.json(
+        { error: "Failed to create payment order" },
+        { status: 500 },
+      );
+    }
+
+    await client.query(
+      `INSERT INTO payments (
+        order_id,
+        payment_order_id,
+        gateway,
+        gateway_payment_id,
+        amount,
+        currency,
+        method,
+        status,
+        captured
+      )
+      VALUES ($1, $2, $3, $4, 0, 'INR', 'free', 'captured', true)`,
+      [orderId, paymentOrderId, FREE_GATEWAY, gatewayPaymentId],
+    );
+
+    await client.query("COMMIT");
   } catch (error) {
     try {
       await client.query("ROLLBACK");
@@ -168,30 +137,27 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "User not found" }, { status: 404 });
   }
 
-  if (!alreadyEnrolled) {
-    try {
-      await upsertOrderNotification(orderId, userId, userEmail);
-      const [emailResult, whatsappResult] = await Promise.all([
-        sendOrderConfirmationEmail(orderId),
-        sendOrderConfirmationWhatsAppMessage(orderId),
-      ]);
-      console.log("[JOIN_FREE_LIVE_CLASS] Notifications", {
-        orderId,
-        emailOk: emailResult.success,
-        whatsappOk: whatsappResult.success,
-      });
-    } catch (notificationError) {
-      console.error("[JOIN_FREE_LIVE_CLASS] Notification error", {
-        orderId,
-        error: notificationError,
-      });
-    }
+  try {
+    await upsertOrderNotification(orderId, userId, userEmail);
+    const [emailResult, whatsappResult] = await Promise.all([
+      sendOrderConfirmationEmail(orderId),
+      sendOrderConfirmationWhatsAppMessage(orderId),
+    ]);
+    console.log("[JOIN_FREE_LIVE_CLASS] Notifications", {
+      orderId,
+      emailOk: emailResult.success,
+      whatsappOk: whatsappResult.success,
+    });
+  } catch (notificationError) {
+    console.error("[JOIN_FREE_LIVE_CLASS] Notification error", {
+      orderId,
+      error: notificationError,
+    });
   }
 
   return NextResponse.json({
     bookingId: orderId,
     gatewayOrderId,
     gatewayPaymentId,
-    alreadyEnrolled,
   });
 }
