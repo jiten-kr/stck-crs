@@ -4,6 +4,7 @@ import pool from "@/lib/db";
 import { LIVE_TRADING_CLASS_ITEM_ID } from "@/lib/constants";
 import { validateRequest } from "@/lib/middleware/verifyJWT";
 import type { User } from "@/lib/types";
+import type { SendNotificationResult } from "@/lib/notifications";
 import {
   upsertOrderNotification,
   sendOrderConfirmationEmail,
@@ -11,6 +12,26 @@ import {
 } from "@/lib/notifications";
 
 const FREE_GATEWAY = "FREE";
+
+const NOTIFY_RETRY_MS = 500;
+
+async function sendWithRetry(
+  orderId: number,
+  label: string,
+  send: (id: number) => Promise<SendNotificationResult>,
+): Promise<SendNotificationResult> {
+  let result = await send(orderId);
+  if (!result.success) {
+    console.warn("[JOIN_FREE_LIVE_CLASS] Notification retry", {
+      orderId,
+      label,
+      error: result.error,
+    });
+    await new Promise((r) => setTimeout(r, NOTIFY_RETRY_MS));
+    result = await send(orderId);
+  }
+  return result;
+}
 
 /**
  * Free enrollment for the live trading class: each call inserts a new PAID order
@@ -137,27 +158,58 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "User not found" }, { status: 404 });
   }
 
+  // Same sequence as Razorpay webhook: email queue row, then send email + WhatsApp in parallel.
+  let emailResult: SendNotificationResult = {
+    success: false,
+    error: "not started",
+  };
+  let whatsappResult: SendNotificationResult = {
+    success: false,
+    error: "not started",
+  };
+
   try {
     await upsertOrderNotification(orderId, userId, userEmail);
-    const [emailResult, whatsappResult] = await Promise.all([
-      sendOrderConfirmationEmail(orderId),
-      sendOrderConfirmationWhatsAppMessage(orderId),
-    ]);
-    console.log("[JOIN_FREE_LIVE_CLASS] Notifications", {
+  } catch (upsertErr) {
+    console.error("[JOIN_FREE_LIVE_CLASS] upsertOrderNotification failed", {
       orderId,
-      emailOk: emailResult.success,
-      whatsappOk: whatsappResult.success,
-    });
-  } catch (notificationError) {
-    console.error("[JOIN_FREE_LIVE_CLASS] Notification error", {
-      orderId,
-      error: notificationError,
+      error: upsertErr,
     });
   }
+
+  try {
+    [emailResult, whatsappResult] = await Promise.all([
+      sendWithRetry(orderId, "email", sendOrderConfirmationEmail),
+      sendWithRetry(orderId, "whatsapp", sendOrderConfirmationWhatsAppMessage),
+    ]);
+  } catch (notifyErr) {
+    console.error("[JOIN_FREE_LIVE_CLASS] Notification send failed", {
+      orderId,
+      error: notifyErr,
+    });
+  }
+
+  console.log("[JOIN_FREE_LIVE_CLASS] Notifications complete", {
+    orderId,
+    emailOk: emailResult.success,
+    emailError: emailResult.error,
+    whatsappOk: whatsappResult.success,
+    whatsappError: whatsappResult.error,
+  });
 
   return NextResponse.json({
     bookingId: orderId,
     gatewayOrderId,
     gatewayPaymentId,
+    notifications: {
+      email: {
+        sent: emailResult.success,
+        error: emailResult.success ? undefined : emailResult.error,
+      },
+      whatsapp: {
+        sent: whatsappResult.success,
+        error: whatsappResult.success ? undefined : whatsappResult.error,
+      },
+    },
   });
 }
