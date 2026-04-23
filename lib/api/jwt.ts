@@ -2,10 +2,16 @@ import jwt, { JwtPayload, SignOptions } from "jsonwebtoken";
 
 const JWT_SECRET = process.env.JWT_SECRET || "your-secret-key";
 
-// Generic payload type
+/** httpOnly cookie max-age (seconds). JWTs omit `exp`; keep cookie aligned for server-side reads. */
+export const AUTH_TOKEN_COOKIE_MAX_AGE_SEC = 10 * 365 * 24 * 60 * 60; // ~10 years
+
+/**
+ * Sign a JWT. By default no `expiresIn` is set, so the token does not include `exp` and does not
+ * expire until the secret rotates. Pass `options.expiresIn` if you need a shorter-lived token.
+ */
 export function generateJWT<T extends object>(
   payload: T,
-  options: SignOptions = { expiresIn: "1h" }
+  options: SignOptions = {},
 ): string {
   return jwt.sign(payload, JWT_SECRET, options);
 }

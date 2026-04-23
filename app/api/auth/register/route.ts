@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import pool from "@/lib/db";
 import bcrypt from "bcryptjs";
-import { generateJWT } from "@/lib/api/jwt";
+import { AUTH_TOKEN_COOKIE_MAX_AGE_SEC, generateJWT } from "@/lib/api/jwt";
 
 export async function POST(req: Request) {
   console.log("[REGISTER] Request received");
@@ -127,7 +127,7 @@ export async function POST(req: Request) {
       sameSite: "lax",
       secure: process.env.NODE_ENV === "production",
       path: "/",
-      maxAge: 60 * 60,
+      maxAge: AUTH_TOKEN_COOKIE_MAX_AGE_SEC,
     });
     return response;
   } catch (error) {
