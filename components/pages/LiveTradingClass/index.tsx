@@ -437,7 +437,7 @@ export default function LiveTradingClass({
         const tick = () => {
             setFreeBookingRemainingMs(
                 FREE_BOOKING_COUNTDOWN_CYCLE_MS -
-                    (Date.now() % FREE_BOOKING_COUNTDOWN_CYCLE_MS),
+                (Date.now() % FREE_BOOKING_COUNTDOWN_CYCLE_MS),
             );
         };
         tick();
@@ -463,7 +463,7 @@ export default function LiveTradingClass({
             >
                 <div className="container mx-auto flex flex-col items-center justify-center gap-1.5 px-4 py-2.5 sm:flex-row sm:gap-4 sm:py-2">
                     <p className="text-center text-xs font-medium text-amber-950/90 sm:text-sm">
-                        Grab your free booking — this offer window resets in
+                        Limited-time free class offer ends in
                     </p>
                     <div className="flex items-center gap-2 rounded-md bg-white/60 px-3 py-1 font-mono text-base font-bold tabular-nums tracking-tight text-amber-900 shadow-sm ring-1 ring-amber-200/80 sm:text-lg">
                         <Clock
