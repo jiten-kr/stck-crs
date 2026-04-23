@@ -8,6 +8,7 @@ import { ReviewsSection } from "@/components/ui/reviews-section";
 import WriteReview from "@/components/reviews/write-review";
 import {
     LEARNERS_COUNT,
+    LIVE_TRADING_CLASS_CROSS_OUT_PRICE_INR,
     LIVE_TRADING_CLASS_ITEM_ID,
     LIVE_TRADING_CLASS_NAME,
     LIVE_TRADING_CLASS_PRICE_INR,
@@ -32,7 +33,23 @@ import {
     GraduationCap,
     Users,
     Star,
+    Clock,
 } from "lucide-react";
+
+/** 24h repeating window for free-booking urgency (aligned to Unix epoch). */
+const FREE_BOOKING_COUNTDOWN_CYCLE_MS = 24 * 60 * 60 * 1000;
+
+function formatHms(remainingMs: number): { h: string; m: string; s: string } {
+    const totalSec = Math.max(0, Math.floor(remainingMs / 1000));
+    const h = Math.floor(totalSec / 3600);
+    const m = Math.floor((totalSec % 3600) / 60);
+    const s = totalSec % 60;
+    return {
+        h: String(h).padStart(2, "0"),
+        m: String(m).padStart(2, "0"),
+        s: String(s).padStart(2, "0"),
+    };
+}
 
 type RazorpaySuccessResponse = {
     razorpay_payment_id: string;
@@ -102,6 +119,9 @@ export default function LiveTradingClass({
     const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
     const [showStickyCta, setShowStickyCta] = useState(false);
     const [joinFreeSubmitting, setJoinFreeSubmitting] = useState(false);
+    const [freeBookingRemainingMs, setFreeBookingRemainingMs] = useState<number | null>(
+        null,
+    );
     const heroCtaRef = useRef<HTMLButtonElement>(null);
     const user = useSelector(selectAuthUser);
     const isAuthenticated = useSelector(selectIsAuthenticated);
@@ -368,6 +388,25 @@ export default function LiveTradingClass({
         return newReviews;
     }, []);
 
+    const renderFreeCtaButtonContent = () =>
+        joinFreeSubmitting ? (
+            <span className="text-sm md:text-[0.9375rem]">Reserving your seat…</span>
+        ) : (
+            <span className="flex flex-wrap items-center justify-center gap-x-2.5 gap-y-1.5 text-center max-w-md">
+                <span
+                    className="inline-flex items-center rounded-lg bg-white/20 px-3 py-1.5 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.35)] ring-1 ring-white/35"
+                    title={`Earlier listed at ₹${LIVE_TRADING_CLASS_CROSS_OUT_PRICE_INR}`}
+                >
+                    <span className="line-through decoration-1 decoration-white/95 text-white font-bold tabular-nums text-2xl md:text-3xl leading-none">
+                        ₹&nbsp;{LIVE_TRADING_CLASS_CROSS_OUT_PRICE_INR}
+                    </span>
+                </span>
+                <span className="text-base md:text-lg font-semibold tracking-tight">
+                    Book free — reserve your seat
+                </span>
+            </span>
+        );
+
     /**
      * Show sticky CTA when hero button scrolls out of view
      */
@@ -391,8 +430,57 @@ export default function LiveTradingClass({
         return () => observer.disconnect();
     }, []);
 
+    /**
+     * 24-hour countdown that resets every 24 hours (same boundary for all visitors).
+     */
+    useEffect(() => {
+        const tick = () => {
+            setFreeBookingRemainingMs(
+                FREE_BOOKING_COUNTDOWN_CYCLE_MS -
+                    (Date.now() % FREE_BOOKING_COUNTDOWN_CYCLE_MS),
+            );
+        };
+        tick();
+        const id = window.setInterval(tick, 1000);
+        return () => window.clearInterval(id);
+    }, []);
+
+    const countdownParts =
+        freeBookingRemainingMs != null
+            ? formatHms(freeBookingRemainingMs)
+            : null;
+
     return (
         <div className="flex flex-col min-h-screen">
+            <div
+                className="sticky top-16 z-40 w-full border-b border-amber-200/80 bg-gradient-to-r from-amber-50 via-orange-50/95 to-amber-50 text-amber-950 shadow-sm backdrop-blur-sm supports-[backdrop-filter]:bg-amber-50/90"
+                role="timer"
+                aria-label={
+                    countdownParts
+                        ? `Time left in this free booking window: ${countdownParts.h} hours, ${countdownParts.m} minutes, ${countdownParts.s} seconds`
+                        : "Countdown loading"
+                }
+            >
+                <div className="container mx-auto flex flex-col items-center justify-center gap-1.5 px-4 py-2.5 sm:flex-row sm:gap-4 sm:py-2">
+                    <p className="text-center text-xs font-medium text-amber-950/90 sm:text-sm">
+                        Grab your free booking — this offer window resets in
+                    </p>
+                    <div className="flex items-center gap-2 rounded-md bg-white/60 px-3 py-1 font-mono text-base font-bold tabular-nums tracking-tight text-amber-900 shadow-sm ring-1 ring-amber-200/80 sm:text-lg">
+                        <Clock
+                            className="h-4 w-4 shrink-0 text-amber-700"
+                            aria-hidden
+                        />
+                        {countdownParts ? (
+                            <span>
+                                {countdownParts.h}:{countdownParts.m}:
+                                {countdownParts.s}
+                            </span>
+                        ) : (
+                            <span className="min-w-[7.5ch]">--:--:--</span>
+                        )}
+                    </div>
+                </div>
+            </div>
             <ContactAuthModal
                 open={isAuthModalOpen}
                 onOpenChange={setIsAuthModalOpen}
@@ -401,7 +489,7 @@ export default function LiveTradingClass({
                     await joinFreeAfterAuth(authenticatedUser);
                 }}
                 title="Get free access"
-                // description="Share your details and we’ll send your live class links by email and WhatsApp—same as paid enrollments, at no cost."
+                description="Enter your details. We’ll send your live class links by email and WhatsApp."
                 submitLabel="Continue"
             />
             {/* Paid checkout (Razorpay) — restore when re-enabling paid CTA below
@@ -507,11 +595,14 @@ export default function LiveTradingClass({
                                     ref={heroCtaRef}
                                     onClick={handleJoinFreeClick}
                                     disabled={joinFreeSubmitting}
-                                    className="w-full md:w-auto bg-blue-600 hover:bg-blue-700 text-white text-base md:text-lg px-8 py-6 md:py-7 rounded-lg font-semibold"
+                                    className="w-full md:w-auto h-auto bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 md:px-6 md:py-3 rounded-md font-semibold text-sm shadow-sm shadow-blue-900/10 border border-blue-500/30"
+                                    aria-label={
+                                        joinFreeSubmitting
+                                            ? "Reserving your seat"
+                                            : `Book free live class seat. Listed value ${LIVE_TRADING_CLASS_CROSS_OUT_PRICE_INR} rupees is waived for this session.`
+                                    }
                                 >
-                                    {joinFreeSubmitting
-                                        ? "Getting access…"
-                                        : "Get Free Access"}
+                                    {renderFreeCtaButtonContent()}
                                 </Button>
 
                                 {/* Paid enrollment — keep for future use; pair with Razorpay Script above
@@ -906,15 +997,18 @@ export default function LiveTradingClass({
                 <div className="pointer-events-none">
                     <div className="pointer-events-auto px-4 sm:px-6 lg:px-8 pb-[env(safe-area-inset-bottom)]">
                         <div className="mx-auto w-full max-w-xl md:max-w-2xl">
-                            <div className="bg-white/95 backdrop-blur border border-gray-200 shadow-lg rounded-xl p-2 md:p-3">
+                            <div className="bg-white/95 backdrop-blur border border-gray-200 shadow-lg rounded-xl p-1.5 md:p-2">
                                 <Button
                                     onClick={handleJoinFreeClick}
                                     disabled={joinFreeSubmitting}
-                                    className="w-full bg-blue-600 hover:bg-blue-700 text-white text-base md:text-lg px-6 py-5 md:py-6 rounded-lg font-semibold"
+                                    className="w-full h-auto bg-blue-600 hover:bg-blue-700 text-white px-4 py-2.5 md:px-5 md:py-3 rounded-md font-semibold text-sm shadow-sm shadow-blue-900/10 border border-blue-500/30"
+                                    aria-label={
+                                        joinFreeSubmitting
+                                            ? "Reserving your seat"
+                                            : `Book free live class seat. Listed value ${LIVE_TRADING_CLASS_CROSS_OUT_PRICE_INR} rupees is waived for this session.`
+                                    }
                                 >
-                                    {joinFreeSubmitting
-                                        ? "Getting access…"
-                                        : "Get Free Access"}
+                                    {renderFreeCtaButtonContent()}
                                 </Button>
 
                                 {/* Paid sticky CTA — restore with Razorpay Script when needed
