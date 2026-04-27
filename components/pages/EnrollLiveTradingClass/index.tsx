@@ -11,9 +11,10 @@ import {
     LEARNERS_COUNT,
     LIVE_TRADING_CLASS_ITEM_ID,
     LIVE_TRADING_CLASS_NAME,
-    LIVE_TRADING_CLASS_PRICE_INR,
     PLATFORM_NAME,
 } from "@/lib/constants";
+
+const ENROLL_CLASS_PRICE_INR = 2499;
 import { fetchMoreReviews } from "@/lib/utils";
 import type { Review, User } from "@/lib/types";
 import { selectAuthUser, selectIsAuthenticated } from "@/app/auth/authSelector";
@@ -107,7 +108,7 @@ export default function EnrollLiveTradingClass({
     const totalReviews = initialTotalReviews;
     const reviewStats = initialReviewStats;
     const isLoadingReviews = false;
-    const classPriceInPaise = LIVE_TRADING_CLASS_PRICE_INR * 100;
+    const classPriceInPaise = ENROLL_CLASS_PRICE_INR * 100;
 
     const createOrderId = async (userId: number) => {
         try {
@@ -210,7 +211,7 @@ export default function EnrollLiveTradingClass({
                                 : response.razorpay_order_id,
                             paymentId: response.razorpay_payment_id,
                             orderId: response.razorpay_order_id,
-                            amount: LIVE_TRADING_CLASS_PRICE_INR,
+                            amount: ENROLL_CLASS_PRICE_INR,
                             currency: "INR",
                             itemName: LIVE_TRADING_CLASS_NAME,
                             nextLiveClassDate,
@@ -253,7 +254,7 @@ export default function EnrollLiveTradingClass({
     const handleClick = async () => {
         // Track InitiateCheckout event for Meta Pixel
         trackInitiateCheckout({
-            value: LIVE_TRADING_CLASS_PRICE_INR,
+            value: ENROLL_CLASS_PRICE_INR,
             currency: "INR",
             content_name: LIVE_TRADING_CLASS_NAME,
             content_ids: [LIVE_TRADING_CLASS_ITEM_ID.toString()],
@@ -417,7 +418,7 @@ export default function EnrollLiveTradingClass({
                                     onClick={handleClick}
                                     className="w-full md:w-auto bg-blue-600 hover:bg-blue-700 text-white text-base md:text-lg px-8 py-6 md:py-7 rounded-lg font-semibold"
                                 >
-                                    Join Live Class for ₹{LIVE_TRADING_CLASS_PRICE_INR}
+                                    Join Live Class for ₹{ENROLL_CLASS_PRICE_INR}
                                 </Button>
 
                                 <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs md:text-sm text-gray-600">
@@ -808,7 +809,7 @@ export default function EnrollLiveTradingClass({
                                     onClick={handleClick}
                                     className="w-full bg-blue-600 hover:bg-blue-700 text-white text-base md:text-lg px-6 py-5 md:py-6 rounded-lg font-semibold"
                                 >
-                                    Join Live Class for ₹{LIVE_TRADING_CLASS_PRICE_INR}
+                                    Join Live Class for ₹{ENROLL_CLASS_PRICE_INR}
                                 </Button>
                             </div>
                         </div>
