@@ -3,7 +3,7 @@ import { unstable_noStore as noStore } from "next/cache";
 import { PLATFORM_NAME } from "@/lib/constants";
 import type { Review } from "@/lib/types";
 import pool from "@/lib/db";
-import LiveTradingClass from "@/components/pages/LiveTradingClass";
+import EnrollLiveTradingClass from "@/components/pages/EnrollLiveTradingClass";
 
 export const metadata: Metadata = {
     title: PLATFORM_NAME + " - Enroll in Live Stock & Crypto Trading Class | Learn & Trade Confidently",
@@ -123,7 +123,7 @@ export default async function EnrollLiveStockCryptoClassPage() {
         totalReviews > 0 ? { totalReviews, averageRating } : null;
 
     return (
-        <LiveTradingClass
+        <EnrollLiveTradingClass
             initialReviews={reviews}
             initialTotalReviews={totalReviews}
             initialReviewStats={initialReviewStats}
