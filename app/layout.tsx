@@ -15,11 +15,6 @@ import type { Metadata } from "next";
 const META_PIXEL_ID = "1569707624288294";
 
 
-const inter = Inter({ subsets: ["latin"] })
-
-
-
-
 export default function RootLayout({
   children,
 }: {
