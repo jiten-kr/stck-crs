@@ -9,10 +9,8 @@ import Footer from "@/components/footer"
 import PixelTracker from "@/components/PixelTracker"
 import "./globals.css"
 import { Providers } from "@/components/providers"
-import { PLATFORM_FULL_NAME, PLATFORM_NAME } from "@/lib/constants"
-import type { Metadata } from "next";
 
-const META_PIXEL_ID = "1569707624288294";
+const META_PIXEL_ID = "2830727287263807";
 
 
 export default function RootLayout({
@@ -41,6 +39,7 @@ export default function RootLayout({
                   s.parentNode.insertBefore(t,s)}(window, document,'script',
                   'https://connect.facebook.net/en_US/fbevents.js');
                   fbq('init', '${META_PIXEL_ID}');
+                  fbq('track', 'PageView');
                 `,
               }}
             />
