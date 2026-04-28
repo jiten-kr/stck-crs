@@ -19,6 +19,7 @@ export default function PixelTracker(): null {
     const pathname = usePathname();
     const searchParams = useSearchParams();
     const previousUrl = useRef<string | null>(null);
+    const hasHandledInitial = useRef(false);
 
     useEffect(() => {
         // Construct the full URL including search params
@@ -31,6 +32,11 @@ export default function PixelTracker(): null {
 
         // Update the previous URL ref
         previousUrl.current = url;
+
+        if (!hasHandledInitial.current) {
+            hasHandledInitial.current = true;
+            return;
+        }
 
         // Track the pageview
         pageview();
