@@ -187,7 +187,7 @@ function ReviewCardSkeleton() {
 export function ReviewsSection({
   id,
   reviews,
-  heading = "What Traders Are Saying",
+  heading = "Reviews",
   subheading,
   className = "",
   initialCount = 8,

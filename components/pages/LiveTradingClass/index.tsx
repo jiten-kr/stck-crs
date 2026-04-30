@@ -7,7 +7,6 @@ import { Card, CardContent } from "@/components/ui/card";
 import { ReviewsSection } from "@/components/ui/reviews-section";
 import WriteReview from "@/components/reviews/write-review";
 import {
-    LEARNERS_COUNT,
     LIVE_TRADING_CLASS_CROSS_OUT_PRICE_INR,
     LIVE_TRADING_CLASS_ITEM_ID,
     LIVE_TRADING_CLASS_NAME,
@@ -16,10 +15,11 @@ import {
 } from "@/lib/constants";
 import { fetchMoreReviews } from "@/lib/utils";
 import type { Review, User } from "@/lib/types";
+import { CURRICULUM_TOPICS } from "@/lib/courseCurriculum";
 import { selectAuthUser, selectIsAuthenticated } from "@/app/auth/authSelector";
-import Image from "next/image";
 import { useRouter } from "next/navigation";
 import ContactAuthModal from "@/components/auth/ContactAuthModal";
+import InstructorPanel from "@/components/pages/shared/InstructorPanel";
 import { setPaymentSuccessData } from "@/lib/paymentSuccessStore";
 import { getNextLiveClassSchedule } from "@/lib/notifications/contentBuilder";
 import { trackInitiateCheckout } from "@/lib/metaPixel";
@@ -624,81 +624,88 @@ export default function LiveTradingClass({
                         </div>
 
                         {/* Right Section - Instructor */}
-                        <div className="relative order-2 lg:order-2 flex justify-center lg:justify-end">
-                            <div className="relative w-full max-w-xl">
-                                {/* Background Circles */}
-                                <div className="absolute inset-0 flex items-center justify-center">
-                                    <div className="w-64 h-64 md:w-80 md:h-80 lg:w-[26rem] lg:h-[26rem] rounded-full border-2 border-gray-200 opacity-30"></div>
-                                    <div className="absolute w-48 h-48 md:w-64 md:h-64 lg:w-80 lg:h-80 rounded-full border-2 border-gray-200 opacity-30"></div>
-                                </div>
-
-                                {/* Instructor Photo and Details */}
-                                <div className="relative z-10 flex flex-col items-center gap-6">
-                                    <div className="relative w-40 h-40 md:w-56 md:h-56 lg:w-72 lg:h-72">
-                                        <div className="relative w-full h-full rounded-full overflow-hidden shadow-xl border-[3px] border-blue-500">
-                                            <Image
-                                                src="/mayank_feature_img.png"
-                                                alt="Mayank Kumar"
-                                                fill
-                                                priority
-                                                sizes="(min-width: 1024px) 18rem, (min-width: 768px) 14rem, 10rem"
-                                                className="object-cover object-top"
-                                            />
-                                        </div>
-
-                                        {/* Social Proof Cards */}
-                                        <div className="absolute top-8 left-[70%] sm:left-[80%] lg:left-[85%] z-20 -translate-x-4">
-                                            <Card className="bg-white border-2 border-blue-500 shadow-lg p-2 md:p-3 whitespace-normal sm:whitespace-nowrap">
-                                                <CardContent className="p-0 flex items-center space-x-2">
-                                                    <GraduationCap className="w-4 h-4 md:w-5 md:h-5 text-blue-600" />
-                                                    <span className="text-xs md:text-sm font-semibold text-gray-800">
-                                                        {LEARNERS_COUNT} Students Enrolled
-                                                    </span>
-                                                </CardContent>
-                                            </Card>
-                                        </div>
-                                    </div>
-
-                                    {/* Name and Title */}
-                                    <div className="bg-blue-600 rounded-lg px-6 py-4 shadow-xl text-center">
-                                        <h3 className="text-lg md:text-xl lg:text-2xl font-bold text-white">
-                                            Mayank Kumar
-                                        </h3>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+                        <InstructorPanel />
                     </div>
                 </div>
             </section>
 
-            {/* Reviews Section */}
-            {isLoadingReviews ? (
-                <section className="w-full bg-white text-gray-900 py-12 md:py-16 lg:py-20">
-                    <div className="container mx-auto px-4 text-center">
-                        <p className="text-gray-500">Loading reviews...</p>
+            {/* What will you Learn Section */}
+            <section className="w-full bg-gradient-to-br from-gray-50 via-white to-blue-50 py-12 md:py-16 lg:py-20">
+                <div className="container mx-auto px-4 sm:px-6 md:px-8 lg:px-12 xl:px-16 2xl:px-20">
+                    {/* Section Title */}
+                    <div className="text-center mb-10 md:mb-12 lg:mb-16">
+                        <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-gray-900 mb-3">
+                            What will you Learn?
+                        </h2>
+                        <p className="text-base md:text-lg text-gray-600 max-w-2xl mx-auto">
+                            This masterclass is built from real market experience, not theory.
+                        </p>
+                        <div className="w-24 h-1 bg-gradient-to-r from-blue-600 to-blue-400 mx-auto rounded-full"></div>
                     </div>
-                </section>
-            ) : reviews.length > 0 ? (
-                <ReviewsSection
-                    id="reviews-section"
-                    reviews={reviews}
-                    heading="What Traders Are Saying"
-                    subheading="Real feedback from students who transformed their trading with our masterclass"
-                    footerContent={
-                        <WriteReview
-                            onSubmitted={() => router.refresh()}
-                            className="mx-auto max-w-4xl"
-                        />
-                    }
-                    initialCount={reviews.length}
-                    loadMoreCount={4}
-                    loadMoreText="Load More Reviews"
-                    loadingText="Loading reviews..."
-                    onLoadMore={handleLoadMoreReviews}
-                    totalCount={totalReviews}
-                />
-            ) : null}
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
+                        {CURRICULUM_TOPICS.map((topic) => (
+                            <div key={topic.id} className="bg-white border border-gray-200 rounded-xl p-6 md:p-8 shadow-sm">
+                                <div className="flex items-center gap-3 mb-4">
+                                    <CheckCircle2 className="w-6 h-6 text-blue-600 flex-shrink-0" />
+                                    <h3 className="text-lg md:text-xl font-bold text-gray-900">
+                                        {topic.title}
+                                    </h3>
+                                </div>
+                                <ul className="space-y-2">
+                                    {topic.points.map((point, index) => (
+                                        <li key={index} className="flex items-start">
+                                            <div className="w-2 h-2 rounded-full bg-blue-500 mt-2 mr-3 flex-shrink-0"></div>
+                                            <span className="text-sm md:text-base text-gray-700 leading-relaxed">
+                                                {point}
+                                            </span>
+                                        </li>
+                                    ))}
+                                </ul>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            </section>
+
+            {/* Sticky Bottom CTA */}
+            <div
+                className={`fixed inset-x-0 bottom-0 z-50 transition-all duration-300 ease-out ${showStickyCta
+                    ? "opacity-100 translate-y-0"
+                    : "opacity-0 translate-y-4 pointer-events-none"
+                    }`}
+                aria-hidden={!showStickyCta}
+            >
+                <div className="pointer-events-none">
+                    <div className="pointer-events-auto px-4 sm:px-6 lg:px-8 pb-[env(safe-area-inset-bottom)]">
+                        <div className="mx-auto w-full max-w-xl md:max-w-2xl">
+                            <div className="bg-white/95 backdrop-blur border border-gray-200 shadow-lg rounded-xl p-1.5 md:p-2">
+                                <Button
+                                    onClick={handleJoinFreeClick}
+                                    disabled={joinFreeSubmitting}
+                                    className="w-full h-auto bg-blue-600 hover:bg-blue-700 text-white px-4 py-2.5 md:px-5 md:py-3 rounded-md font-semibold text-sm shadow-sm shadow-blue-900/10 border border-blue-500/30"
+                                    aria-label={
+                                        joinFreeSubmitting
+                                            ? "Reserving your seat"
+                                            : `Book free live class seat. Listed value ${LIVE_TRADING_CLASS_CROSS_OUT_PRICE_INR} rupees is waived for this session.`
+                                    }
+                                >
+                                    {renderFreeCtaButtonContent()}
+                                </Button>
+
+                                {/* Paid sticky CTA — restore with Razorpay Script when needed
+                                <Button
+                                    onClick={handleClick}
+                                    className="w-full bg-blue-600 hover:bg-blue-700 text-white text-base md:text-lg px-6 py-5 md:py-6 rounded-lg font-semibold"
+                                >
+                                    Join Live Class for ₹{LIVE_TRADING_CLASS_PRICE_INR}
+                                </Button>
+                                */}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
             {/* Who is this Masterclass for Section */}
             <section className="w-full bg-gradient-to-br from-slate-50 via-gray-50 to-slate-100 py-12 md:py-16 lg:py-20">
@@ -794,236 +801,33 @@ export default function LiveTradingClass({
                 </div>
             </section>
 
-            {/* What will you Learn Section */}
-            <section className="w-full bg-gradient-to-br from-gray-50 via-white to-blue-50 py-12 md:py-16 lg:py-20">
-                <div className="container mx-auto px-4 sm:px-6 md:px-8 lg:px-12 xl:px-16 2xl:px-20">
-                    {/* Section Title */}
-                    <div className="text-center mb-10 md:mb-12 lg:mb-16">
-                        <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-gray-900 mb-3">
-                            What will you Learn?
-                        </h2>
-                        <p className="text-base md:text-lg text-gray-600 max-w-2xl mx-auto">
-                            This masterclass is built from real market experience, not theory.
-                        </p>
-                        <div className="w-24 h-1 bg-gradient-to-r from-blue-600 to-blue-400 mx-auto rounded-full"></div>
+            {/* Reviews Section */}
+            {isLoadingReviews ? (
+                <section className="w-full bg-white text-gray-900 py-12 md:py-16 lg:py-20">
+                    <div className="container mx-auto px-4 text-center">
+                        <p className="text-gray-500">Loading reviews...</p>
                     </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
-                        <div className="bg-white border border-gray-200 rounded-xl p-6 md:p-8 shadow-sm">
-                            <div className="flex items-center gap-3 mb-4">
-                                <CheckCircle2 className="w-6 h-6 text-blue-600 flex-shrink-0" />
-                                <h3 className="text-lg md:text-xl font-bold text-gray-900">
-                                    Proper Entry Strategy
-                                </h3>
-                            </div>
-                            <ul className="space-y-2">
-                                <li className="flex items-start">
-                                    <div className="w-2 h-2 rounded-full bg-blue-500 mt-2 mr-3 flex-shrink-0"></div>
-                                    <span className="text-sm md:text-base text-gray-700 leading-relaxed">
-                                        How to identify high-probability entries
-                                    </span>
-                                </li>
-                                <li className="flex items-start">
-                                    <div className="w-2 h-2 rounded-full bg-blue-500 mt-2 mr-3 flex-shrink-0"></div>
-                                    <span className="text-sm md:text-base text-gray-700 leading-relaxed">
-                                        When not to enter (most important rule)
-                                    </span>
-                                </li>
-                                <li className="flex items-start">
-                                    <div className="w-2 h-2 rounded-full bg-blue-500 mt-2 mr-3 flex-shrink-0"></div>
-                                    <span className="text-sm md:text-base text-gray-700 leading-relaxed">
-                                        Avoid chasing and FOMO trades
-                                    </span>
-                                </li>
-                            </ul>
-                        </div>
-
-                        <div className="bg-white border border-gray-200 rounded-xl p-6 md:p-8 shadow-sm">
-                            <div className="flex items-center gap-3 mb-4">
-                                <CheckCircle2 className="w-6 h-6 text-blue-600 flex-shrink-0" />
-                                <h3 className="text-lg md:text-xl font-bold text-gray-900">
-                                    Stop-Loss That Actually Works
-                                </h3>
-                            </div>
-                            <ul className="space-y-2">
-                                <li className="flex items-start">
-                                    <div className="w-2 h-2 rounded-full bg-blue-500 mt-2 mr-3 flex-shrink-0"></div>
-                                    <span className="text-sm md:text-base text-gray-700 leading-relaxed">
-                                        Logical stop-loss placement (not random points)
-                                    </span>
-                                </li>
-                                <li className="flex items-start">
-                                    <div className="w-2 h-2 rounded-full bg-blue-500 mt-2 mr-3 flex-shrink-0"></div>
-                                    <span className="text-sm md:text-base text-gray-700 leading-relaxed">
-                                        How to protect capital first, profits second
-                                    </span>
-                                </li>
-                                <li className="flex items-start">
-                                    <div className="w-2 h-2 rounded-full bg-blue-500 mt-2 mr-3 flex-shrink-0"></div>
-                                    <span className="text-sm md:text-base text-gray-700 leading-relaxed">
-                                        Why most stop-losses fail—and how to fix it
-                                    </span>
-                                </li>
-                            </ul>
-                        </div>
-
-                        <div className="bg-white border border-gray-200 rounded-xl p-6 md:p-8 shadow-sm">
-                            <div className="flex items-center gap-3 mb-4">
-                                <CheckCircle2 className="w-6 h-6 text-blue-600 flex-shrink-0" />
-                                <h3 className="text-lg md:text-xl font-bold text-gray-900">
-                                    Target Setting Like a Pro
-                                </h3>
-                            </div>
-                            <ul className="space-y-2">
-                                <li className="flex items-start">
-                                    <div className="w-2 h-2 rounded-full bg-blue-500 mt-2 mr-3 flex-shrink-0"></div>
-                                    <span className="text-sm md:text-base text-gray-700 leading-relaxed">
-                                        How to define targets before entering a trade
-                                    </span>
-                                </li>
-                                <li className="flex items-start">
-                                    <div className="w-2 h-2 rounded-full bg-blue-500 mt-2 mr-3 flex-shrink-0"></div>
-                                    <span className="text-sm md:text-base text-gray-700 leading-relaxed">
-                                        Holding winners instead of exiting early
-                                    </span>
-                                </li>
-                                <li className="flex items-start">
-                                    <div className="w-2 h-2 rounded-full bg-blue-500 mt-2 mr-3 flex-shrink-0"></div>
-                                    <span className="text-sm md:text-base text-gray-700 leading-relaxed">
-                                        Scaling out without destroying risk-reward
-                                    </span>
-                                </li>
-                            </ul>
-                        </div>
-
-                        <div className="bg-white border border-gray-200 rounded-xl p-6 md:p-8 shadow-sm">
-                            <div className="flex items-center gap-3 mb-4">
-                                <CheckCircle2 className="w-6 h-6 text-blue-600 flex-shrink-0" />
-                                <h3 className="text-lg md:text-xl font-bold text-gray-900">
-                                    Risk-Reward Ratio: Minimum 1:5
-                                </h3>
-                            </div>
-                            <ul className="space-y-2">
-                                <li className="flex items-start">
-                                    <div className="w-2 h-2 rounded-full bg-blue-500 mt-2 mr-3 flex-shrink-0"></div>
-                                    <span className="text-sm md:text-base text-gray-700 leading-relaxed">
-                                        Why low risk-reward kills accounts
-                                    </span>
-                                </li>
-                                <li className="flex items-start">
-                                    <div className="w-2 h-2 rounded-full bg-blue-500 mt-2 mr-3 flex-shrink-0"></div>
-                                    <span className="text-sm md:text-base text-gray-700 leading-relaxed">
-                                        How to structure trades for asymmetric returns
-                                    </span>
-                                </li>
-                                <li className="flex items-start">
-                                    <div className="w-2 h-2 rounded-full bg-blue-500 mt-2 mr-3 flex-shrink-0"></div>
-                                    <span className="text-sm md:text-base text-gray-700 leading-relaxed">
-                                        Fewer trades, higher impact results
-                                    </span>
-                                </li>
-                            </ul>
-                        </div>
-
-                        <div className="bg-white border border-gray-200 rounded-xl p-6 md:p-8 shadow-sm">
-                            <div className="flex items-center gap-3 mb-4">
-                                <CheckCircle2 className="w-6 h-6 text-blue-600 flex-shrink-0" />
-                                <h3 className="text-lg md:text-xl font-bold text-gray-900">
-                                    Universal Strategy – All Markets
-                                </h3>
-                            </div>
-                            <ul className="space-y-2">
-                                <li className="flex items-start">
-                                    <div className="w-2 h-2 rounded-full bg-blue-500 mt-2 mr-3 flex-shrink-0"></div>
-                                    <span className="text-sm md:text-base text-gray-700 leading-relaxed">
-                                        Same logic for stocks, crypto &amp; commodities
-                                    </span>
-                                </li>
-                                <li className="flex items-start">
-                                    <div className="w-2 h-2 rounded-full bg-blue-500 mt-2 mr-3 flex-shrink-0"></div>
-                                    <span className="text-sm md:text-base text-gray-700 leading-relaxed">
-                                        Market-independent decision making
-                                    </span>
-                                </li>
-                                <li className="flex items-start">
-                                    <div className="w-2 h-2 rounded-full bg-blue-500 mt-2 mr-3 flex-shrink-0"></div>
-                                    <span className="text-sm md:text-base text-gray-700 leading-relaxed">
-                                        Adapt strategy, not emotions
-                                    </span>
-                                </li>
-                            </ul>
-                        </div>
-
-                        <div className="bg-white border border-gray-200 rounded-xl p-6 md:p-8 shadow-sm">
-                            <div className="flex items-center gap-3 mb-4">
-                                <CheckCircle2 className="w-6 h-6 text-blue-600 flex-shrink-0" />
-                                <h3 className="text-lg md:text-xl font-bold text-gray-900">
-                                    Trading Psychology &amp; Discipline
-                                </h3>
-                            </div>
-                            <ul className="space-y-2">
-                                <li className="flex items-start">
-                                    <div className="w-2 h-2 rounded-full bg-blue-500 mt-2 mr-3 flex-shrink-0"></div>
-                                    <span className="text-sm md:text-base text-gray-700 leading-relaxed">
-                                        How to follow rules under pressure
-                                    </span>
-                                </li>
-                                <li className="flex items-start">
-                                    <div className="w-2 h-2 rounded-full bg-blue-500 mt-2 mr-3 flex-shrink-0"></div>
-                                    <span className="text-sm md:text-base text-gray-700 leading-relaxed">
-                                        Eliminate over-trading and revenge trades
-                                    </span>
-                                </li>
-                                <li className="flex items-start">
-                                    <div className="w-2 h-2 rounded-full bg-blue-500 mt-2 mr-3 flex-shrink-0"></div>
-                                    <span className="text-sm md:text-base text-gray-700 leading-relaxed">
-                                        Build consistency, not luck
-                                    </span>
-                                </li>
-                            </ul>
-                        </div>
-                    </div>
-                </div>
-            </section>
-
-            {/* Sticky Bottom CTA */}
-            <div
-                className={`fixed inset-x-0 bottom-0 z-50 transition-all duration-300 ease-out ${showStickyCta
-                    ? "opacity-100 translate-y-0"
-                    : "opacity-0 translate-y-4 pointer-events-none"
-                    }`}
-                aria-hidden={!showStickyCta}
-            >
-                <div className="pointer-events-none">
-                    <div className="pointer-events-auto px-4 sm:px-6 lg:px-8 pb-[env(safe-area-inset-bottom)]">
-                        <div className="mx-auto w-full max-w-xl md:max-w-2xl">
-                            <div className="bg-white/95 backdrop-blur border border-gray-200 shadow-lg rounded-xl p-1.5 md:p-2">
-                                <Button
-                                    onClick={handleJoinFreeClick}
-                                    disabled={joinFreeSubmitting}
-                                    className="w-full h-auto bg-blue-600 hover:bg-blue-700 text-white px-4 py-2.5 md:px-5 md:py-3 rounded-md font-semibold text-sm shadow-sm shadow-blue-900/10 border border-blue-500/30"
-                                    aria-label={
-                                        joinFreeSubmitting
-                                            ? "Reserving your seat"
-                                            : `Book free live class seat. Listed value ${LIVE_TRADING_CLASS_CROSS_OUT_PRICE_INR} rupees is waived for this session.`
-                                    }
-                                >
-                                    {renderFreeCtaButtonContent()}
-                                </Button>
-
-                                {/* Paid sticky CTA — restore with Razorpay Script when needed
-                                <Button
-                                    onClick={handleClick}
-                                    className="w-full bg-blue-600 hover:bg-blue-700 text-white text-base md:text-lg px-6 py-5 md:py-6 rounded-lg font-semibold"
-                                >
-                                    Join Live Class for ₹{LIVE_TRADING_CLASS_PRICE_INR}
-                                </Button>
-                                */}
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
+                </section>
+            ) : reviews.length > 0 ? (
+                <ReviewsSection
+                    id="reviews-section"
+                    reviews={reviews}
+                    heading="Reviews"
+                    subheading="Real feedback from students who transformed their trading with our masterclass"
+                    footerContent={
+                        <WriteReview
+                            onSubmitted={() => router.refresh()}
+                            className="mx-auto max-w-4xl"
+                        />
+                    }
+                    initialCount={reviews.length}
+                    loadMoreCount={4}
+                    loadMoreText="Load More Reviews"
+                    loadingText="Loading reviews..."
+                    onLoadMore={handleLoadMoreReviews}
+                    totalCount={totalReviews}
+                />
+            ) : null}
         </div>
     );
 }
