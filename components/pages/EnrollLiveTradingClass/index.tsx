@@ -13,7 +13,7 @@ import {
     PLATFORM_NAME,
 } from "@/lib/constants";
 
-const ENROLL_CLASS_PRICE_INR = 2499;
+const ENROLL_CLASS_PRICE_INR = 2;
 import { fetchMoreReviews } from "@/lib/utils";
 import type { Review, User } from "@/lib/types";
 import { ENROLL_CURRICULUM_TOPICS } from "@/lib/courseCurriculum";
@@ -407,7 +407,7 @@ export default function EnrollLiveTradingClass({
                                     onClick={handleClick}
                                     className="w-full md:w-auto bg-blue-600 hover:bg-blue-700 text-white text-base md:text-lg px-8 py-6 md:py-7 rounded-lg font-semibold"
                                 >
-                                    Join Live Class for ₹{ENROLL_CLASS_PRICE_INR}
+                                    Reserve Your Seat - ₹{ENROLL_CLASS_PRICE_INR}
                                 </Button>
 
                                 <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs md:text-sm text-gray-600">
@@ -614,7 +614,7 @@ export default function EnrollLiveTradingClass({
                                     onClick={handleClick}
                                     className="w-full bg-blue-600 hover:bg-blue-700 text-white text-base md:text-lg px-6 py-5 md:py-6 rounded-lg font-semibold"
                                 >
-                                    Join Live Class for ₹{ENROLL_CLASS_PRICE_INR}
+                                    Enroll in the Masterclass for ₹{ENROLL_CLASS_PRICE_INR}
                                 </Button>
                             </div>
                         </div>
