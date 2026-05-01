@@ -72,15 +72,6 @@ export const CURRICULUM_TOPICS: CurriculumTopic[] = [
  */
 export const ENROLL_CURRICULUM_TOPICS: CurriculumTopic[] = [
   {
-    id: "price-action",
-    title: "Price Action from Scratch to Advanced",
-    points: [
-      "Market structure, support/resistance, trend behavior",
-      "Entry, exit, and trade confirmation techniques",
-      "Reading price action without relying on indicators",
-    ],
-  },
-  {
     id: "swing-positional",
     title: "Positional & Swing Trading",
     points: [
@@ -91,7 +82,7 @@ export const ENROLL_CURRICULUM_TOPICS: CurriculumTopic[] = [
   },
   {
     id: "fundamental-analysis",
-    title: "Fundamental Analysis (Practical Approach)",
+    title: "Detailed Fundamental Analysis: Basics to Advanced",
     points: [
       "How to evaluate stocks for short-term and long-term trades",
       "Key financial metrics that actually matter",
@@ -99,21 +90,61 @@ export const ENROLL_CURRICULUM_TOPICS: CurriculumTopic[] = [
     ],
   },
   {
-    id: "intraday-strategies",
-    title: "Intraday & Swing Trading Strategies",
+    id: "top-6-strategies",
+    title:
+      "Top 6 Trading Strategies For Intraday and Swing Trade with high R:R ratio ",
     points: [
-      "6 structured strategies with clear entry/exit rules",
+      "Structured strategies with clear entry/exit rules",
       "Focus on risk-reward, not random signals",
       "Real-time execution and risk management",
     ],
   },
   {
-    id: "options-trading",
-    title: "Options Trading (Buying & Selling)",
+    id: "price-action",
+    title: "Price Action from Scratch to Advanced",
     points: [
-      "A rule-based approach to options buying",
-      "Capital-efficient option selling strategy",
+      "Market structure, support/resistance, trend behavior",
+      "Entry, exit, and trade confirmation techniques",
+      "Reading price action without relying on indicators",
+    ],
+  },
+
+  {
+    id: "options-buying",
+    title:
+      "Top most Options buying Trading Strategy with (70% to 75%) accuracy",
+    points: [
+      "How to identify high-probability options buying opportunities",
+      "Capital-efficient options buying strategy",
       "How to manage risk even with smaller capital",
+    ],
+  },
+  {
+    id: "options-selling",
+    title:
+      "Most Profitable Option Selling Strategy which I am using last 4 years",
+    points: [
+      "How to identify high-probability options selling opportunities",
+      "Capital-efficient options selling strategy",
+      "How to manage risk even with smaller capital",
+    ],
+  },
+  {
+    id: "stock-selection",
+    title: "Stock selection process for Intraday and swing trade",
+    points: [
+      "How to identify high-probability stocks for intraday and swing trading",
+      "Key criteria for stock selection based on technical and fundamental factors",
+      "How to filter stocks effectively to find the best trading opportunities",
+    ],
+  },
+  {
+    id: "trading-psychology",
+    title: "Trading Psychology & Discipline",
+    points: [
+      "How to follow rules under pressure",
+      "Eliminate over-trading and revenge trades",
+      "Build consistency, not luck",
     ],
   },
 ];
