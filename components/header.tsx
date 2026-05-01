@@ -51,20 +51,36 @@ export default function Header() {
   };
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b bg-background">
-      <div className="container flex h-16 items-center justify-between px-4 md:px-6">
+    <header className="sticky top-0 z-50 w-full border-b-2 border-blue-100 bg-slate-100 shadow-md dark:border-blue-900/50 dark:bg-slate-950 dark:shadow-black/40">
+      <div className="container mx-auto flex h-[4.25rem] max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
         <div className="flex items-center gap-2">
-          <Link href="/" className="flex items-center space-x-2">
-            <span className="font-bold text-xl">{PLATFORM_NAME}</span>
+          <Link
+            href="/"
+            className="flex items-center space-x-2 rounded-md outline-none ring-offset-slate-100 focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2 dark:ring-offset-slate-950"
+          >
+            {PLATFORM_NAME === "MayankFin" ? (
+              <span className="text-xl font-bold tracking-tight">
+                <span className="text-gray-900 dark:text-slate-100">Mayank</span>
+                <span className="text-blue-600 dark:text-blue-400">Fin</span>
+              </span>
+            ) : (
+              <span className="text-xl font-bold tracking-tight text-gray-900 dark:text-slate-100">
+                {PLATFORM_NAME}
+              </span>
+            )}
           </Link>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1 sm:gap-2">
           <Link href="/cart">
-            <Button variant="ghost" size="icon" className="relative">
+            <Button
+              variant="ghost"
+              size="icon"
+              className="relative text-slate-700 hover:bg-white hover:text-gray-900 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white"
+            >
               <ShoppingCart className="h-5 w-5" />
               {itemCount > 0 && (
-                <Badge className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center p-0 text-xs">
+                <Badge className="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center border-0 bg-blue-600 p-0 text-xs text-white shadow-sm hover:bg-blue-600 dark:bg-blue-500">
                   {itemCount}
                 </Badge>
               )}
@@ -77,18 +93,19 @@ export default function Header() {
               variant="ghost"
               size="icon"
               onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
+              className="text-slate-700 hover:bg-white hover:text-gray-900 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white"
             >
               <User className="h-5 w-5" />
               <span className="sr-only">User menu</span>
             </Button>
 
             {isUserMenuOpen && (
-              <div className="absolute right-0 mt-2 w-56 rounded-md shadow-lg bg-background border">
+              <div className="absolute right-0 mt-2 w-56 rounded-lg border border-slate-200 bg-white shadow-xl ring-1 ring-slate-100 dark:border-slate-700 dark:bg-slate-900 dark:ring-slate-800">
                 <div className="py-1">
                   {!isAuthenticated && (
                     <Link
                       href="/auth/signin"
-                      className="block px-4 py-2 text-sm hover:bg-muted"
+                      className="block px-4 py-2 text-sm text-slate-700 hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-800"
                       onClick={() => setIsUserMenuOpen(false)}
                     >
                       Sign In
@@ -97,7 +114,7 @@ export default function Header() {
                   {!isAuthenticated && (
                     <Link
                       href="/auth/signup"
-                      className="block px-4 py-2 text-sm hover:bg-muted"
+                      className="block px-4 py-2 text-sm text-slate-700 hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-800"
                       onClick={() => setIsUserMenuOpen(false)}
                     >
                       Sign Up
@@ -112,7 +129,7 @@ export default function Header() {
                   </Link> */}
                   {isAuthenticated && <Link
                     href="/account"
-                    className="block px-4 py-2 text-sm hover:bg-muted"
+                    className="block px-4 py-2 text-sm text-slate-700 hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-800"
                     onClick={() => setIsUserMenuOpen(false)}
                   >
                     My Account
@@ -120,7 +137,7 @@ export default function Header() {
                   {isAuthenticated && user?.access_role === "admin" && (
                     <Link
                       href="/admin/live-class-bookings"
-                      className="block px-4 py-2 text-sm hover:bg-muted"
+                      className="block px-4 py-2 text-sm text-slate-700 hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-800"
                       onClick={() => setIsUserMenuOpen(false)}
                     >
                       Live Class Bookings
@@ -129,7 +146,7 @@ export default function Header() {
                   {isAuthenticated && user?.access_role === "admin" && (
                     <Link
                       href="/admin/manage-live-class-links"
-                      className="block px-4 py-2 text-sm hover:bg-muted"
+                      className="block px-4 py-2 text-sm text-slate-700 hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-800"
                       onClick={() => setIsUserMenuOpen(false)}
                     >
                       Manage live class links
@@ -146,7 +163,7 @@ export default function Header() {
                   {isAuthenticated && (
                     <button
                       type="button"
-                      className="block w-full px-4 py-2 text-left text-sm hover:bg-muted"
+                      className="block w-full px-4 py-2 text-left text-sm text-slate-700 hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-800"
                       onClick={handleLogout}
                     >
                       Logout
