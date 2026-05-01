@@ -12,6 +12,7 @@ import {
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
 import { sampleOrders } from "@/lib/data";
+import { formatPriceInr } from "@/lib/utils";
 import { ShoppingBag, Download, ExternalLink } from "lucide-react";
 
 export default function OrdersPage() {
@@ -70,7 +71,9 @@ export default function OrdersPage() {
                       </div>
                       <div className="flex items-center gap-2">
                         <span className="text-sm font-medium">
-                          ${course.discountedPrice || course.price}
+                          {formatPriceInr(
+                            course.discountedPrice ?? course.price,
+                          )}
                         </span>
                         <Button asChild size="sm">
                           <Link href={`/courses/${course.id}`}>
@@ -87,7 +90,7 @@ export default function OrdersPage() {
                   <div className="flex justify-between">
                     <span className="font-medium">Total</span>
                     <span className="font-medium">
-                      ${order.total.toFixed(2)}
+                      {formatPriceInr(order.total)}
                     </span>
                   </div>
                 </div>

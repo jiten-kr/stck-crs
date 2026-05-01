@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
 import { useCart } from "@/components/cart-provider"
+import { formatPriceInr } from "@/lib/utils"
 import { Trash2, ShoppingCart } from "lucide-react"
 
 export default function CartPage() {
@@ -66,7 +67,7 @@ export default function CartPage() {
                           variant="ghost"
                           size="icon"
                           className="h-8 w-8 text-muted-foreground hover:text-destructive"
-                          onClick={() => removeItem(item.course.id)}
+                          onClick={() => removeItem(item.course.id.toString())}
                         >
                           <Trash2 className="h-4 w-4" />
                           <span className="sr-only">Remove</span>
@@ -82,13 +83,13 @@ export default function CartPage() {
                         <div className="font-semibold">
                           {item.course.discountedPrice ? (
                             <>
-                              <span>${item.course.discountedPrice}</span>
+                              <span>{formatPriceInr(item.course.discountedPrice)}</span>
                               <span className="text-sm text-muted-foreground line-through ml-2">
-                                ${item.course.price}
+                                {formatPriceInr(item.course.price)}
                               </span>
                             </>
                           ) : (
-                            <span>${item.course.price}</span>
+                            <span>{formatPriceInr(item.course.price)}</span>
                           )}
                         </div>
                       </div>
@@ -116,16 +117,16 @@ export default function CartPage() {
               <CardContent className="space-y-4">
                 <div className="flex justify-between">
                   <span>Subtotal</span>
-                  <span>${subtotal.toFixed(2)}</span>
+                  <span>{formatPriceInr(subtotal)}</span>
                 </div>
                 <div className="flex justify-between">
                   <span>Tax (10%)</span>
-                  <span>${tax.toFixed(2)}</span>
+                  <span>{formatPriceInr(tax)}</span>
                 </div>
                 <Separator />
                 <div className="flex justify-between font-bold">
                   <span>Total</span>
-                  <span>${total.toFixed(2)}</span>
+                  <span>{formatPriceInr(total)}</span>
                 </div>
               </CardContent>
               <CardFooter>

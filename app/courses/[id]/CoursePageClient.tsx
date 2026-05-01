@@ -30,6 +30,7 @@ import {
   ShoppingCart,
 } from "lucide-react";
 import type { Course } from "@/lib/types";
+import { formatPriceInr } from "@/lib/utils";
 import { useSelector } from "react-redux";
 import { RootState } from "@/lib/store";
 
@@ -260,14 +261,16 @@ export default function CoursePageClient({
                   {course.discountedPrice ? (
                     <>
                       <span className="text-2xl">
-                        ${course.discountedPrice}
+                        {formatPriceInr(course.discountedPrice)}
                       </span>
                       <span className="text-lg text-muted-foreground line-through">
-                        ${course.price}
+                        {formatPriceInr(course.price)}
                       </span>
                     </>
                   ) : (
-                    <span className="text-2xl">${course.price}</span>
+                    <span className="text-2xl">
+                      {formatPriceInr(course.price)}
+                    </span>
                   )}
                 </CardTitle>
                 {course.discountedPrice && (

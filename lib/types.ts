@@ -5,7 +5,12 @@ export type Course = {
   price: number;
   discountedPrice?: number;
   duration: string;
-  level: "Beginner" | "Intermediate" | "Advanced" | "All Levels";
+  level:
+    | "Beginner"
+    | "Intermediate"
+    | "Advanced"
+    | "All Levels"
+    | "Beginner to Advanced";
   category: string;
   tags: string[];
   image: string;
@@ -15,6 +20,11 @@ export type Course = {
   students: number;
   updatedAt: string;
   curriculum: CurriculumSection[];
+  /**
+   * For live-format listings only: navigate here instead of `/courses/[id]`
+   * (e.g. `/enroll-live-stock-crypto-class`).
+   */
+  enrollmentHref?: string;
 };
 
 export type Instructor = {

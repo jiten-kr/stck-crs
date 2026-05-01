@@ -5,6 +5,16 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
+/** Format an amount as Indian Rupees (locale-aware grouping and ₹ symbol). */
+export function formatPriceInr(amount: number): string {
+  return new Intl.NumberFormat("en-IN", {
+    style: "currency",
+    currency: "INR",
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 2,
+  }).format(amount);
+}
+
 // Server-only helper to build an absolute URL for internal API calls
 export async function buildBaseUrl(): Promise<string> {
   const { headers } = await import("next/headers");

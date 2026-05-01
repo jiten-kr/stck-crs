@@ -1,4 +1,5 @@
 import Link from "next/link"
+import { formatPriceInr } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { CheckCircle } from "lucide-react"
@@ -26,7 +27,7 @@ export default function PricingPage() {
                 <CardTitle className="text-xl">Basic</CardTitle>
                 <CardDescription>Essential stock market knowledge</CardDescription>
                 <div className="mt-4">
-                  <span className="text-4xl font-bold">$199</span>
+                  <span className="text-4xl font-bold">{formatPriceInr(199)}</span>
                   <span className="text-muted-foreground ml-2">one-time</span>
                 </div>
               </CardHeader>
@@ -62,7 +63,7 @@ export default function PricingPage() {
                 <CardTitle className="text-xl">Pro</CardTitle>
                 <CardDescription>Complete trading education</CardDescription>
                 <div className="mt-4">
-                  <span className="text-4xl font-bold">$399</span>
+                  <span className="text-4xl font-bold">{formatPriceInr(399)}</span>
                   <span className="text-muted-foreground ml-2">one-time</span>
                 </div>
               </CardHeader>
@@ -96,7 +97,7 @@ export default function PricingPage() {
                 <CardTitle className="text-xl">Premium</CardTitle>
                 <CardDescription>Advanced trading with mentorship</CardDescription>
                 <div className="mt-4">
-                  <span className="text-4xl font-bold">$699</span>
+                  <span className="text-4xl font-bold">{formatPriceInr(699)}</span>
                   <span className="text-muted-foreground ml-2">one-time</span>
                 </div>
               </CardHeader>

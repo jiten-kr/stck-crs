@@ -1,0 +1,100 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 400" role="img" aria-label="Live stock market masterclass thumbnail">
+  <defs>
+    <linearGradient id="bgMain" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0f172a"/>
+      <stop offset="35%" stop-color="#1e40af"/>
+      <stop offset="70%" stop-color="#2563eb"/>
+      <stop offset="100%" stop-color="#38bdf8"/>
+    </linearGradient>
+    <radialGradient id="spot" cx="78%" cy="12%" r="55%">
+      <stop offset="0%" stop-color="#7dd3fc" stop-opacity=".45"/>
+      <stop offset="55%" stop-color="#2563eb" stop-opacity=".12"/>
+      <stop offset="100%" stop-color="#0f172a" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="areaFill" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#34d399" stop-opacity=".35"/>
+      <stop offset="45%" stop-color="#22d3ee" stop-opacity=".15"/>
+      <stop offset="100%" stop-color="#0f172a" stop-opacity="0"/>
+    </linearGradient>
+    <clipPath id="chartClip">
+      <rect x="44" y="56" width="552" height="228" rx="8"/>
+    </clipPath>
+  </defs>
+
+  <rect width="640" height="400" fill="url(#bgMain)"/>
+  <rect width="640" height="400" fill="url(#spot)"/>
+
+  <rect x="36" y="48" width="568" height="336" rx="14" fill="#020617" opacity=".28" stroke="#fff" stroke-opacity=".12" stroke-width="1"/>
+
+  <g clip-path="url(#chartClip)" opacity=".55">
+    <line x1="44" y1="92" x2="596" y2="92" stroke="#94a3b8" stroke-opacity=".14" stroke-width="1"/>
+    <line x1="44" y1="128" x2="596" y2="128" stroke="#94a3b8" stroke-opacity=".12" stroke-width="1"/>
+    <line x1="44" y1="164" x2="596" y2="164" stroke="#94a3b8" stroke-opacity=".10" stroke-width="1"/>
+    <line x1="44" y1="200" x2="596" y2="200" stroke="#94a3b8" stroke-opacity=".10" stroke-width="1"/>
+    <line x1="44" y1="236" x2="596" y2="236" stroke="#94a3b8" stroke-opacity=".10" stroke-width="1"/>
+    <line x1="132" y1="56" x2="132" y2="284" stroke="#94a3b8" stroke-opacity=".08" stroke-width="1"/>
+    <line x1="292" y1="56" x2="292" y2="284" stroke="#94a3b8" stroke-opacity=".08" stroke-width="1"/>
+    <line x1="452" y1="56" x2="452" y2="284" stroke="#94a3b8" stroke-opacity=".08" stroke-width="1"/>
+  </g>
+
+  <g clip-path="url(#chartClip)">
+    <path d="M52 268 C118 252 148 218 208 206 C268 194 298 148 358 138 C418 128 458 96 538 82 L584 74 L584 284 L52 284 Z" fill="url(#areaFill)"/>
+    <path d="M52 268 C118 252 148 218 208 206 C268 194 298 148 358 138 C418 128 458 96 538 82 L584 74" stroke="#38bdf8" stroke-width="10" stroke-linecap="round" stroke-linejoin="round" fill="none" opacity=".35"/>
+    <path d="M52 278 C130 268 176 236 236 226 C296 216 336 178 396 172 C456 166 498 138 584 118" stroke="#67e8f9" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" fill="none" opacity=".65"/>
+    <path d="M52 268 C118 252 148 218 208 206 C268 194 298 148 358 138 C418 128 458 96 538 82 L584 74" stroke="#fff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+    <circle cx="208" cy="206" r="4.5" fill="#fff"/>
+    <circle cx="358" cy="138" r="4.5" fill="#fde047"/>
+    <circle cx="584" cy="74" r="6" fill="#fde047" stroke="#fff" stroke-width="2"/>
+
+    <g opacity=".55">
+      <rect x="108" y="252" width="7" height="22" rx="1.5" fill="#64748b"/>
+      <rect x="148" y="244" width="7" height="30" rx="1.5" fill="#64748b"/>
+      <rect x="188" y="236" width="7" height="38" rx="1.5" fill="#34d399"/>
+      <rect x="228" y="248" width="7" height="26" rx="1.5" fill="#f87171"/>
+      <rect x="268" y="228" width="7" height="46" rx="1.5" fill="#34d399"/>
+      <rect x="308" y="240" width="7" height="34" rx="1.5" fill="#64748b"/>
+      <rect x="348" y="232" width="7" height="42" rx="1.5" fill="#34d399"/>
+      <rect x="388" y="246" width="7" height="28" rx="1.5" fill="#f87171"/>
+      <rect x="428" y="238" width="7" height="36" rx="1.5" fill="#34d399"/>
+      <rect x="468" y="250" width="7" height="24" rx="1.5" fill="#64748b"/>
+      <rect x="508" y="242" width="7" height="32" rx="1.5" fill="#34d399"/>
+      <rect x="548" y="254" width="7" height="20" rx="1.5" fill="#34d399"/>
+    </g>
+
+    <g>
+      <rect x="118" y="188" width="11" height="42" rx="2" fill="#22c55e"/>
+      <rect x="122" y="172" width="3" height="72" fill="#86efac"/>
+      <rect x="158" y="204" width="11" height="36" rx="2" fill="#ef4444"/>
+      <rect x="162" y="188" width="3" height="66" fill="#fca5a5"/>
+      <rect x="198" y="176" width="11" height="52" rx="2" fill="#22c55e"/>
+      <rect x="202" y="156" width="3" height="88" fill="#86efac"/>
+      <rect x="238" y="196" width="11" height="38" rx="2" fill="#ef4444"/>
+      <rect x="242" y="178" width="3" height="70" fill="#fca5a5"/>
+      <rect x="278" y="168" width="11" height="58" rx="2" fill="#22c55e"/>
+      <rect x="282" y="146" width="3" height="96" fill="#86efac"/>
+      <rect x="318" y="182" width="11" height="48" rx="2" fill="#22c55e"/>
+      <rect x="322" y="162" width="3" height="82" fill="#86efac"/>
+      <rect x="358" y="154" width="11" height="62" rx="2" fill="#22c55e"/>
+      <rect x="362" y="132" width="3" height="98" fill="#86efac"/>
+      <rect x="398" y="172" width="11" height="50" rx="2" fill="#ef4444"/>
+      <rect x="402" y="154" width="3" height="84" fill="#fca5a5"/>
+      <rect x="438" y="148" width="11" height="56" rx="2" fill="#22c55e"/>
+      <rect x="442" y="126" width="3" height="92" fill="#86efac"/>
+      <rect x="478" y="164" width="11" height="44" rx="2" fill="#22c55e"/>
+      <rect x="482" y="146" width="3" height="76" fill="#86efac"/>
+    </g>
+  </g>
+
+  <path d="M48 62 V76 H62" stroke="#38bdf8" stroke-width="2.5" fill="none" opacity=".85"/>
+  <path d="M592 62 V76 H578" stroke="#38bdf8" stroke-width="2.5" fill="none" opacity=".85"/>
+  <path d="M48 372 V358 H62" stroke="#38bdf8" stroke-width="2.5" fill="none" opacity=".85"/>
+  <path d="M592 372 V358 H578" stroke="#38bdf8" stroke-width="2.5" fill="none" opacity=".85"/>
+
+  <!-- Live indicator (graphic only, no lettering) -->
+  <g transform="translate(28 22)">
+    <circle cx="20" cy="20" r="30" stroke="#f87171" stroke-width="1" fill="none" opacity=".28"/>
+    <circle cx="20" cy="20" r="24" stroke="#f87171" stroke-width="1.25" fill="none" opacity=".42"/>
+    <circle cx="20" cy="20" r="18" stroke="#f87171" stroke-width="1.5" fill="none" opacity=".55"/>
+    <circle cx="20" cy="20" r="8" fill="#ef4444" stroke="#fff" stroke-width="2"/>
+  </g>
+</svg>

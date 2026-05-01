@@ -12,6 +12,7 @@ import { Label } from "@/components/ui/label"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Separator } from "@/components/ui/separator"
 import { useCart } from "@/components/cart-provider"
+import { formatPriceInr } from "@/lib/utils"
 import { useToast } from "@/hooks/use-toast"
 
 export default function CheckoutPage() {
@@ -107,7 +108,9 @@ export default function CheckoutPage() {
                 </div>
 
                 <Button type="submit" className="w-full" size="lg" disabled={isProcessing}>
-                  {isProcessing ? "Processing Payment..." : `Pay $${total.toFixed(2)}`}
+                  {isProcessing
+                    ? "Processing Payment..."
+                    : `Pay ${formatPriceInr(total)}`}
                 </Button>
               </div>
             </form>
@@ -127,9 +130,9 @@ export default function CheckoutPage() {
                     </div>
                     <div className="text-right">
                       {item.course.discountedPrice ? (
-                        <span>${item.course.discountedPrice}</span>
+                        <span>{formatPriceInr(item.course.discountedPrice)}</span>
                       ) : (
-                        <span>${item.course.price}</span>
+                        <span>{formatPriceInr(item.course.price)}</span>
                       )}
                     </div>
                   </div>
@@ -139,16 +142,16 @@ export default function CheckoutPage() {
 
                 <div className="flex justify-between">
                   <span>Subtotal</span>
-                  <span>${subtotal.toFixed(2)}</span>
+                  <span>{formatPriceInr(subtotal)}</span>
                 </div>
                 <div className="flex justify-between">
                   <span>Tax (10%)</span>
-                  <span>${tax.toFixed(2)}</span>
+                  <span>{formatPriceInr(tax)}</span>
                 </div>
                 <Separator />
                 <div className="flex justify-between font-bold">
                   <span>Total</span>
-                  <span>${total.toFixed(2)}</span>
+                  <span>{formatPriceInr(total)}</span>
                 </div>
               </CardContent>
               <CardFooter className="text-sm text-muted-foreground">
