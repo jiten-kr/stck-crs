@@ -45,7 +45,7 @@ export default function CoursesTabs({
           format="live"
           courses={liveCourses}
           title="Live courses"
-          description="Join scheduled sessions, ask questions live, and learn alongside others — shown below with the blue Live label."
+          description="Join scheduled sessions, ask questions live, and learn alongside others."
         />
       </TabsContent>
 
