@@ -8,6 +8,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { ReviewsSection } from "@/components/ui/reviews-section";
 import WriteReview from "@/components/reviews/write-review";
 import {
+    LIVE_TRADING_CLASS_ENROLMENT_COURSE_ID,
     LIVE_TRADING_CLASS_ITEM_ID,
     LIVE_TRADING_CLASS_NAME,
     PLATFORM_NAME,
@@ -184,7 +185,7 @@ export default function EnrollLiveTradingClass({
                         let whatsappGroupUrl: string | null = null;
                         try {
                             const linksRes = await fetch(
-                                `/api/public/live-class-links?courseId=${LIVE_TRADING_CLASS_ITEM_ID}`,
+                                `/api/public/live-class-links?courseId=${LIVE_TRADING_CLASS_ENROLMENT_COURSE_ID}`,
                                 { cache: "no-store" },
                             );
                             if (linksRes.ok) {
