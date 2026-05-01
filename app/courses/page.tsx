@@ -1,7 +1,7 @@
 import CoursesTabs from "./courses-tabs";
 import type { Course } from "@/lib/types";
 import type { Metadata } from "next";
-import { PLATFORM_NAME } from "@/lib/constants";
+import { ENROLL_CLASS_PRICE_INR, PLATFORM_NAME } from "@/lib/constants";
 
 export const metadata: Metadata = {
   title:
@@ -82,7 +82,7 @@ const liveStockMarketCourse: Course[] = [
     title: "Complete Masterclass 2026: For Indian Stocks Market, Crypto and Commodities ke liye Ultimate Trading Strategies",
     description:
       "Join our live stock market trading course and learn from real-time market analysis, interactive sessions, and practical trading strategies.",
-    price: 2499,
+    price: ENROLL_CLASS_PRICE_INR,
     duration: "15 Days",
     level: "All Levels",
     category: "Stock Market",

@@ -12,9 +12,10 @@ import {
     LIVE_TRADING_CLASS_ITEM_ID,
     LIVE_TRADING_CLASS_NAME,
     PLATFORM_NAME,
+    ENROLL_CLASS_PRICE_INR,
 } from "@/lib/constants";
 
-const ENROLL_CLASS_PRICE_INR = 2;
+
 import { fetchMoreReviews } from "@/lib/utils";
 import type { Review, User } from "@/lib/types";
 import { ENROLL_CURRICULUM_TOPICS } from "@/lib/courseCurriculum";
