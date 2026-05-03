@@ -10,7 +10,7 @@ import PixelTracker from "@/components/PixelTracker"
 import "./globals.css"
 import { Providers } from "@/components/providers"
 
-const META_PIXEL_ID = "971640662658743";
+const META_PIXEL_ID = "2827470310930375";
 
 
 export default function RootLayout({
