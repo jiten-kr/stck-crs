@@ -324,6 +324,7 @@ export default function LiveTradingClass({
                 description: "Please sign in again and try once more.",
                 variant: "destructive",
             });
+            setIsAuthModalOpen(true);
             return;
         }
 
@@ -337,6 +338,12 @@ export default function LiveTradingClass({
                 },
                 body: JSON.stringify({ itemId: LIVE_TRADING_CLASS_ITEM_ID }),
             });
+
+            if (res.status === 401) {
+                localStorage.removeItem("token");
+                setIsAuthModalOpen(true);
+                return;
+            }
             const data = (await res.json()) as {
                 error?: string;
                 bookingId?: number;

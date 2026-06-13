@@ -426,7 +426,7 @@ export async function sendLiveClassConfirmationWhatsApp(
   },
 ): Promise<SendWhatsAppResult> {
   // Use approved Twilio Content Template SID
-  const LIVE_CLASS_TEMPLATE_SID = "HX7e4e79f3ae554e86a60651f609ea5a84";
+  const LIVE_CLASS_TEMPLATE_SID = "HX7330b2a890a45d09a6638c99a7fdcb0f";
 
   return sendWhatsAppMessage({
     to,

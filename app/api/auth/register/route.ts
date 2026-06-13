@@ -79,10 +79,10 @@ export async function POST(req: Request) {
 
       const errorMessage =
         emailExists && phoneExists
-          ? "User with this email and phone number already exists"
+          ? "Try login, User with this email and phone number already exists"
           : emailExists
-            ? "User with this email already exists"
-            : "User with this phone number already exists";
+            ? "Try login, User with this email already exists"
+            : "Try login, User with this phone number already exists";
 
       return NextResponse.json({ error: errorMessage }, { status: 400 });
     }
