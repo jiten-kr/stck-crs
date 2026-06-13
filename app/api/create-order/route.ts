@@ -2,6 +2,8 @@ import Razorpay from "razorpay";
 import { NextRequest, NextResponse } from "next/server";
 import pool from "@/lib/db";
 import {
+  ENROLL_CLASS_PRICE_INR,
+  LIVE_TRADING_CLASS_ENROLMENT_COURSE_ID,
   LIVE_TRADING_CLASS_ITEM_ID,
   LIVE_TRADING_CLASS_PRICE_INR,
 } from "@/lib/constants";
@@ -31,6 +33,7 @@ export async function POST(request: NextRequest) {
 
     const pricingByItemId: Record<number, number> = {
       [LIVE_TRADING_CLASS_ITEM_ID]: LIVE_TRADING_CLASS_PRICE_INR * 100,
+      [LIVE_TRADING_CLASS_ENROLMENT_COURSE_ID]: ENROLL_CLASS_PRICE_INR * 100,
     };
     const resolvedAmount = pricingByItemId[itemId];
 
