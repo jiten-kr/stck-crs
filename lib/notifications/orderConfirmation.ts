@@ -755,18 +755,17 @@ export async function sendOrderConfirmationWhatsAppMessage(
     const classUrl = orderData.liveClassUrl?.trim() ?? "";
     if (!classUrl) {
       console.error(
-        "[ORDER_CONFIRMATION_WHATSAPP] Live class URL missing for course",
+        "[ORDER_CONFIRMATION_WHATSAPP] Live class URL missing for course; sending without it",
         { orderId, itemId: orderData.itemId },
       );
-      await updateNotificationStatus(
-        notificationId,
-        "FAILED",
-        "Live class URL is not configured for this course",
+    }
+
+    const whatsappGroupLink = orderData.whatsappGroupUrl?.trim() ?? "";
+    if (!whatsappGroupLink) {
+      console.error(
+        "[ORDER_CONFIRMATION_WHATSAPP] WhatsApp group URL missing for course; sending without it",
+        { orderId, itemId: orderData.itemId },
       );
-      return {
-        success: false,
-        error: "Live class URL is not configured for this course",
-      };
     }
 
     const result = await sendLiveClassConfirmationWhatsApp(orderData.phone, {
@@ -777,6 +776,7 @@ export async function sendOrderConfirmationWhatsAppMessage(
       classDate: formattedDate,
       classTime: orderData.nextLiveClassTime,
       classUrl,
+      whatsappGroupLink,
     });
 
     // Step 6: Update notification status
@@ -821,7 +821,12 @@ export async function sendOrderConfirmationWhatsAppMessage(
 
     console.error(
       "[ORDER_CONFIRMATION_WHATSAPP] EXCEPTION: Unexpected error caught",
-      { orderId, notificationId, errorMessage, stack: err instanceof Error ? err.stack : undefined },
+      {
+        orderId,
+        notificationId,
+        errorMessage,
+        stack: err instanceof Error ? err.stack : undefined,
+      },
     );
 
     await updateNotificationStatus(notificationId, "FAILED", errorMessage);

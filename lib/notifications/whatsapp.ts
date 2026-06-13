@@ -289,13 +289,9 @@ Welcome to MayankFin! Your live trading class booking is confirmed.
 
 🔗 *Join Link:*
 {{classUrl}}
+{{WhatsAppGroupLink}}
 
-💡 *What's Next?*
-• Save this message for the join link
-• Join 5 minutes before class starts
-• Keep a notebook ready for notes
-
-For any queries, reply to this message or email us at support@mayankfin.com
+For any queries, email us at support@mayankfin.com
 
 See you in class! 🚀`,
 
@@ -380,6 +376,7 @@ export function buildLiveClassTwilioContentVariables(data: {
   classDate: string;
   classTime: string;
   classUrl: string;
+  whatsappGroupLink?: string;
 }): Record<string, string> {
   const customerName = String(data.customerName);
   const orderId = String(data.orderId);
@@ -388,6 +385,7 @@ export function buildLiveClassTwilioContentVariables(data: {
   const classDate = String(data.classDate);
   const classTime = String(data.classTime);
   const classUrl = String(data.classUrl);
+  const whatsappGroupLink = String(data.whatsappGroupLink ?? "");
 
   return {
     customerName,
@@ -397,6 +395,8 @@ export function buildLiveClassTwilioContentVariables(data: {
     classDate,
     classTime,
     classUrl,
+    whatsappGroupLink,
+    WhatsAppGroupLink: whatsappGroupLink,
     "1": customerName,
     "2": orderId,
     "3": itemName,
@@ -404,6 +404,7 @@ export function buildLiveClassTwilioContentVariables(data: {
     "5": classDate,
     "6": classTime,
     "7": classUrl,
+    "8": whatsappGroupLink,
   };
 }
 
@@ -421,6 +422,7 @@ export async function sendLiveClassConfirmationWhatsApp(
     classDate: string;
     classTime: string;
     classUrl: string;
+    whatsappGroupLink?: string;
   },
 ): Promise<SendWhatsAppResult> {
   // Use approved Twilio Content Template SID

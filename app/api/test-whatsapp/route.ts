@@ -5,7 +5,7 @@ import { sendLiveClassConfirmationWhatsApp } from "@/lib/notifications/whatsapp"
  * POST /api/test-whatsapp
  *
  * Test endpoint to send a live class confirmation WhatsApp message via Twilio.
- * Body: { to: string, customerName?: string, orderId?: string, itemName?: string, amount?: string, classDate?: string, classTime?: string, classUrl?: string }
+ * Body: { to: string, customerName?: string, orderId?: string, itemName?: string, amount?: string, classDate?: string, classTime?: string, classUrl?: string, whatsappGroupLink?: string }
  *
  * Example:
  * curl -X POST http://localhost:3000/api/test-whatsapp \
@@ -27,7 +27,8 @@ export async function POST(request: NextRequest) {
       amount: body?.amount || "₹999",
       classDate: body?.classDate || "Every Saturday & Sunday",
       classTime: body?.classTime || "7:00 PM - 8:30 PM IST",
-      classUrl: body?.classUrl || "https://meet.google.com/abc-defg-hij",
+      classUrl: body?.classUrl || "",
+      whatsappGroupLink: body?.whatsappGroupLink || "",
     };
 
     if (!to) {

@@ -30,6 +30,7 @@ describe("buildLiveClassTwilioContentVariables", () => {
     classDate: "30 Mar 2026",
     classTime: "8 PM IST",
     classUrl: "https://meet.example.com/live-abc",
+    whatsappGroupLink: "https://chat.whatsapp.com/invite-abc",
   };
 
   it("includes named keys for Twilio templates that use named variables", () => {
@@ -41,9 +42,11 @@ describe("buildLiveClassTwilioContentVariables", () => {
     expect(v.classDate).toBe("30 Mar 2026");
     expect(v.classTime).toBe("8 PM IST");
     expect(v.classUrl).toBe("https://meet.example.com/live-abc");
+    expect(v.whatsappGroupLink).toBe("https://chat.whatsapp.com/invite-abc");
+    expect(v.WhatsAppGroupLink).toBe("https://chat.whatsapp.com/invite-abc");
   });
 
-  it("includes positional keys 1–7 so Meta {{1}}…{{7}} templates receive the live URL", () => {
+  it("includes positional keys 1–8 so Meta {{1}}…{{8}} templates receive both links", () => {
     const v = buildLiveClassTwilioContentVariables(sample);
     expect(v["1"]).toBe(sample.customerName);
     expect(v["2"]).toBe("99");
@@ -52,6 +55,7 @@ describe("buildLiveClassTwilioContentVariables", () => {
     expect(v["5"]).toBe(sample.classDate);
     expect(v["6"]).toBe(sample.classTime);
     expect(v["7"]).toBe(sample.classUrl);
+    expect(v["8"]).toBe(sample.whatsappGroupLink);
   });
 
   it("coerces every value to string (Twilio expects string contentVariables)", () => {
@@ -91,6 +95,7 @@ describe("sendWhatsAppMessage (Twilio Content / HX)", () => {
       classDate: "Mon",
       classTime: "7 PM",
       classUrl: "https://zoom.us/j/123",
+      whatsappGroupLink: "https://chat.whatsapp.com/group123",
     });
 
     const result = await sendWhatsAppMessage({
@@ -113,6 +118,9 @@ describe("sendWhatsAppMessage (Twilio Content / HX)", () => {
     >;
     expect(parsed["7"]).toBe("https://zoom.us/j/123");
     expect(parsed.classUrl).toBe("https://zoom.us/j/123");
+    expect(parsed["8"]).toBe("https://chat.whatsapp.com/group123");
+    expect(parsed.whatsappGroupLink).toBe("https://chat.whatsapp.com/group123");
+    expect(parsed.WhatsAppGroupLink).toBe("https://chat.whatsapp.com/group123");
     expect(parsed["2"]).toBe("1");
     for (const val of Object.values(parsed)) {
       expect(typeof val).toBe("string");
