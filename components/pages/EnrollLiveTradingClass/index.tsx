@@ -121,7 +121,7 @@ export default function EnrollLiveTradingClass({
                 },
                 body: JSON.stringify({
                     amount: classPriceInPaise,
-                    itemId: LIVE_TRADING_CLASS_ITEM_ID,
+                    itemId: LIVE_TRADING_CLASS_ENROLMENT_COURSE_ID,
                     userId,
                 }),
             });
@@ -218,7 +218,7 @@ export default function EnrollLiveTradingClass({
                             itemName: LIVE_TRADING_CLASS_NAME,
                             nextLiveClassDate,
                             nextLiveClassTime,
-                            courseId: LIVE_TRADING_CLASS_ITEM_ID,
+                            courseId: LIVE_TRADING_CLASS_ENROLMENT_COURSE_ID,
                             liveClassUrl,
                             whatsappGroupUrl,
                         });
