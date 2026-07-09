@@ -1,4 +1,5 @@
 import Link from "next/link"
+import { Info } from "lucide-react"
 import { PLATFORM_NAME } from "@/lib/constants";
 
 export default function Footer() {
@@ -73,6 +74,17 @@ export default function Footer() {
             </ul>
           </div>
         </div>
+        
+        {/* Educational Disclaimer */}
+        <div className="mt-8 rounded-lg bg-muted/30 p-4 text-center">
+          <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
+            <Info className="h-4 w-4 flex-shrink-0" />
+            <p>
+              We're here to teach, not advise! Our courses are purely educational — always check with a licensed financial advisor before making investment decisions.
+            </p>
+          </div>
+        </div>
+
         <div className="mt-8 border-t pt-8 text-center text-sm text-muted-foreground">
           &copy; {new Date().getFullYear()} {PLATFORM_NAME}. All rights reserved.
         </div>
