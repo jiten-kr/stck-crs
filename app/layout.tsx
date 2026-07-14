@@ -1,4 +1,5 @@
 import type React from "react"
+import type { Metadata } from "next"
 import { Suspense } from "react"
 import { Inter } from "next/font/google"
 import Script from "next/script"
@@ -11,6 +12,14 @@ import "./globals.css"
 import { Providers } from "@/components/providers"
 
 const META_PIXEL_ID = "1657961372132051";
+
+export const metadata: Metadata = {
+  verification: {
+    other: {
+      "facebook-domain-verification": "946zz31nn8zztf6niryb3xvpqgahjf",
+    },
+  },
+};
 
 
 export default function RootLayout({
