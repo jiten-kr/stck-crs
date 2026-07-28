@@ -11,7 +11,7 @@ export const GENERAL_SUPPORT_EMAIL = "mayankfinhub@gmail.com";
 export const LEARNERS_COUNT = "2,000+";
 export const LIVE_TRADING_CLASS_ITEM_ID = 2;
 export const LIVE_TRADING_CLASS_ENROLMENT_COURSE_ID = 4;
-export const LIVE_TRADING_CLASS_PRICE_INR = 1;
+export const LIVE_TRADING_CLASS_PRICE_INR = 199;
 export const ENROLL_CLASS_PRICE_INR = 2499;
 /** Shown crossed out on the live class CTA (marketing list price). */
 export const LIVE_TRADING_CLASS_NAME = "Live Trading Class";
