@@ -17,6 +17,7 @@ import type { Review, User } from "@/lib/types";
 import { CURRICULUM_TOPICS } from "@/lib/courseCurriculum";
 import { selectAuthUser, selectIsAuthenticated } from "@/app/auth/authSelector";
 import { useRouter } from "next/navigation";
+import Script from "next/script";
 import ContactAuthModal from "@/components/auth/ContactAuthModal";
 import InstructorPanel from "@/components/pages/shared/InstructorPanel";
 import { setPaymentSuccessData } from "@/lib/paymentSuccessStore";
@@ -117,7 +118,7 @@ export default function LiveTradingClass({
     const { toast } = useToast();
     const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
     const [showStickyCta, setShowStickyCta] = useState(false);
-    const [joinFreeSubmitting, setJoinFreeSubmitting] = useState(false);
+    const [isSubmitting, setIsSubmitting] = useState(false);
     const [freeBookingRemainingMs, setFreeBookingRemainingMs] = useState<number | null>(
         null,
     );
@@ -129,6 +130,7 @@ export default function LiveTradingClass({
     const reviewStats = initialReviewStats;
     const isLoadingReviews = false;
     const classPriceInPaise = LIVE_TRADING_CLASS_PRICE_INR * 100;
+    const isFreeClass = (LIVE_TRADING_CLASS_PRICE_INR as number) === 0;
 
     const fetchLiveClassPublicLinks = async () => {
         let liveClassUrl: string | null = null;
@@ -293,31 +295,12 @@ export default function LiveTradingClass({
         rzp1.open();
     };
 
-    const handleClick = async () => {
-        // Track InitiateCheckout event for Meta Pixel
-        trackInitiateCheckout({
-            value: LIVE_TRADING_CLASS_PRICE_INR,
-            currency: "INR",
-            content_name: LIVE_TRADING_CLASS_NAME,
-            content_ids: [LIVE_TRADING_CLASS_ITEM_ID.toString()],
-            content_type: "product",
-            num_items: 1,
-        });
-
-        if (!isAuthenticated || !user?.id) {
-            console.warn("[LIVE_TRADING_CLASS] User not authenticated");
-            setIsAuthModalOpen(true);
-            return;
-        }
-
-        await startCheckout(user);
-    };
-
+    /** Free enrollment flow - direct booking without payment */
     const joinFreeAfterAuth = async (activeUser: User) => {
         const token =
             typeof window !== "undefined" ? localStorage.getItem("token") : null;
         if (!token) {
-            console.error("[LIVE_TRADING_CLASS] No auth token for join free");
+            console.error("[LIVE_TRADING_CLASS] No auth token for free join");
             toast({
                 title: "Session missing",
                 description: "Please sign in again and try once more.",
@@ -327,7 +310,7 @@ export default function LiveTradingClass({
             return;
         }
 
-        setJoinFreeSubmitting(true);
+        setIsSubmitting(true);
         try {
             const res = await fetch("/api/live-class/join-free", {
                 method: "POST",
@@ -352,7 +335,7 @@ export default function LiveTradingClass({
 
             if (!res.ok) {
                 toast({
-                    title: "Could not complete join",
+                    title: "Could not complete enrollment",
                     description: data.error ?? "Something went wrong. Try again.",
                     variant: "destructive",
                 });
@@ -366,23 +349,44 @@ export default function LiveTradingClass({
                 amount: 0,
             });
         } catch (e) {
-            console.error("[LIVE_TRADING_CLASS] Complimentary seat flow failed", e);
+            console.error("[LIVE_TRADING_CLASS] Free enrollment failed", e);
             toast({
-                title: "Could not complete join",
+                title: "Could not complete enrollment",
                 description: "Check your connection and try again.",
                 variant: "destructive",
             });
         } finally {
-            setJoinFreeSubmitting(false);
+            setIsSubmitting(false);
         }
     };
 
-    const handleJoinFreeClick = async () => {
+    const handleClick = async () => {
+        // Track InitiateCheckout event for Meta Pixel
+        trackInitiateCheckout({
+            value: LIVE_TRADING_CLASS_PRICE_INR,
+            currency: "INR",
+            content_name: LIVE_TRADING_CLASS_NAME,
+            content_ids: [LIVE_TRADING_CLASS_ITEM_ID.toString()],
+            content_type: "product",
+            num_items: 1,
+        });
+
         if (!isAuthenticated || !user?.id) {
+            console.warn("[LIVE_TRADING_CLASS] User not authenticated");
             setIsAuthModalOpen(true);
             return;
         }
-        await joinFreeAfterAuth(user);
+
+        if (isFreeClass) {
+            await joinFreeAfterAuth(user);
+        } else {
+            setIsSubmitting(true);
+            try {
+                await startCheckout(user);
+            } finally {
+                setIsSubmitting(false);
+            }
+        }
     };
 
     /**
@@ -394,12 +398,12 @@ export default function LiveTradingClass({
         return newReviews;
     }, []);
 
-    const renderFreeCtaButtonContent = () =>
-        joinFreeSubmitting ? (
+    const renderCtaButtonContent = () =>
+        isSubmitting ? (
             <span className="text-sm md:text-[0.9375rem]">Processing…</span>
         ) : (
             <span className="text-base md:text-lg font-semibold tracking-tight">
-                Enroll Now — ₹{LIVE_TRADING_CLASS_PRICE_INR}
+                {isFreeClass ? "Enroll Now — Free" : `Enroll Now — ₹${LIVE_TRADING_CLASS_PRICE_INR}`}
             </span>
         );
 
@@ -459,7 +463,10 @@ export default function LiveTradingClass({
             >
                 <div className="container mx-auto flex flex-col items-center justify-center gap-1.5 px-4 py-2.5 sm:flex-row sm:gap-4 sm:py-2">
                     <p className="text-center text-xs font-medium text-amber-950/90 sm:text-sm">
-                        Special introductory price — ₹{LIVE_TRADING_CLASS_PRICE_INR} offer ends in
+                        {isFreeClass 
+                            ? "Limited-time free class offer ends in"
+                            : `Special introductory price — ₹${LIVE_TRADING_CLASS_PRICE_INR} offer ends in`
+                        }
                     </p>
                     <div className="flex items-center gap-2 rounded-md bg-white/60 px-3 py-1 font-mono text-base font-bold tabular-nums tracking-tight text-amber-900 shadow-sm ring-1 ring-amber-200/80 sm:text-lg">
                         <Clock
@@ -482,18 +489,30 @@ export default function LiveTradingClass({
                 onOpenChange={setIsAuthModalOpen}
                 onUserResolved={async (authenticatedUser) => {
                     setIsAuthModalOpen(false);
-                    await joinFreeAfterAuth(authenticatedUser);
+                    if (isFreeClass) {
+                        await joinFreeAfterAuth(authenticatedUser);
+                    } else {
+                        setIsSubmitting(true);
+                        try {
+                            await startCheckout(authenticatedUser);
+                        } finally {
+                            setIsSubmitting(false);
+                        }
+                    }
                 }}
                 title="Complete Your Enrollment"
-                description="Enter your details to receive class access via email and WhatsApp."
+                description={isFreeClass 
+                    ? "Enter your details to receive class access via email and WhatsApp."
+                    : "Enter your details to proceed with payment."
+                }
                 submitLabel="Continue"
             />
-            {/* Paid checkout (Razorpay) — restore when re-enabling paid CTA below
-            <Script
-                id="razorpay-checkout-js"
-                src="https://checkout.razorpay.com/v1/checkout.js"
-            />
-            */}
+            {!isFreeClass && (
+                <Script
+                    id="razorpay-checkout-js"
+                    src="https://checkout.razorpay.com/v1/checkout.js"
+                />
+            )}
             {/* Hero Section */}
             <section className="relative w-full bg-gradient-to-br from-blue-50 via-white to-blue-50 py-8 md:py-16 lg:py-24">
                 <div className="container mx-auto px-4 sm:px-6 lg:px-8">
@@ -589,26 +608,19 @@ export default function LiveTradingClass({
                             <div className="flex flex-col space-y-2 pt-4">
                                 <Button
                                     ref={heroCtaRef}
-                                    onClick={handleJoinFreeClick}
-                                    disabled={joinFreeSubmitting}
+                                    onClick={handleClick}
+                                    disabled={isSubmitting}
                                     className="w-full md:w-auto h-auto bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 md:px-6 md:py-3 rounded-md font-semibold text-sm shadow-sm shadow-blue-900/10 border border-blue-500/30"
                                     aria-label={
-                                        joinFreeSubmitting
+                                        isSubmitting
                                             ? "Processing enrollment"
-                                            : `Enroll in live trading class for ${LIVE_TRADING_CLASS_PRICE_INR} rupees`
+                                            : isFreeClass
+                                                ? "Enroll in free live trading class"
+                                                : `Enroll in live trading class for ${LIVE_TRADING_CLASS_PRICE_INR} rupees`
                                     }
                                 >
-                                    {renderFreeCtaButtonContent()}
+                                    {renderCtaButtonContent()}
                                 </Button>
-
-                                {/* Paid enrollment — keep for future use; pair with Razorpay Script above
-                                <Button
-                                    onClick={handleClick}
-                                    className="w-full md:w-auto bg-blue-600 hover:bg-blue-700 text-white text-base md:text-lg px-8 py-6 md:py-7 rounded-lg font-semibold"
-                                >
-                                    Join Live Class for ₹{LIVE_TRADING_CLASS_PRICE_INR}
-                                </Button>
-                                */}
 
                                 <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs md:text-sm text-gray-600">
                                     <div className="flex items-center gap-2">
@@ -677,26 +689,19 @@ export default function LiveTradingClass({
                         <div className="mx-auto w-full max-w-xl md:max-w-2xl">
                             <div className="bg-white/95 backdrop-blur border border-gray-200 shadow-lg rounded-xl p-1.5 md:p-2">
                                 <Button
-                                    onClick={handleJoinFreeClick}
-                                    disabled={joinFreeSubmitting}
+                                    onClick={handleClick}
+                                    disabled={isSubmitting}
                                     className="w-full h-auto bg-blue-600 hover:bg-blue-700 text-white px-4 py-2.5 md:px-5 md:py-3 rounded-md font-semibold text-sm shadow-sm shadow-blue-900/10 border border-blue-500/30"
                                     aria-label={
-                                        joinFreeSubmitting
+                                        isSubmitting
                                             ? "Processing enrollment"
-                                            : `Enroll in live trading class for ${LIVE_TRADING_CLASS_PRICE_INR} rupees`
+                                            : isFreeClass
+                                                ? "Enroll in free live trading class"
+                                                : `Enroll in live trading class for ${LIVE_TRADING_CLASS_PRICE_INR} rupees`
                                     }
                                 >
-                                    {renderFreeCtaButtonContent()}
+                                    {renderCtaButtonContent()}
                                 </Button>
-
-                                {/* Paid sticky CTA — restore with Razorpay Script when needed
-                                <Button
-                                    onClick={handleClick}
-                                    className="w-full bg-blue-600 hover:bg-blue-700 text-white text-base md:text-lg px-6 py-5 md:py-6 rounded-lg font-semibold"
-                                >
-                                    Join Live Class for ₹{LIVE_TRADING_CLASS_PRICE_INR}
-                                </Button>
-                                */}
                             </div>
                         </div>
                     </div>
