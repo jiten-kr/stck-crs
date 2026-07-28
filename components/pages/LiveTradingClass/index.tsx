@@ -7,7 +7,6 @@ import { Card, CardContent } from "@/components/ui/card";
 import { ReviewsSection } from "@/components/ui/reviews-section";
 import WriteReview from "@/components/reviews/write-review";
 import {
-    LIVE_TRADING_CLASS_CROSS_OUT_PRICE_INR,
     LIVE_TRADING_CLASS_ITEM_ID,
     LIVE_TRADING_CLASS_NAME,
     LIVE_TRADING_CLASS_PRICE_INR,
@@ -36,7 +35,7 @@ import {
     Clock,
 } from "lucide-react";
 
-/** 24h repeating window for free-booking urgency (aligned to Unix epoch). */
+/** 24h repeating window for ₹199 booking urgency (aligned to Unix epoch). */
 const FREE_BOOKING_COUNTDOWN_CYCLE_MS = 24 * 60 * 60 * 1000;
 
 function formatHms(remainingMs: number): { h: string; m: string; s: string } {
@@ -397,20 +396,10 @@ export default function LiveTradingClass({
 
     const renderFreeCtaButtonContent = () =>
         joinFreeSubmitting ? (
-            <span className="text-sm md:text-[0.9375rem]">Reserving your seat…</span>
+            <span className="text-sm md:text-[0.9375rem]">Processing…</span>
         ) : (
-            <span className="flex flex-wrap items-center justify-center gap-x-2.5 gap-y-1.5 text-center max-w-md">
-                <span
-                    className="inline-flex items-center rounded-lg bg-white/20 px-3 py-1.5 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.35)] ring-1 ring-white/35"
-                    title={`Earlier listed at ₹${LIVE_TRADING_CLASS_CROSS_OUT_PRICE_INR}`}
-                >
-                    <span className="line-through decoration-1 decoration-white/95 text-white font-bold tabular-nums text-2xl md:text-3xl leading-none">
-                        ₹&nbsp;{LIVE_TRADING_CLASS_CROSS_OUT_PRICE_INR}
-                    </span>
-                </span>
-                <span className="text-base md:text-lg font-semibold tracking-tight">
-                    Book free — reserve your seat
-                </span>
+            <span className="text-base md:text-lg font-semibold tracking-tight">
+                Enroll Now — ₹{LIVE_TRADING_CLASS_PRICE_INR}
             </span>
         );
 
@@ -464,13 +453,13 @@ export default function LiveTradingClass({
                 role="timer"
                 aria-label={
                     countdownParts
-                        ? `Time left in this free booking window: ${countdownParts.h} hours, ${countdownParts.m} minutes, ${countdownParts.s} seconds`
+                        ? `Special offer ends in: ${countdownParts.h} hours, ${countdownParts.m} minutes, ${countdownParts.s} seconds`
                         : "Countdown loading"
                 }
             >
                 <div className="container mx-auto flex flex-col items-center justify-center gap-1.5 px-4 py-2.5 sm:flex-row sm:gap-4 sm:py-2">
                     <p className="text-center text-xs font-medium text-amber-950/90 sm:text-sm">
-                        Limited-time free class offer ends in
+                        Special introductory price — ₹{LIVE_TRADING_CLASS_PRICE_INR} offer ends in
                     </p>
                     <div className="flex items-center gap-2 rounded-md bg-white/60 px-3 py-1 font-mono text-base font-bold tabular-nums tracking-tight text-amber-900 shadow-sm ring-1 ring-amber-200/80 sm:text-lg">
                         <Clock
@@ -495,8 +484,8 @@ export default function LiveTradingClass({
                     setIsAuthModalOpen(false);
                     await joinFreeAfterAuth(authenticatedUser);
                 }}
-                title="Get free access"
-                description="Enter your details. We’ll send your live class links by email and WhatsApp."
+                title="Complete Your Enrollment"
+                description="Enter your details to receive class access via email and WhatsApp."
                 submitLabel="Continue"
             />
             {/* Paid checkout (Razorpay) — restore when re-enabling paid CTA below
@@ -605,8 +594,8 @@ export default function LiveTradingClass({
                                     className="w-full md:w-auto h-auto bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 md:px-6 md:py-3 rounded-md font-semibold text-sm shadow-sm shadow-blue-900/10 border border-blue-500/30"
                                     aria-label={
                                         joinFreeSubmitting
-                                            ? "Reserving your seat"
-                                            : `Book free live class seat. Listed value ${LIVE_TRADING_CLASS_CROSS_OUT_PRICE_INR} rupees is waived for this session.`
+                                            ? "Processing enrollment"
+                                            : `Enroll in live trading class for ${LIVE_TRADING_CLASS_PRICE_INR} rupees`
                                     }
                                 >
                                     {renderFreeCtaButtonContent()}
@@ -693,8 +682,8 @@ export default function LiveTradingClass({
                                     className="w-full h-auto bg-blue-600 hover:bg-blue-700 text-white px-4 py-2.5 md:px-5 md:py-3 rounded-md font-semibold text-sm shadow-sm shadow-blue-900/10 border border-blue-500/30"
                                     aria-label={
                                         joinFreeSubmitting
-                                            ? "Reserving your seat"
-                                            : `Book free live class seat. Listed value ${LIVE_TRADING_CLASS_CROSS_OUT_PRICE_INR} rupees is waived for this session.`
+                                            ? "Processing enrollment"
+                                            : `Enroll in live trading class for ${LIVE_TRADING_CLASS_PRICE_INR} rupees`
                                     }
                                 >
                                     {renderFreeCtaButtonContent()}
