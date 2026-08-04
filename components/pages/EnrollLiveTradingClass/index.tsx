@@ -579,7 +579,7 @@ export default function EnrollLiveTradingClass({
                                 </h3>
                             </div>
                             <p className="text-sm md:text-base text-gray-700 leading-relaxed">
-                                Proven methods to identify when to get in and when to get out of trades profitably.
+                                Proven methods to identify when to get in and when to get out of trades with clarity.
                             </p>
                         </div>
 

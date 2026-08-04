@@ -24,7 +24,7 @@ export const CURRICULUM_TOPICS: CurriculumTopic[] = [
     title: "Stop-Loss That Actually Works",
     points: [
       "Logical stop-loss placement (not random points)",
-      "How to protect capital first, profits second",
+      "How to protect capital first, manage risk second",
       "Why most stop-losses fail—and how to fix it",
     ],
   },
@@ -41,9 +41,9 @@ export const CURRICULUM_TOPICS: CurriculumTopic[] = [
     id: "risk-reward",
     title: "Risk-Reward Ratio: Minimum 1:5",
     points: [
-      "Why low risk-reward kills accounts",
-      "How to structure trades for asymmetric returns",
-      "Fewer trades, higher impact results",
+      "Why low risk-reward hurts your trading",
+      "How to structure trades for favorable outcomes",
+      "Fewer trades, better quality setups",
     ],
   },
   {
@@ -111,8 +111,7 @@ export const ENROLL_CURRICULUM_TOPICS: CurriculumTopic[] = [
 
   {
     id: "options-buying",
-    title:
-      "Top most Options buying Trading Strategy with (70% to 75%) accuracy",
+    title: "Options Buying Strategy with Structured Risk Management",
     points: [
       "How to identify high-probability options buying opportunities",
       "Capital-efficient options buying strategy",
@@ -121,8 +120,7 @@ export const ENROLL_CURRICULUM_TOPICS: CurriculumTopic[] = [
   },
   {
     id: "options-selling",
-    title:
-      "Most Profitable Option Selling Strategy which I am using last 4 years",
+    title: "Practical Option Selling Strategy for Consistent Traders",
     points: [
       "How to identify high-probability options selling opportunities",
       "Capital-efficient options selling strategy",

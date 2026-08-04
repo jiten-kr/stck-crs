@@ -464,7 +464,7 @@ export default function LiveTradingClass({
         }
 
         const endTime = new Date(promoConfig.countdownEndAt).getTime();
-        
+
         const tick = () => {
             const remaining = endTime - Date.now();
             if (remaining <= 0) {
@@ -474,7 +474,7 @@ export default function LiveTradingClass({
                 setCountdownRemainingMs(remaining);
             }
         };
-        
+
         tick();
         const id = window.setInterval(tick, 1000);
         return () => window.clearInterval(id);
@@ -495,7 +495,7 @@ export default function LiveTradingClass({
                 >
                     <div className="container mx-auto flex flex-col items-center justify-center gap-1.5 px-4 py-2.5 sm:flex-row sm:gap-4 sm:py-2">
                         <p className="text-center text-xs font-medium text-amber-950/90 sm:text-sm">
-                            {promoConfig?.promoText || (isFreeClass 
+                            {promoConfig?.promoText || (isFreeClass
                                 ? "Limited-time free class offer ends in"
                                 : `Special introductory price — ₹${LIVE_TRADING_CLASS_PRICE_INR} offer ends in`
                             )}
@@ -530,7 +530,7 @@ export default function LiveTradingClass({
                     }
                 }}
                 title="Complete Your Enrollment"
-                description={isFreeClass 
+                description={isFreeClass
                     ? "Enter your details to receive class access via email and WhatsApp."
                     : "Enter your details to proceed with payment."
                 }
@@ -558,7 +558,7 @@ export default function LiveTradingClass({
                                 <p className="text-base md:text-lg text-gray-700 leading-relaxed">
                                     Most traders don’t lose money because of the market. They lose
                                     because they enter without a plan, hesitate to book losses,
-                                    move stop-loss emotionally, and exit profitable trades too
+                                    move stop-loss emotionally, and exit winning trades too
                                     early.
                                 </p>
                                 {reviewStats && reviewStats.totalReviews > 0 && (
@@ -615,7 +615,7 @@ export default function LiveTradingClass({
                                 <div className="flex items-center space-x-3">
                                     <TrendingUp className="w-5 h-5 md:w-6 md:h-6 text-blue-600 flex-shrink-0" />
                                     <span className="text-base md:text-lg text-blue-600 font-medium">
-                                        Catch Big Monster Moves with Rules
+                                        Identify Market Opportunities with Rules
                                     </span>
                                 </div>
                                 <div className="flex items-center space-x-3">

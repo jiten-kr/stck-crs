@@ -4,7 +4,7 @@ import pool from "@/lib/db";
 /**
  * Public endpoint to fetch promo/countdown configuration.
  * Returns countdown settings only if enabled AND end time is in the future.
- * 
+ *
  * Query params:
  * - courseId (optional): Get course-specific promo, falls back to site-wide
  */
@@ -37,7 +37,7 @@ export async function GET(request: Request) {
     );
 
     const row = result.rows[0];
-    
+
     // If no active promo found, return disabled state
     if (!row) {
       return NextResponse.json(
@@ -66,7 +66,7 @@ export async function GET(request: Request) {
     );
   } catch (error) {
     console.error("[PUBLIC_PROMO_CONFIG] GET failed", error);
-    
+
     // On error, fail safe by returning disabled countdown
     return NextResponse.json(
       {
@@ -76,7 +76,7 @@ export async function GET(request: Request) {
         error: "Unable to load promo config",
       },
       {
-        status: 200,  // Return 200 to not break the page
+        status: 200, // Return 200 to not break the page
         headers: { "Cache-Control": "no-store" },
       },
     );
