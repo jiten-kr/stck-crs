@@ -15,3 +15,31 @@ export const LIVE_TRADING_CLASS_PRICE_INR = 199;
 export const ENROLL_CLASS_PRICE_INR = 2499;
 /** Shown crossed out on the live class CTA (marketing list price). */
 export const LIVE_TRADING_CLASS_NAME = "Live Trading Class";
+
+/**
+ * Centralized contact details for use across the platform
+ */
+export const contactDetails = {
+  businessName: PLATFORM_NAME,
+  ownerName: "Mayank Kumar",
+  email: {
+    support: "contact.mayankfin@gmail.com",
+    general: "mayankfinhub@gmail.com",
+  },
+  phone: {
+    support: "+91 9997336099",
+  },
+  address: {
+    line1: "Bagwara, Sahaspur",
+    city: "Dehradun",
+    state: "Uttarakhand",
+    country: "India",
+    pincode: "248197",
+    full: "Bagwara, Sahaspur, Dehradun, Uttarakhand, India - 248197",
+  },
+  hours: {
+    days: "Monday - Sunday",
+    time: "9:00 AM - 9:00 PM IST",
+  },
+  website: "https://mayankfin.com",
+} as const;

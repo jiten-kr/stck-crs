@@ -1,6 +1,6 @@
 import { Separator } from "@/components/ui/separator";
 import type { Metadata } from "next";
-import { PLATFORM_NAME } from "@/lib/constants";
+import { PLATFORM_NAME, contactDetails } from "@/lib/constants";
 
 export const metadata: Metadata = {
   title: PLATFORM_NAME + " - Refund & Cancellation Policy",
@@ -111,6 +111,14 @@ export default function RefundPolicyPage() {
               To request a refund for eligible courses, contact our support team
               with your order details. We typically respond within 24 hours.
             </p>
+          </div>
+
+          <div className="rounded-lg border p-4 text-sm text-muted-foreground">
+            <p className="font-medium text-foreground">Contact Us</p>
+            <p>For refund requests or questions, contact us at:</p>
+            <p className="mt-2">Email: {contactDetails.email.support}</p>
+            <p>Phone: {contactDetails.phone.support}</p>
+            <p>Address: {contactDetails.address.full}</p>
           </div>
         </div>
       </div>

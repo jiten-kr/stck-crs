@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Separator } from "@/components/ui/separator"
 import { useToast } from "@/hooks/use-toast"
-import { PLATFORM_NAME, PLATFORM_SUPPORT_EMAIL } from "@/lib/constants"
+import { contactDetails } from "@/lib/constants"
 import { Mail, Phone, Clock, MapPin, Send } from 'lucide-react'
 
 export default function ContactForm() {
@@ -71,7 +71,7 @@ export default function ContactForm() {
               <Mail className="h-5 w-5 text-primary mt-0.5" />
               <div>
                 <h3 className="font-medium">Email</h3>
-                <p>{PLATFORM_SUPPORT_EMAIL}</p>
+                <p>{contactDetails.email.support}</p>
               </div>
             </div>
 
@@ -82,7 +82,7 @@ export default function ContactForm() {
               <div>
                 <h3 className="font-medium">Phone</h3>
                 <p className="text-sm text-muted-foreground">Customer Support:</p>
-                <p>+91 9997336099</p>
+                <p>{contactDetails.phone.support}</p>
               </div>
             </div>
 
@@ -93,7 +93,7 @@ export default function ContactForm() {
               <div>
                 <h3 className="font-medium">Hours of Operation</h3>
                 <p className="text-sm text-muted-foreground">Customer Support:</p>
-                <p>Monday - Sunday: 9:00 AM - 9:00 PM IST</p>
+                <p>{contactDetails.hours.days}: {contactDetails.hours.time}</p>
               </div>
             </div>
 
@@ -103,8 +103,8 @@ export default function ContactForm() {
               <MapPin className="h-5 w-5 text-primary mt-0.5" />
               <div>
                 <h3 className="font-medium">Office Address</h3>
-                <p>{PLATFORM_NAME}</p>
-                <p>Bagwara, Sahaspur, Uttar Pradesh, India</p>
+                <p>{contactDetails.businessName}</p>
+                <p>{contactDetails.address.full}</p>
               </div>
             </div>
           </CardContent>

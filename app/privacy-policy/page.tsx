@@ -1,6 +1,6 @@
 import { Separator } from "@/components/ui/separator"
 import type { Metadata } from "next";
-import { PLATFORM_NAME } from "@/lib/constants";
+import { PLATFORM_NAME, contactDetails } from "@/lib/constants";
 
 export const metadata: Metadata = {
   title: PLATFORM_NAME + " - Privacy Policy",
@@ -119,11 +119,13 @@ export default function PrivacyPolicyPage() {
             </p>
           </div>
 
-          {/* <div className="rounded-lg border p-4 text-sm text-muted-foreground">
-            <p className="font-medium text-foreground">Contact</p>
-            <p>Email: privacy@marketmastery.com</p>
-            <p>Address: 123 Trading Street, Suite 456, Financial District, New York, NY 10001</p>
-          </div> */}
+          <div className="rounded-lg border p-4 text-sm text-muted-foreground">
+            <p className="font-medium text-foreground">Contact Us</p>
+            <p>For privacy-related inquiries, contact us at:</p>
+            <p className="mt-2">Email: {contactDetails.email.support}</p>
+            <p>Phone: {contactDetails.phone.support}</p>
+            <p>Address: {contactDetails.address.full}</p>
+          </div>
         </div>
       </div>
     </div>

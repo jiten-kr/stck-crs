@@ -1,6 +1,6 @@
 import Link from "next/link"
-import { Info } from "lucide-react"
-import { PLATFORM_NAME } from "@/lib/constants";
+import { Info, Mail, Phone } from "lucide-react"
+import { PLATFORM_NAME, contactDetails } from "@/lib/constants";
 
 export default function Footer() {
   return (
@@ -12,6 +12,16 @@ export default function Footer() {
             <p className="text-sm text-muted-foreground">
               Master practical skills with expert guidance you can apply immediately.
             </p>
+            <div className="space-y-2 text-sm text-muted-foreground">
+              <div className="flex items-center gap-2">
+                <Mail className="h-4 w-4" />
+                <span>{contactDetails.email.support}</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <Phone className="h-4 w-4" />
+                <span>{contactDetails.phone.support}</span>
+              </div>
+            </div>
           </div>
           {/* <div className="space-y-4">
             <h3 className="text-lg font-medium">Quick Links</h3>
@@ -74,7 +84,7 @@ export default function Footer() {
             </ul>
           </div>
         </div>
-        
+
         {/* Educational Disclaimer */}
         <div className="mt-8 rounded-lg bg-muted/30 p-4 text-center">
           <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
