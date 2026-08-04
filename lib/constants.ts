@@ -30,12 +30,7 @@ export const contactDetails = {
     support: "+91 9997336099",
   },
   address: {
-    line1: "Bagwara, Sahaspur",
-    city: "Dehradun",
-    state: "Uttarakhand",
-    country: "India",
-    pincode: "248197",
-    full: "Bagwara, Sahaspur, Dehradun, Uttarakhand, India - 248197",
+    full: "Bagwara, Sahaspur, Uttar Pradesh, India - 246745",
   },
   hours: {
     days: "Monday - Sunday",
