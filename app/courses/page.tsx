@@ -6,16 +6,15 @@ import { ENROLL_CLASS_PRICE_INR, PLATFORM_NAME } from "@/lib/constants";
 export const metadata: Metadata = {
   title:
     PLATFORM_NAME +
-    " - Stock Market & Crypto Trading Courses | Learn at Your Own Pace",
+    " - Stock Market Trading Courses | Learn at Your Own Pace",
   description:
-    "Explore beginner-friendly stock market and crypto trading courses by MayankFin. Self-paced, structured lessons covering fundamentals, strategies, and risk management.",
+    "Explore beginner-friendly stock market trading courses by MayankFin. Self-paced, structured lessons covering fundamentals, strategies, and risk management.",
 
   keywords: [
     "stock market courses",
-    "crypto trading courses",
     "online trading courses",
     "learn stock market",
-    "learn crypto trading",
+    "learn trading",
     "self paced trading course",
     "trading courses for beginners",
     "online trading education india",
@@ -34,9 +33,9 @@ export const metadata: Metadata = {
   openGraph: {
     title:
       PLATFORM_NAME +
-      " - Stock Market & Crypto Trading Courses",
+      " - Stock Market Trading Courses",
     description:
-      "Self-paced stock market and crypto trading courses designed for beginners. Learn fundamentals, strategies, and risk management at your own speed.",
+      "Self-paced stock market trading courses designed for beginners. Learn fundamentals, strategies, and risk management at your own speed.",
     url: "https://mayankfin.com/courses",
     siteName: "MayankFin",
     images: [
@@ -44,7 +43,7 @@ export const metadata: Metadata = {
         url: "/og-image.png",
         width: 1200,
         height: 630,
-        alt: "MayankFin - Stock Market & Crypto Trading Courses",
+        alt: "MayankFin - Stock Market Trading Courses",
       },
     ],
     locale: "en_IN",
@@ -55,9 +54,9 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title:
       PLATFORM_NAME +
-      " - Stock Market & Crypto Trading Courses",
+      " - Stock Market Trading Courses",
     description:
-      "Learn stock market and crypto trading with self-paced courses designed for beginners.",
+      "Learn stock market trading with self-paced courses designed for beginners.",
     images: ["/og-image.png"],
   },
 
@@ -79,7 +78,7 @@ export const metadata: Metadata = {
 const liveStockMarketCourse: Course[] = [
   {
     id: 1,
-    title: "Complete Masterclass 2026: For Indian Stocks Market, Crypto and Commodities ke liye Ultimate Trading Strategies",
+    title: "Complete Masterclass 2026: For Indian Stocks Market and Commodities - Ultimate Trading Strategies",
     description:
       "Join our live stock market trading course and learn from real-time market analysis, interactive sessions, and practical trading strategies.",
     price: ENROLL_CLASS_PRICE_INR,

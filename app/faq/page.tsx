@@ -16,7 +16,6 @@ export const metadata: Metadata = {
     "trading class faqs",
     "live trading course questions",
     "stock market course faq",
-    "crypto trading class faq",
     "online trading education help",
     "trading course support india",
   ],

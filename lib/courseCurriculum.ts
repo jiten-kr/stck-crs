@@ -50,7 +50,7 @@ export const CURRICULUM_TOPICS: CurriculumTopic[] = [
     id: "universal-strategy",
     title: "Universal Strategy – All Markets",
     points: [
-      "Same logic for stocks, crypto & commodities",
+      "Same logic for stocks & commodities",
       "Market-independent decision making",
       "Adapt strategy, not emotions",
     ],

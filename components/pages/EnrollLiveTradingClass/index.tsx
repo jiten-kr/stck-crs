@@ -337,7 +337,7 @@ export default function EnrollLiveTradingClass({
                                         </span>
                                     </h2>
                                     <h3 className="text-2xl md:text-3xl lg:text-4xl font-bold text-black leading-tight">
-                                        For Indian Stocks Market, Crypto and Commodities ke liye Ultimate Trading Strategies
+                                        For Indian Stocks Market and Commodities - Ultimate Trading Strategies
                                     </h3>
                                 </div>
                                 <p className="text-base md:text-lg text-gray-700 leading-relaxed">
@@ -345,7 +345,7 @@ export default function EnrollLiveTradingClass({
                                     This live masterclass is built to help you develop a structured, repeatable trading approach using price action, risk management, and proven market concepts.
                                 </p>
                                 <p className="text-base md:text-lg text-gray-700 leading-relaxed">
-                                    You will learn how to analyze markets, identify high-probability setups, and execute trades with discipline—whether you trade crypto, stocks, options, or other instruments.
+                                    You will learn how to analyze markets, identify high-probability setups, and execute trades with discipline—whether you trade stocks, options, or other instruments.
                                 </p>
                                 {reviewStats && reviewStats.totalReviews > 0 && (
                                     <a
@@ -533,7 +533,7 @@ export default function EnrollLiveTradingClass({
                                 </h3>
                             </div>
                             <p className="text-sm md:text-base text-gray-700 leading-relaxed">
-                                Designed for Indian markets &amp; crypto, but applicable globally. Master strategies that work everywhere.
+                                Designed for Indian markets, but applicable globally. Master strategies that work everywhere.
                             </p>
                         </div>
                     </div>

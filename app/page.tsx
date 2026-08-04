@@ -26,16 +26,16 @@ import type { Metadata } from "next";
 import { PLATFORM_NAME } from "@/lib/constants";
 
 export const metadata: Metadata = {
-  title: PLATFORM_NAME + " - Learn Stock Market & Crypto Trading | Live Classes & Courses",
+  title: PLATFORM_NAME + " - Learn Stock Market Trading | Live Classes & Courses",
   description:
-    "MayankFin helps beginners learn stock market and crypto trading through live instructor-led classes and structured pre-recorded courses. Practical, beginner-friendly, and trusted learning.",
+    "MayankFin helps beginners learn stock market trading through live instructor-led classes and structured pre-recorded courses. Practical, beginner-friendly, and trusted learning.",
 
   keywords: [
     "stock market learning",
-    "crypto trading education",
+    "trading education",
     "learn trading online",
     "stock market courses",
-    "crypto courses",
+    "trading courses",
     "live trading classes",
     "trading for beginners india",
     "online trading education",
@@ -52,9 +52,9 @@ export const metadata: Metadata = {
   },
 
   openGraph: {
-    title: PLATFORM_NAME + " - Stock Market & Crypto Trading Education",
+    title: PLATFORM_NAME + " - Stock Market Trading Education",
     description:
-      "Learn stock market and crypto trading with live classes and self-paced courses. Designed for beginners with a practical, structured approach.",
+      "Learn stock market trading with live classes and self-paced courses. Designed for beginners with a practical, structured approach.",
     url: "https://mayankfin.com",
     siteName: "MayankFin",
     locale: "en_IN",
@@ -67,9 +67,9 @@ export const metadata: Metadata = {
 
   twitter: {
     card: "summary_large_image",
-    title: PLATFORM_NAME + " - Learn Stock Market & Crypto Trading",
+    title: PLATFORM_NAME + " - Learn Stock Market Trading",
     description:
-      "Beginner-friendly stock market & crypto trading education with live classes and structured courses.",
+      "Beginner-friendly stock market trading education with live classes and structured courses.",
   },
 
   robots: {
@@ -96,7 +96,7 @@ export default function HomePage() {
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="max-w-3xl mx-auto text-center space-y-6">
             <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 leading-tight">
-              Learn Stock Market & Crypto Trading{" "}
+              Learn Stock Market Trading{" "}
               <span className="text-blue-600">the Right Way</span>
             </h1>
             <p className="text-lg md:text-xl text-gray-600 leading-relaxed max-w-2xl mx-auto">
@@ -204,7 +204,7 @@ export default function HomePage() {
                   </div>
                 </div>
                 <p className="text-gray-600 mb-5">
-                  Self-paced stock market and crypto courses designed to build
+                  Self-paced stock market courses designed to build
                   strong fundamentals at your own speed.
                 </p>
                 <ul className="space-y-2 mb-6">
@@ -376,10 +376,10 @@ export default function HomePage() {
                 </div>
                 <div>
                   <h3 className="font-semibold text-gray-900 mb-1">
-                    Crypto Market Basics
+                    Commodities & Derivatives
                   </h3>
                   <p className="text-sm text-gray-600">
-                    Navigate crypto markets with the same disciplined approach.
+                    Navigate different markets with the same disciplined approach.
                   </p>
                 </div>
               </div>
@@ -464,7 +464,7 @@ export default function HomePage() {
               <CheckCircle2 className="w-6 h-6 text-green-600 flex-shrink-0 mt-0.5" />
               <div>
                 <h3 className="font-semibold text-gray-900">
-                  Stock & Crypto Enthusiasts
+                  Stock Market Enthusiasts
                 </h3>
                 <p className="text-sm text-gray-600">
                   Turn your interest into structured knowledge with a

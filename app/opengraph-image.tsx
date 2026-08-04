@@ -2,7 +2,7 @@ import { ImageResponse } from "next/og";
 
 export const runtime = "edge";
 
-export const alt = "MayankFin - Stock Market & Crypto Trading Education";
+export const alt = "MayankFin - Stock Market Trading Education";
 export const size = {
     width: 1200,
     height: 630,
@@ -74,7 +74,7 @@ export default function Image() {
                             marginBottom: 20,
                         }}
                     >
-                        Learn Stock Market & Crypto Trading
+                        Learn Stock Market Trading
                     </div>
 
                     <div

@@ -311,7 +311,7 @@ Thank you for your purchase!`,
 
 Hi {{customerName}},
 
-Thank you for joining us! You're now part of a community learning stock market and crypto trading the right way.
+Thank you for joining us! You're now part of a community learning stock market trading the right way.
 
 🎓 What's next?
 • Check your email for login details
