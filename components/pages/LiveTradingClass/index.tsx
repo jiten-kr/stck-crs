@@ -36,8 +36,12 @@ import {
     Clock,
 } from "lucide-react";
 
-/** 24h repeating window for ₹199 booking urgency (aligned to Unix epoch). */
-const FREE_BOOKING_COUNTDOWN_CYCLE_MS = 24 * 60 * 60 * 1000;
+/** Promo config from server */
+type PromoConfig = {
+    countdownEnabled: boolean;
+    countdownEndAt: string | null;
+    promoText: string | null;
+};
 
 function formatHms(remainingMs: number): { h: string; m: string; s: string } {
     const totalSec = Math.max(0, Math.floor(remainingMs / 1000));
@@ -119,9 +123,8 @@ export default function LiveTradingClass({
     const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
     const [showStickyCta, setShowStickyCta] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
-    const [freeBookingRemainingMs, setFreeBookingRemainingMs] = useState<number | null>(
-        null,
-    );
+    const [promoConfig, setPromoConfig] = useState<PromoConfig | null>(null);
+    const [countdownRemainingMs, setCountdownRemainingMs] = useState<number | null>(null);
     const heroCtaRef = useRef<HTMLButtonElement>(null);
     const user = useSelector(selectAuthUser);
     const isAuthenticated = useSelector(selectIsAuthenticated);
@@ -431,59 +434,85 @@ export default function LiveTradingClass({
     }, []);
 
     /**
-     * 24-hour countdown that resets every 24 hours (same boundary for all visitors).
+     * Fetch promo config from server on mount
      */
     useEffect(() => {
-        const tick = () => {
-            setFreeBookingRemainingMs(
-                FREE_BOOKING_COUNTDOWN_CYCLE_MS -
-                (Date.now() % FREE_BOOKING_COUNTDOWN_CYCLE_MS),
-            );
+        const fetchPromoConfig = async () => {
+            try {
+                const res = await fetch(
+                    `/api/public/promo-config?courseId=${LIVE_TRADING_CLASS_ITEM_ID}`,
+                    { cache: "no-store" }
+                );
+                if (res.ok) {
+                    const data = (await res.json()) as PromoConfig;
+                    setPromoConfig(data);
+                }
+            } catch (err) {
+                console.warn("[LIVE_TRADING_CLASS] Could not load promo config", err);
+            }
         };
+        fetchPromoConfig();
+    }, []);
+
+    /**
+     * Server-controlled countdown - only runs when promo is enabled with valid end time
+     */
+    useEffect(() => {
+        if (!promoConfig?.countdownEnabled || !promoConfig?.countdownEndAt) {
+            setCountdownRemainingMs(null);
+            return;
+        }
+
+        const endTime = new Date(promoConfig.countdownEndAt).getTime();
+        
+        const tick = () => {
+            const remaining = endTime - Date.now();
+            if (remaining <= 0) {
+                setCountdownRemainingMs(null);
+                setPromoConfig(prev => prev ? { ...prev, countdownEnabled: false } : null);
+            } else {
+                setCountdownRemainingMs(remaining);
+            }
+        };
+        
         tick();
         const id = window.setInterval(tick, 1000);
         return () => window.clearInterval(id);
-    }, []);
+    }, [promoConfig?.countdownEnabled, promoConfig?.countdownEndAt]);
 
-    const countdownParts =
-        freeBookingRemainingMs != null
-            ? formatHms(freeBookingRemainingMs)
-            : null;
+    // Only show countdown if promo is enabled and there's time remaining
+    const showCountdown = promoConfig?.countdownEnabled && countdownRemainingMs != null && countdownRemainingMs > 0;
+    const countdownParts = countdownRemainingMs != null ? formatHms(countdownRemainingMs) : null;
 
     return (
         <div className="flex flex-col min-h-screen">
-            <div
-                className="sticky top-16 z-40 w-full border-b border-amber-200/80 bg-gradient-to-r from-amber-50 via-orange-50/95 to-amber-50 text-amber-950 shadow-sm backdrop-blur-sm supports-[backdrop-filter]:bg-amber-50/90"
-                role="timer"
-                aria-label={
-                    countdownParts
-                        ? `Special offer ends in: ${countdownParts.h} hours, ${countdownParts.m} minutes, ${countdownParts.s} seconds`
-                        : "Countdown loading"
-                }
-            >
-                <div className="container mx-auto flex flex-col items-center justify-center gap-1.5 px-4 py-2.5 sm:flex-row sm:gap-4 sm:py-2">
-                    <p className="text-center text-xs font-medium text-amber-950/90 sm:text-sm">
-                        {isFreeClass 
-                            ? "Limited-time free class offer ends in"
-                            : `Special introductory price — ₹${LIVE_TRADING_CLASS_PRICE_INR} offer ends in`
-                        }
-                    </p>
-                    <div className="flex items-center gap-2 rounded-md bg-white/60 px-3 py-1 font-mono text-base font-bold tabular-nums tracking-tight text-amber-900 shadow-sm ring-1 ring-amber-200/80 sm:text-lg">
-                        <Clock
-                            className="h-4 w-4 shrink-0 text-amber-700"
-                            aria-hidden
-                        />
-                        {countdownParts ? (
+            {/* Countdown banner - only shown when server enables it with a real end time */}
+            {showCountdown && countdownParts && (
+                <div
+                    className="sticky top-16 z-40 w-full border-b border-amber-200/80 bg-gradient-to-r from-amber-50 via-orange-50/95 to-amber-50 text-amber-950 shadow-sm backdrop-blur-sm supports-[backdrop-filter]:bg-amber-50/90"
+                    role="timer"
+                    aria-label={`Special offer ends in: ${countdownParts.h} hours, ${countdownParts.m} minutes, ${countdownParts.s} seconds`}
+                >
+                    <div className="container mx-auto flex flex-col items-center justify-center gap-1.5 px-4 py-2.5 sm:flex-row sm:gap-4 sm:py-2">
+                        <p className="text-center text-xs font-medium text-amber-950/90 sm:text-sm">
+                            {promoConfig?.promoText || (isFreeClass 
+                                ? "Limited-time free class offer ends in"
+                                : `Special introductory price — ₹${LIVE_TRADING_CLASS_PRICE_INR} offer ends in`
+                            )}
+                        </p>
+                        <div className="flex items-center gap-2 rounded-md bg-white/60 px-3 py-1 font-mono text-base font-bold tabular-nums tracking-tight text-amber-900 shadow-sm ring-1 ring-amber-200/80 sm:text-lg">
+                            <Clock
+                                className="h-4 w-4 shrink-0 text-amber-700"
+                                aria-hidden
+                            />
                             <span>
                                 {countdownParts.h}:{countdownParts.m}:
                                 {countdownParts.s}
                             </span>
-                        ) : (
-                            <span className="min-w-[7.5ch]">--:--:--</span>
-                        )}
+                        </div>
                     </div>
                 </div>
-            </div>
+            )}
             <ContactAuthModal
                 open={isAuthModalOpen}
                 onOpenChange={setIsAuthModalOpen}

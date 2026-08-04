@@ -6,19 +6,17 @@ import pool from "@/lib/db";
 import LiveTradingClass from "@/components/pages/LiveTradingClass";
 
 export const metadata: Metadata = {
-  title: PLATFORM_NAME + " - Live Stock Market & Crypto Trading Class | Learn & Trade Confidently",
+  title: PLATFORM_NAME + " - Live Stock Market Trading Class | Learn & Trade Confidently",
   description:
-    "Join our live online stock market and crypto trading classes. Learn real-world trading strategies, risk management, and market psychology. Beginner-friendly. Limited seats.",
+    "Join our live online stock market trading classes. Learn real-world trading strategies, risk management, and market psychology. Beginner-friendly. Limited seats.",
 
   keywords: [
     "live stock market class",
-    "crypto trading class",
     "online trading course",
     "learn stock trading",
-    "learn crypto trading",
     "live trading workshop",
     "stock market for beginners",
-    "crypto trading for beginners",
+    "trading for beginners",
     "online trading class india",
   ],
 
@@ -33,9 +31,9 @@ export const metadata: Metadata = {
   },
 
   openGraph: {
-    title: PLATFORM_NAME + " - Live Stock Market & Crypto Trading Class",
+    title: PLATFORM_NAME + " - Live Stock Market Trading Class",
     description:
-      "Learn stock market & crypto trading live with practical strategies, real examples, and expert guidance. Join now – limited seats available.",
+      "Learn stock market trading live with practical strategies, real examples, and expert guidance. Join now – limited seats available.",
     url: "https://mayankfin.com",
     siteName: "MayankFin",
     images: [
@@ -43,7 +41,7 @@ export const metadata: Metadata = {
         url: "/og-image.png", // 1200x630 recommended
         width: 1200,
         height: 630,
-        alt: "Live Stock Market & Crypto Trading Class",
+        alt: "Live Stock Market Trading Class",
       },
     ],
     locale: "en_IN",
@@ -52,9 +50,9 @@ export const metadata: Metadata = {
 
   twitter: {
     card: "summary_large_image",
-    title: PLATFORM_NAME + " - Live Stock Market & Crypto Trading Class",
+    title: PLATFORM_NAME + " - Live Stock Market Trading Class",
     description:
-      "Join live stock market & crypto trading classes. Learn practical trading, risk management & real strategies.",
+      "Join live stock market trading classes. Learn practical trading, risk management & real strategies.",
     images: ["/og-image.png"],
   },
 
